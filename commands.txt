@@ -18,6 +18,6 @@ set PARMETIS_DIR=D:\Luciano\Numerico\Libs\parmetis-4.0.3
 set CXX=x86_64-w64-mingw32-g++.exe
 set CC=x86_64-w64-mingw32-gcc.exe
 
-cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_FLAGS="-fpermissive -O3 -ffast-math -m64" -DUSE_PETSC=ON -G "MinGW Makefiles" %FLUXSOL_DIR%\Src\FluxSol-Solver
+cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_FLAGS="-fpermissive -O3 -ffast-math -m64" -DUSE_PETSC=ON -G "CodeBlocks - MinGW Makefiles" ..\src
 
 mingw32-make.exe

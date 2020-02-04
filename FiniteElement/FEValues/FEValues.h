@@ -108,8 +108,8 @@ namespace FluxSol
 		const GaussFullMatrices & shape_grad_comps() const{return this->shape_grad_components;}
 		const Matrix<double> & shape_value_matrix(const int &gausspoint)const;
 		inline const GaussFullMatrices & shape_value_matrix()const{return this->shape_value_matrices;}
-		inline const double & shape_grad_component  (const int &fn, const int &gaussp, const int &comp) const{return this->shape_grad_components[gaussp][comp][fn];};	//Like in dealii
-		inline const double & shape_value_component (const int &fn, const int &gaussp) const{return this->shape_value_components[gaussp][0][fn];};	//Like in dealii
+		inline const double & shape_grad_component  (const int &fn, const int &gaussp, const int &comp){return this->shape_grad_components[gaussp][comp][fn];};	//Like in dealii
+		inline const double & shape_value_component (const int &fn, const int &gaussp) 					{return this->shape_value_components[gaussp][0][fn];};	//Like in dealii
 		//TO MODIFY TO shape_grad_matrix
 		inline const GaussFullMatrices  & shape_grad_matrix()const;
 		inline const GaussFullMatrices  & shape_localgrad_matrix()const;
