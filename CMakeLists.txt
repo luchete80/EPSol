@@ -49,9 +49,9 @@ set (METIS_LIBRARY_DIRS ${MY_METIS_DIR}/bin-x86_64-mingw)
 set (MY_PETSC_DIR "D:/Luciano/Numerico/Libs/petsc-3.4.4")
 
 if(DEBUG_MODE)
-set (MY_PETSC_ARCH arch-mswin-c-debug-shared-mpi0-fc0)
+set (MY_PETSC_ARCH arch-mswin-mpi1-release)
 else ()
-set (MY_PETSC_ARCH arch-mswin-c-release-mpi0-fc0)
+set (MY_PETSC_ARCH arch-mswin-mpi1-release)
 endif ()
 
 #######################################################################

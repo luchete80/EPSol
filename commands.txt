@@ -1,0 +1,23 @@
+set CXX=x86_64-w64-mingw32-g++.exe
+set CC=x86_64-w64-mingw32-gcc.exe
+
+export PATH=/d/Luciano/Programas/cmake/bin:$PATH
+
+cmake ../src -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+
+set PETSC_DIR=D:\Luciano\Numerico\Libs\petsc-3.4.4
+set MPI_LIB_DIR=D:\Luciano\Programas\Microsoft-HPCPack-2008R2\Lib\amd64
+set MPI_INC_DIR=D:\Luciano\Programas\Microsoft-HPCPack-2008R2\Inc
+set PETSC_ARCH=arch-mswin-mpi1-release
+
+set PATH=D:\Luciano\Programas\mingw64\bin;D:\Luciano\Programas\cmake\bin;%PATH%
+
+
+set PARMETIS_DIR=D:\Luciano\Numerico\Libs\parmetis-4.0.3
+
+set CXX=x86_64-w64-mingw32-g++.exe
+set CC=x86_64-w64-mingw32-gcc.exe
+
+cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_FLAGS="-fpermissive -O3 -ffast-math -m64" -DUSE_PETSC=ON -G "MinGW Makefiles" %FLUXSOL_DIR%\Src\FluxSol-Solver
+
+mingw32-make.exe
