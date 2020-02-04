@@ -1,0 +1,30 @@
+namespace FluxSol{
+
+template
+FeGrid<2>::FeGrid(const double &lex, const double &ley, const double &lez,
+				const int &nex, const int &ney, const int &nez);
+
+template
+void FeGrid<2>::Create(const double &lex, const double &ley, const double &lez,
+				const int &nex, const int &ney, const int &nez);
+
+template
+FeGrid<2>::FeGrid(const Element <2> &,
+				const double &, const double &, const double &,
+				const int &, const int &, const int &);
+
+
+template
+FeGrid<3>::FeGrid(const double &lex, const double &ley, const double &lez,
+				const int &nex, const int &ney, const int &nez);
+
+template
+void FeGrid<3>::Create(const double &lex, const double &ley, const double &lez,
+				const int &nex, const int &ney, const int &nez);
+
+template
+FeGrid<3>::FeGrid(const Element <3> &,
+				const double &, const double &, const double &,
+				const int &, const int &, const int &);
+
+}

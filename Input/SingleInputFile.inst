@@ -1,0 +1,55 @@
+
+namespace FluxSol
+{
+
+template
+SingleInputFile<2>::SingleInputFile(const string &name);
+
+template
+void SingleInputFile<2>::strip_white_spaces();
+template
+void SingleInputFile<2>::strip_endlines();
+
+template
+void  SingleInputFile<2>::ShowData();
+template
+void  SingleInputFile<2>::ReadNodes();
+template
+void  SingleInputFile<2>::ReadElements();
+template
+void  SingleInputFile<2>::ReadMaterial();
+template
+void  SingleInputFile<2>::ReadBoundary();
+template
+void  SingleInputFile<2>::ReadLoads();
+template
+void  SingleInputFile<2>::ReadSections();
+
+template
+SingleInputFile<3>::SingleInputFile(const string &name);
+
+template
+void SingleInputFile<3>::strip_white_spaces();
+template
+void SingleInputFile<3>::strip_endlines();
+
+template
+void  SingleInputFile<3>::ShowData();
+template
+void  SingleInputFile<3>::ReadNodes();
+template
+void  SingleInputFile<3>::ReadElements();
+template
+void  SingleInputFile<3>::ReadMaterial();
+template
+void  SingleInputFile<3>::ReadBoundary();
+template
+void  SingleInputFile<3>::ReadLoads();
+template
+void  SingleInputFile<3>::ReadSections();
+
+
+bool extract_in_between(string &data, string begin, string end, string &result,bool check_char_before, string acceptList);
+
+
+}

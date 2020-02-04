@@ -1,0 +1,238 @@
+/************************************************************************
+	
+	Copyright 2012-2013 Luciano Buglioni
+ 
+	Contact: luciano.buglioni@gmail.com
+
+	This file is a part of FluxSol
+
+	FluxSol is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    Free CFD is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    For a copy of the GNU General Public License,
+    see <http://www.gnu.org/licenses/>.
+
+*************************************************************************/
+#ifndef _FIELD_H
+#define _FIELD_H
+
+// Parado en directorio Field //
+#include "./FiniteVolume/Mesh/FvGrid.h"
+#include "./Type/Scalar.h"
+#include "./Type/Vec3d.h"
+#include "./SistEcuac/SistEcuac.h"
+
+#include <list>
+
+namespace FluxSol{
+//Los campos no dependen de la discretizacion
+//
+
+//Campo generico
+//De este derivan todos los campos
+//Este campo no tiene asociada una malla
+//Siempre en los campos internos
+template<typename T>
+class _Field{
+
+
+    protected:
+    std::vector <T> value;
+	int order;
+	int numberofvals;
+	//This must not be able for patchfields since is confusing
+	std::vector <int> idgrid_domain;	//Ya sea vertex, surface o volume
+										//Son los id de los vertices que forman parte del dominio
+
+    public:
+    _Field(){};
+    const int Order(){return order;};
+	T & Val(const int &i){return value[i];};
+	int & Numberofvals(){return numberofvals;}
+	void  Insert_Idgrid_domain(const int &i){idgrid_domain.push_back(i);}
+	int & Idgrid_domain(const int &i){return idgrid_domain[i];}
+	void Log();
+
+};
+
+
+
+/////////////////////////////
+///// CAMPOS GEOMETRICO /////
+/////////////////////////////
+// IMPORTANTE REFERENCIA A LA MALLA
+//Tienen asociadas mallas, siempre se llama igual *GridPtr
+//y puede ser distinto tipo de malla
+//CONVIENE PONER FvField como padre
+
+//Campo de superficie
+template<typename T>
+class _Surf_Fv_Field:public _Field<T>{
+
+    Fv_CC_Grid *GridPtr;       //Se podria probar con un puntero general
+                                // en la clase base
+
+
+    protected:
+
+    public:
+    _Surf_Fv_Field(){};         //Constructor
+	Fv_CC_Grid  & Grid(){return *GridPtr;}
+	//Adding boundary face
+	_Surf_Fv_Field(Fv_CC_Grid &grid)
+	{
+		GridPtr=&grid;
+		//LO HAGO PARA TODOS LOS FACES
+		for (int f=0;f<GridPtr->Num_Faces();f++)
+		{
+			if (GridPtr->Face(f).Boundaryface()&&!GridPtr->Face(f).Is_Null_Flux_Face())
+			{
+				T val;
+				this->value.push_back(val);
+				this->idgrid_domain.push_back(f);
+			}
+		}		
+	
+	}
+
+	//Devuelve el valor en una Surface 
+	&T GridIdSurFaceVal(const int &i)		//El valor de una 
+	{
+		//Tengo que ver cual es la face i del field
+		for (int fid=0;fid<this->Numberofvals();fid++)
+		{
+			if (i==this->Idgrid_domain(fid))
+				return this->value[fid];
+		}
+	}
+
+};
+
+//
+template<typename T>
+class _Fv_Patch_Field:
+	public _Surf_Fv_Field<T>
+{
+protected:
+	int patchid;
+
+public:
+	_Fv_Patch_Field(){};
+	_Fv_Patch_Field(const Patch &);
+	int & PatchId(){return patchid;};
+	//This must be in parent class
+	void AssignValue(const T &val);
+
+};
+
+//Instead a FieldField as in OpenFoam has a vector in Fields
+//This will be soon a field
+template<typename T>
+class _Fv_Boundary_Field
+{
+protected:
+	std::vector < _Fv_Patch_Field < T > > patchfield;
+
+public:
+	//_Fv_Boundary_Field(const _CC_Fv_Field < T > &);
+	_Fv_Boundary_Field(){}
+	_Fv_Boundary_Field(const Boundary &bound)
+	{
+		Boundary b=bound;
+		//Generate a patchfield for every patch in boundary
+		for (int np=0;np<b.Num_Patches();np++)
+		{
+			_Fv_Patch_Field < T > pf(b.vPatch(np));
+			patchfield.push_back(pf);
+		}
+	
+	}
+
+	_Fv_Patch_Field < T > & PatchField(const int &i){return this->patchfield[i];}
+
+};
+
+//CAMPO VOLUMETRICO DE VOLUMENES FINITOS
+//CONVIENE QUE DERIVE 
+// La T es Scalar, vector o tensor
+template<typename T>
+class _CC_Fv_Field:public _Field<T>{
+
+    //Busco en los nodos de GridPtr
+    //El vector value refiere a cada uno de los node
+
+    //
+
+    //SET DE DIMENSIONES
+
+    protected:
+										//Conviene colocar referencia o puntero??
+	_Fv_Boundary_Field <T> BoundaryField;	//En las caras
+	Fv_CC_Grid  *GridPtr;       //Se podria probar con un puntero general	
+
+    public:
+    
+
+	Fv_CC_Grid  & Grid(){return *GridPtr;}
+		
+	_CC_Fv_Field(){};
+	_CC_Fv_Field(Fv_CC_Grid &grid);
+
+
+	//Conveccion, interpolacion o reconstruccion, de solo una celda
+    const Eqn <T> ToFaces(const int &icell, const std::vector <Scalar> flux);
+	_Fv_Boundary_Field <T> &  Boundaryfield(){return BoundaryField;}
+
+
+};
+
+	
+////////////////////////////
+// FUNCIONES DE TEMPLATES //
+////////////////////////////
+//Reconstruccion a las caras
+//Esta funcion es llamada por la divergencia
+//Devuelve una ecuacion que es como un stencil pero tiene a la vez la componente
+//de source
+//Esta funcion devuelve Sum n (-min[mf,0])
+//O lo que es lo mismo Si m<0 fi f=fi p si no fif=fiN
+template < typename T >
+const Eqn <T> _CC_Fv_Field<T>::ToFaces(const int &icell, std::vector <Scalar> flux)
+{
+    vector <T> an;      //coeficientes de los vecinos
+    T ap(0.);          //Lo inicio vacio, podria tb igualarlo a 0
+    //Recorro las caras del cell
+    //En el caso de upwind o CDS simple la molecula es siempre la misma
+
+    for (int iface=0;iface<GridPtr->cell[icell].num_faces;iface++)
+    {
+        T coef(0.);
+        an.push_back(coef); //Agrego un vecino mas
+        //
+        if      (flux[iface].Val()>0.)   //Flujo saliente, va a ap
+            ap+=flux[iface].Val();       //Este oprador suma un valor a derecha constante
+
+        else if (flux[iface].Val()<0.)  //Flujo entrante, va al vecino
+            an[iface]+=flux[iface].Val();
+
+    }
+    //Creo la ecuacion con el coeficiente central y los vecinos
+    //Como no especifico la fuente, esta es nula
+    Eqn <T> eqn(ap,an);
+    return eqn;
+}
+
+
+//#include "FieldDef.h"
+
+}
+
+
+#endif

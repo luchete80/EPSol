@@ -1,0 +1,143 @@
+
+namespace FluxSol {
+
+template
+PETSC_Solver<double,2>::PETSC_Solver();
+
+template
+PETSC_Solver<double,2>::PETSC_Solver(const int &d);
+
+template
+void PETSC_Solver<double,2>::PETSC_Init();
+
+template
+void PETSC_Solver<double,2>::PreAllocateRows(const vector <int> &nnz);
+
+template
+void PETSC_Solver<double,2>::PreAllocateRows(const PetscInt &cols);
+
+template
+void PETSC_Solver<double,2>::Solve();
+
+template
+void PETSC_Solver<double,2>::InsertRow(const int &row, const std::vector<int> &cols, const std::vector <double> &vals);
+
+template
+void PETSC_Solver<double,2>::SetMatVal(const PetscInt &row, const PetscInt &col, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,2>::AddMatVal(const PetscInt &row, const PetscInt &col, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,2>::ViewInfo();
+
+template
+void PETSC_Solver<double,2>::SetbValues(const PetscInt &row, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,2>::AddbValues(const PetscInt &row, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,2>::SetbValues(const PetscScalar &value);
+
+template
+void PETSC_Solver<double,2>::ApplyBCOnDoF(const int &dof, const DoFHandler<2> &dofhandler);
+
+template
+void PETSC_Solver<double,2>::ApplyBCOnDoF(const int &dof, const DoFHandler<2> &dofhandler, const double &n);
+
+template
+void PETSC_Solver<double,2>::ApplyDispOnDoF(const int &dof, const double &u, const DoFHandler<2> &dofhandler);
+
+template
+const Vector <double> PETSC_Solver<double,2>::X() const;
+
+template
+const double PETSC_Solver<double,2>::X(const int &i) const;
+
+template
+const Vector <double> PETSC_Solver<double,2>::B() const;
+
+template
+const double PETSC_Solver<double,2>::B(const int &i) const;
+
+
+
+
+
+
+template
+PETSC_Solver<double,3>::PETSC_Solver();
+
+template
+PETSC_Solver<double,3>::PETSC_Solver(const int &d);
+
+template
+void PETSC_Solver<double,3>::PETSC_Init();
+
+template
+void PETSC_Solver<double,3>::PreAllocateRows(const vector <int> &nnz);
+
+template
+void PETSC_Solver<double,3>::PreAllocateRows(const PetscInt &cols);
+
+template
+void PETSC_Solver<double,3>::Solve();
+
+template
+void PETSC_Solver<double,3>::InsertRow(const int &row, const std::vector<int> &cols, const std::vector <double> &vals);
+
+template
+void PETSC_Solver<double,3>::SetMatVal(const PetscInt &row, const PetscInt &col, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,3>::AddMatVal(const PetscInt &row, const PetscInt &col, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,3>::ViewInfo();
+
+template
+void PETSC_Solver<double,3>::SetbValues(const PetscInt &row, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,3>::AddbValues(const PetscInt &row, const PetscScalar &value);
+
+template
+void PETSC_Solver<double,3>::SetbValues(const PetscScalar &value);
+
+template
+void PETSC_Solver<double,3>::ApplyBCOnDoF(const int &dof, const DoFHandler<3> &dofhandler);
+
+template
+void PETSC_Solver<double,3>::ApplyBCOnDoF(const int &dof, const DoFHandler<3> &dofhandler, const double &n);
+
+template
+void PETSC_Solver<double,3>::ApplyDispOnDoF(const int &dof, const double &u, const DoFHandler<3> &dofhandler);
+
+template
+const double PETSC_Solver<double,3>::X(const int &i) const;
+
+template
+const Vector <double> PETSC_Solver<double,3>::B() const;
+
+template
+const double PETSC_Solver<double,3>::B(const int &i) const;
+
+
+
+
+
+template
+void PETSC_Solver<double,2>::ResetMatrix(const DoFHandler<2> &dofhandler);
+
+template
+void PETSC_Solver<double,3>::ResetMatrix(const DoFHandler<3> &dofhandler);
+
+
+template
+void PETSC_Solver<double,2>::ResetB(const DoFHandler<2> &dofhandler);
+
+template
+void PETSC_Solver<double,3>::ResetB(const DoFHandler<3> &dofhandler);
+
+}

@@ -1,0 +1,13 @@
+set (NAME Type)
+
+set (SOURCES 
+Operations.cpp
+Scalar.cpp
+Vec3d.cpp
+)
+
+#add_library(${NAME} STATIC ${SOURCES} )
+
+install (FILES ${NAME}.h DESTINATION include)
+install (FILES lib${NAME}.a DESTINATION lib)
+ 

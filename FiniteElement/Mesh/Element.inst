@@ -1,0 +1,65 @@
+namespace FluxSol
+{
+
+template
+Element<2>::Element();
+
+template
+Element<3>::Element();
+
+template
+Element<2>::Element(const std::vector<int> &v);
+
+template
+Element<3>::Element(const std::vector<int> &v);
+
+
+//template 
+//Element<2>::Element (const int &p);
+
+template
+Element<2>::Element(const int &p, const std::vector<int> &vn);
+
+template
+Element<3>::Element(const int &p, const std::vector<int> &vn);
+
+template
+Element<3>::Element(const int &p, const std::vector<int> &vn);
+
+template
+Element<2>::Element(const std::vector<Node> &vn);
+
+template 
+void Element<2>::AddConnectivity(const std::vector<int> &v);
+
+template 
+void Element<3>::AddConnectivity(const std::vector<int> &v);
+
+template 
+inline ShapeFunctionGroup Element<2>::CreateShapeFunctionGroup() const;
+
+template 
+inline ShapeFunctionGroup Element<3>::CreateShapeFunctionGroup() const;
+
+//Overriden Functions
+template
+GaussMatrices Element<2>::H() const;	//Calls
+
+template
+GaussMatrices Element<3>::H() const;	//Calls
+
+template
+GaussMatrices Element<2>::dHdrst() const;
+
+template
+GaussMatrices Element<3>::dHdrst() const;
+
+//RETURN NODE COORDINATES
+template
+const Matrix<double> Element<2>::XYZ()const;
+
+template
+void Element<2>::Set_Nodes(const int numnodes, ...);
+
+}//FluxSol
+

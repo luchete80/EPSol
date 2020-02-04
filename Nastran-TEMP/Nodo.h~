@@ -1,0 +1,38 @@
+#ifndef NODO_H
+#define NODO_H
+
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <vector>
+
+using namespace std;
+
+class Nodo
+{
+public:
+	Nodo::Nodo();
+	Nodo::Nodo(const int &i, const int &sc, vector<double> &coord);
+	Nodo::Nodo(const double &d);
+	int Nodo::VerId_Nastran();
+	vector <double> Nodo::Coords();
+	const int Nodo::Sc();
+	const int Nodo::Sc_int();
+	const int Nodo::Pos_Nastran();
+	void Nodo_Cargar_Ubic(const int u);
+	void Nodo::Cargar_IdSc_Int(const int &val);
+	void Nodo::Iniciar_Coord_cart(vector<double> &coord);
+	vector <double> Nodo::Coord_carts();
+
+	private:
+	int id;	//Id de Nastran
+	std::vector <double> Coord;
+	std::vector <double> Coord_cart;
+	int SistCoord;
+	int SistCoord_int;
+	int pos_nastran;	//Ubicacion en el NASTRAN
+
+};
+
+#endif
