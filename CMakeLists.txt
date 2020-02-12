@@ -72,11 +72,17 @@ if (USE_PETSC)
 	#Blas And Lapack, Manual, can be also automatic
 	set (PETSC_LIBRARY_DIRS  ${MY_PETSC_DIR}/${MY_PETSC_ARCH}/lib)
 	link_directories(${PETSC_LIBRARY_DIRS})
-	set (EXT_LIBS ${EXT_LIBS} ${PETSC_LIB} f2clapack f2cblas)
+	set (EXT_LIBS ${EXT_LIBS} ${PETSC_LIB} flapack fblas)
     
 	set (MODULE_LIST ${MODULE_LIST} "PETSc")
-    set (USE_MPI OFF)
-    add_definitions (-D__PETSC_MODULE)
+	set (USE_MPI ON)
+	add_definitions (-D__PETSC_MODULE)
+
+
+	link_directories(${MPI_LIB_DIR})
+	include_directories(${MPI_INC_DIR})
+	set (EXT_LIBS ${EXT_LIBS} msmpi gfortran)
+	
 endif ()
 
 if (USE_METIS)
