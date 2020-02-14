@@ -34,6 +34,12 @@ set (CMAKE_CXX_FLAGS "-fpermissive -g")
 # CAN BE SET INSTEAD WITH cmake -DCMAKE_BUILD_TYPE=Debug ..
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fpermissive -g -Wall")
 
+set (MY_PETSC_DIR "$ENV{PETSC_DIR}")
+set (MY_PETSC_ARCH "$ENV{PETSC_ARCH}")
+set (MPI_LIB_DIR "$ENV{MPI_LIB_DIR}")
+set (MPI_INC_DIR "$ENV{MPI_INC_DIR}")
+set (PARMETIS_DIR "$ENV{PARMETIS_DIR}")
+
 #set (LASPACK_LIBRARY_DIRS /home/lucho/PruebaCrossComp/HelloLaspack)
 
 
@@ -46,34 +52,32 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fpermissive -g -Wall")
 set (MY_METIS_DIR D:/Luciano/Numerico/Libs/metis-5.1.0)
 set (METIS_LIBRARY_DIRS ${MY_METIS_DIR}/bin-x86_64-mingw)
 
-set (MY_PETSC_DIR "D:/Luciano/Numerico/Libs/petsc-3.4.4")
-
-if(DEBUG_MODE)
-set (MY_PETSC_ARCH arch-mswin-mpi1-release)
-else ()
-set (MY_PETSC_ARCH arch-mswin-mpi1-release)
-endif ()
-
 #######################################################################
 ######################## External libaries ############################
 #######################################################################
 
 ## PETSC
+#This must be included before including another thing else. By now
 if (USE_PETSC)
-    find_package (PETSc REQUIRED HINTS "${MY_PETSC_DIR}/${MY_PETSC_ARCH}/conf")
-    include_directories ("${MY_PETSC_DIR}/include" "${MY_PETSC_DIR}/${MY_PETSC_ARCH}/include" ${PETSC_INCLUDE_PATH})
-	include_directories ("${MY_PETSC_DIR}/include/mpiuni")
-    find_library (PETSC_LIB petsc PATH "${MY_PETSC_DIR}/${MY_PETSC_ARCH}/lib/") 
-    if (${PETSC_LIB} STREQUAL "PETSC_LIB-NOTFOUND")
-        message (FATAL_ERROR "PETSc library not found")
-    endif ()
-    #set (EXT_LIBS ${EXT_LIBS} ${PETSC_LIB} ${PETSC_PACKAGE_LIBS})
+	find_package (PETSc REQUIRED HINTS "${MY_PETSC_DIR}/${MY_PETSC_ARCH}/conf")
+	include_directories (..)
+	include_directories ("${MY_PETSC_DIR}/include" "${MY_PETSC_DIR}/${MY_PETSC_ARCH}/include" ${PETSC_INCLUDE_PATH})
 	
+	#THIS IS NOT USED IN WINDOWS, USED MSMPI
+	#include_directories ("${MY_PETSC_DIR}/include/mpiuni")
+	
+	include_directories ("E:/Programas/cygwin64/petsc-3.4.4/include")
+	find_library (PETSC_LIB petsc PATH "${MY_PETSC_DIR}/${MY_PETSC_ARCH}/lib/") 
+	if (${PETSC_LIB} STREQUAL "PETSC_LIB-NOTFOUND")
+		message (FATAL_ERROR "PETSc library not found")
+	endif ()
+	##set (EXT_LIBS ${EXT_LIBS} ${PETSC_LIB} ${PETSC_PACKAGE_LIBS})
+
 	#Blas And Lapack, Manual, can be also automatic
 	set (PETSC_LIBRARY_DIRS  ${MY_PETSC_DIR}/${MY_PETSC_ARCH}/lib)
 	link_directories(${PETSC_LIBRARY_DIRS})
 	set (EXT_LIBS ${EXT_LIBS} ${PETSC_LIB} flapack fblas)
-    
+
 	set (MODULE_LIST ${MODULE_LIST} "PETSc")
 	set (USE_MPI ON)
 	add_definitions (-D__PETSC_MODULE)
@@ -81,10 +85,11 @@ if (USE_PETSC)
 
 	link_directories(${MPI_LIB_DIR})
 	include_directories(${MPI_INC_DIR})
+
 	set (EXT_LIBS ${EXT_LIBS} msmpi gfortran)
 	
-endif ()
 
+endif ()
 if (USE_METIS)
 include_directories ("${MY_METIS_DIR}/include")
 link_directories (${METIS_LIBRARY_DIRS})
