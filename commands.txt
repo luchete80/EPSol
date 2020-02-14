@@ -19,3 +19,7 @@ set CC=x86_64-w64-mingw32-gcc.exe
 cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_FLAGS="-fpermissive -O3 -ffast-math -m64" -DUSE_PETSC=ON -G "CodeBlocks - MinGW Makefiles" ..\src
 
 mingw32-make.exe
+
+FOR EXAMPLES!
+set EPSOL_INCLUDE_DIR=D:\Luciano\Numerico\epsol\src
+set EPSOL_LIB_DIR=D:\Luciano\Numerico\epsol\bin
