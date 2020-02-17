@@ -38,7 +38,7 @@ int main(int argc,char **args)
 {
 
 	cout <<"Opening file..."<<endl;
-    SingleInputFile input("input.in");
+    SingleInputFile <2> input("input.in");
 	
 	input.ShowData();
 	

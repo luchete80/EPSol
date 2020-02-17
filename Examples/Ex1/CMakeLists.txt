@@ -54,6 +54,7 @@ link_directories(${LASPACK_LIBRARY_DIR})
 link_directories (${EPSOL_LIB_DIR})
 include_directories ("${PETSC_DIR}/include")
 include_directories ("${PETSC_DIR}/${PETSC_ARCH}/include")
+include_directories ("${PETSC_DIR}/include/mpiuni")
 include_directories(${MPI_INC_DIR})
 	
 
