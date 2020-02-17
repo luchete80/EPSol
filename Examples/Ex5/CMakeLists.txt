@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (Ex5)
 
-set (CMAKE_CXX_FLAGS "-fpermissive -mwindows")
+set (CMAKE_CXX_FLAGS "-fpermissive")
 
 #include_directories (${SINGLEINPUT_SOURCE_DIR}/Hello) 
 include_directories (${EX5_SOURCE_DIR})
@@ -11,6 +11,8 @@ set (PETSC_DIR "$ENV{PETSC_DIR}")
 set (PETSC_ARCH "$ENV{PETSC_ARCH}")
 set (EPSOL_INCLUDE_DIR "$ENV{EPSOL_INCLUDE_DIR}")
 set (EPSOL_LIB_DIR "$ENV{EPSOL_LIB_DIR}")
+set (MPI_LIB_DIR "$ENV{MPI_LIB_DIR}")
+set (MPI_INC_DIR "$ENV{MPI_INC_DIR}")
 
 
 set (MY_METIS_DIR D:/Luciano/Numerico/Libs/metis-5.1.0)
@@ -32,6 +34,7 @@ include_directories(${PETSC_INCLUDE_DIRS})
 include_directories(${PETSC_INCLUDE_DIRS_MPI})
 include_directories(${PETSC_INCLUDE_DIRS_2})
 link_directories(${PETSC_LIBRARY_DIRS})
+link_directories(${MPI_LIB_DIR})
 
 include_directories("${EPSOL_INCLUDE_DIR}")
 include_directories("${EPSOL_INCLUDE_DIR}/Boundary")
@@ -54,12 +57,10 @@ include_directories("${EPSOL_INCLUDE_DIR}/Solver")
 include_directories("${EPSOL_INCLUDE_DIR}/Type")
 include_directories("${EPSOL_INCLUDE_DIR}/Utils")
 
-set (EPSOL_INCLUDE_DIR /cygdrive/c/Users/samsung/Dropbox/Numerico/MecSol/EPSol/Src)
-set (EPSOL_LIB_DIR /cygdrive/c/Users/samsung/Dropbox/Numerico/MecSol/EPSol/Bin/Windows/Debug/EPSol)
 
 link_directories (${EPSOL_LIB_DIR})
 
-set (EXTRA_LIBS petsc f2clapack f2cblas gdi32 metis)
+set (EXTRA_LIBS petsc flapack fblas metis msmpi gfortran)
 set (EPSOL_LIB epsollib)
 
 
