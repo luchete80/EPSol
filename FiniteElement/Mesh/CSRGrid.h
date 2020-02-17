@@ -66,7 +66,7 @@ CSRGrid<dim>::CSRGrid(const FeGrid<dim> &g)
 {
 	std::vector < std::vector <idx_t> > adj;
 	//TO MODIFY, CHANGE TO STL map<> OR set <>
-	std::vector<int> vv;
+	std::vector<idx_t> vv;
 	adj.assign(g.NumNodes(),vv);
 	this->num_nodes=g.NumNodes();
 	this->num_cells=g.NumElem();

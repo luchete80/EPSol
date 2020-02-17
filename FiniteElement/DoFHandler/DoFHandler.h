@@ -240,7 +240,7 @@ DoFHandler<dim>::DoFHandler(const FeGrid<dim> &g)
 	idx_t *iperm=new idx_t[g.NumNodes()];
 
 
-	int error=METIS_NodeND(&g.NumNodes(), csr.XAdj(), csr.Adjncy(),NULL,options, perm, iperm);
+	int error=METIS_NodeND((idx_t*)&g.NumNodes(), csr.XAdj(), csr.Adjncy(),NULL,options, perm, iperm);
 
 
 	for (int n=0;n<g.NumNodes();n++)
