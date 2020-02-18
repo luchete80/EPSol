@@ -213,8 +213,10 @@ namespace FluxSol
 		//TO MODIFY, MAKE VIRTUAL
 		if (dim==2 && elref.Field_Dim()==2)
 		{
+			cout << "Creating derivatives"<<endl;
 			for (int g = 0; g < gi.NumPoints(); g++)
 			{
+				cout <<"gi" << g<<endl;
 				Matrix<double> dHdrst_T = this->shape_localgrad_matrices.Mat(g).Tr();
 				Matrix<double> dHdX = dHdrst_T *this->jacobian.Mat(g).inv();
 
@@ -238,6 +240,7 @@ namespace FluxSol
 				}
 
 			}
+			cout << "Creating Matrices"<<endl;
 			shape_grad_matrices = ret;
 			shape_grad_components=retcomp;
 		}

@@ -55,10 +55,11 @@ link_directories (${EPSOL_LIB_DIR})
 include_directories ("${PETSC_DIR}/include")
 include_directories ("${PETSC_DIR}/${PETSC_ARCH}/include")
 include_directories ("${PETSC_DIR}/include/mpiuni")
-include_directories(${MPI_INC_DIR})
-	
+include_directories(${MPI_INC_DIR}
 
-set (EPSOL_LIB epsol)
+set (EXTRA_LIBS petsc flapack fblas metis msmpi gfortran))
+
+set (EPSOL_LIB epsollib)
 
 #add the executable
 set (SOURCES
@@ -66,4 +67,4 @@ Ex1.cpp
 )
 add_executable(Ex1 ${SOURCES})
 
-target_link_libraries (Ex1 ${EPSOL_LIB} Laspack)
+target_link_libraries (Ex1 ${EPSOL_LIB} ${EXTRA_LIBS})

@@ -71,7 +71,7 @@ public _Grid
 
                 //Including inherited object in base container
                 for (int e = 0; e < this->num_cells; e++)
-                    this->element.push_back(&ve[e]);
+                    this->element.push_back((Element<dim> *)&ve[e]);
 
                 for (int n = 0; n < this->num_nodes; n++)
                     this->node.push_back(vn[n]);
