@@ -209,6 +209,8 @@ namespace FluxSol
 		//Or elref.DIM()//
 		//TO MODIFY, DEPENDS ON VARIABLE DIM
 		GaussFullMatrices ret(dim, shfngr.Size()*dim, gi);
+		
+		this->SetJacobian();
 
 		//TO MODIFY, MAKE VIRTUAL
 		if (dim==2 && elref.Field_Dim()==2)
