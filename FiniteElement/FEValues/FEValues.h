@@ -208,7 +208,7 @@ namespace FluxSol
 
 		//Or elref.DIM()//
 		//TO MODIFY, DEPENDS ON VARIABLE DIM
-		GaussFullMatrices ret(dim, shfngr.Size()*dim, gi);
+		GaussFullMatrices ret(dim+1, shfngr.Size()*dim, gi); //To modify
 		
 		this->SetJacobian();
 
@@ -220,8 +220,9 @@ namespace FluxSol
 			{
 				cout <<"gi" << g<<endl;
 				Matrix<double> dHdrst_T = this->shape_localgrad_matrices.Mat(g).Tr();
+				cout << "setting global grad"<<endl;
 				Matrix<double> dHdX = dHdrst_T *this->jacobian.Mat(g).inv();
-
+				cout << "set"<<endl;
 
 				for (int h = 0; h < shfngr.Size(); h++)
 				{
@@ -252,7 +253,9 @@ namespace FluxSol
 		{
 			for (int g = 0; g < gi.NumPoints(); g++)
 			{
+				cout << "setting local grad"<<endl;
 				Matrix<double> dHdrst_T = this->shape_localgrad_matrices.Mat(g).Tr();
+				cout << "setting global grad"<<endl;
 				Matrix<double> dHdX = dHdrst_T *this->jacobian.Mat(g).inv();
 
                 //cout << "dhdrst "<< dHdrst_T.outstr()<<endl;
