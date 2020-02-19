@@ -65,7 +65,7 @@ int main()
 	v.push_back(FluxSol::Node(2, 0.0, 0.0, 0.0));
 	v.push_back(FluxSol::Node(3, 1.0, 0.0, 0.0));
 
-	const FluxSol::FEIntegrationScheme intsch;
+	const FluxSol::FEIntegrationScheme intsch(1,2);
 
 
 	//FluxSol::QuadLinearElement e(v);
@@ -142,14 +142,15 @@ int main()
 	c[2][2] = ck*(1 - 2 * nu) / (2.*(1. - nu));
 
 	//C = E / (1 - nu*nu)*[1 nu 0; nu 1 0; 0 0 (1 - nu) / 2];
-
+	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 	for (int g = 0; g < intsch.NumPoints(); g++)
 	{
 		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
 		for (int r = 0; r < 8; r++)
 		for (int c = 0; c < 8; c++){
 			Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
-		cout << "Kel: "<< Kel[r][c]<<endl;	
+			cout << "weight" << intsch[g].w()<<endl;
+			cout << "Kel: "<< Kel[r][c]<<endl;	
 		}
 
 	}
