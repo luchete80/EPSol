@@ -24,7 +24,7 @@
 ///////////////
 // EXAMPLE 1 //
 ///////////////
-// Plain Stress / Strain Problem
+// Viwcoplastic Problem
 // 1 Elements,4 node each, loaded as follows
 //FORCEX
 // ---------------
@@ -57,6 +57,9 @@ private:
 //Matrices
 //Gauss
 FluxSol::GaussMatrices N,B,J,dHrs;
+
+    Matrix<double> Nv,Nsig,NF,Ns;
+    Matrix<double> Bv,Bsig,BF,Bs;
 
 FluxSol::Matrix<double> G(4,4),H(4,4);
 
@@ -96,10 +99,12 @@ int main()
 	std::vector< FluxSol::Element<2> > ve;
 	ve.push_back(e);
 	FluxSol::FeGrid <2> g(v, ve);
-	FluxSol::FEValues<2> fev(e, g);
-        J = fev.Jacobian();
-    FluxSol::GaussFullMatrices B = fev.shape_grad_matrix();
-    FluxSol::GaussFullMatrices dHdrs; //COMPLETE
+FluxSol::FEValues<2> fev(e, g);
+    J = fev.Jacobian();
+    B = fev.shape_grad_matrix();
+    dHdrs=fev.;shape_localgrad_matrix(); //COMPLETE
+    ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
+
 
 	double val = shfngr.ShapeFn(0).Val(0.577, 0.577, 0.);
 
@@ -115,6 +120,9 @@ int main()
 
 	}
 
+    G(0,0)=G(1,3)=G(2,3)=G(2,1)=1.;
+
+
 	logfile << "Jacobian Matrices \n\n";
 	logfile << J.outstr();
 
@@ -122,7 +130,7 @@ int main()
 	logfile << B.outstr();
 
 	logfile << "Shape Fn Matrices n\n";
-	logfile << H.outstr();
+	logfile << N.outstr();
 
 	logfile << "Local grad Matrices \n\n";
 	logfile << dHdrs.outstr();
@@ -138,7 +146,7 @@ int main()
 
 	FluxSol::Matrix<double> Kel(8, 8);
 
-	FluxSol::Matrix<double> c(3, 3);
+	
 
 
 	double E = 206.0e9;
@@ -154,6 +162,12 @@ int main()
 	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 	for (int g = 0; g < intsch.NumPoints(); g++)
 	{
+             Bs=fev.shape_grad_comps(g);
+
+             
+             Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
+             Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];
+
 		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
 		for (int r = 0; r < 8; r++)
 		for (int c = 0; c < 8; c++){
@@ -189,8 +203,7 @@ int main()
 	}
 	Kel[4][4] = Kel[5][5] = Kel[7][7] = 1.;
 	
-	for (int row = 0; row < 8; row++)
-	{
+	for (int row = 0; row < 8; row++){
 		for (int col = 0; col < 8; col++)
 		{
 			//Rows Assembly
