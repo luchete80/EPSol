@@ -1,0 +1,11 @@
+Solution:
+Vector Object:Solution 1 MPI processes
+  type: seq
+2.10356e-008
+-8.41424e-009
+2.94498e-008
+8.41424e-009
+0
+0
+8.41424e-009
+0
