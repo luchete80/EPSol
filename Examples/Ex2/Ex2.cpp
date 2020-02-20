@@ -59,13 +59,26 @@ int main()
 	e.Set_Nodes(4,0,1,2,3);
 	logfile << "Element Gauss Order: " << e.GaussOrder()<<"\n\n";
 
-	FluxSol::GaussMatrices H = e.H();
-
 	cout << "Assemblying matrix" <<endl;
 	
 	FluxSol::GaussFullMatrices J,B,dHdrs;
 	FluxSol::ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
 
+	FluxSol::Matrix<double> Kel(8, 8);
+	FluxSol::Matrix<double> c(3, 3);
+
+
+	double E = 200.0e9;
+	double nu = 0.33;
+
+	//Plain Stress
+	double ck = E / (1 - nu*nu);
+
+	ck = E*(1.-nu)/((1.+nu)*(1.-2*nu));
+	c[0][0] = c[1][1] = ck;
+	c[0][1] = c[1][0] = ck*nu/(1.-nu);
+	c[2][2] = ck*(1 - 2*nu) / (2.*(1.-nu));
+	
 
 	for (int e=0;e<grid.NumElem();e++)
 	{
@@ -142,20 +155,7 @@ int main()
 
 
 
-	FluxSol::Matrix<double> Kel(8, 8);
-	FluxSol::Matrix<double> c(3, 3);
 
-
-	double E = 200.0e9;
-	double nu = 0.33;
-
-	//Plain Stress
-	double ck = E / (1 - nu*nu);
-
-	ck = E*(1.-nu)/((1.+nu)*(1.-2*nu));
-	c[0][0] = c[1][1] = ck;
-	c[0][1] = c[1][0] = ck*nu/(1.-nu);
-	c[2][2] = ck*(1 - 2*nu) / (2.*(1.-nu));
 
 
 	for (int g = 0; g < intsch.NumPoints(); g++){
