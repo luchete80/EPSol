@@ -67,7 +67,7 @@ private:
 	FluxSol::Matrix<double> G,H,Kel;
 	
 	//Vectors
-	Vector<double> F,P,L;	//Unsymmetric vectors
+	Vector<double> U,F,P,L;	//Unsymmetric vectors
 	
 	
 	//Material
