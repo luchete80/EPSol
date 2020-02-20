@@ -48,6 +48,24 @@
 
 using namespace std;
 
+class Eulerian_ViscoPlastic{
+
+public:
+Eulerian_ViscoPlastic();
+
+private:
+//Matrices
+//Gauss
+FluxSol::GaussMatrices N,B,J,dHrs;
+
+FluxSol::Matrix<double> G(4,4),H(4,4);
+
+//Material
+FluxSol::Matrix<double> c(4,4);
+ofstream logfile;
+};
+
+
 int main()
 {
 
@@ -73,24 +91,21 @@ int main()
 	e.Set_Nodes(4, 0, 1, 2, 3);
 	//logfile << "Element Gauss Order: " << e.GaussOrder() << "\n\n";
 
-	FluxSol::GaussMatrices H = e.H();
+	N = e.H();
 
 	std::vector< FluxSol::Element<2> > ve;
 	ve.push_back(e);
 	FluxSol::FeGrid <2> g(v, ve);
 	FluxSol::FEValues<2> fev(e, g);
-
-	FluxSol::GaussFullMatrices J = fev.Jacobian();
-	FluxSol::GaussFullMatrices B = fev.shape_grad_matrix();
-	FluxSol::GaussFullMatrices dHdrs = fev.shape_localgrad_matrix();
-	FluxSol::ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
+        J = fev.Jacobian();
+    FluxSol::GaussFullMatrices B = fev.shape_grad_matrix();
+    FluxSol::GaussFullMatrices dHdrs; //COMPLETE
 
 	double val = shfngr.ShapeFn(0).Val(0.577, 0.577, 0.);
 
 	logfile << shfngr.ShapeFn(2).outstr();
 
-	for (int d = 0; d < 4; d++)
-	{
+	for (int d = 0; d < 4; d++){
 		logfile << "\n Shape Fn " << d << "\n";
 		vector<FluxSol::ShapeFunction> df = shfngr.ShapeFn(d).diff();
 		logfile << "\n Local Diff r Coeff \n";
@@ -128,12 +143,6 @@ int main()
 
 	double E = 206.0e9;
 	double nu = 0.3;
-
-	//Plain Stress
-	double ck = E / (1 - nu*nu);
-	c[0][0] = c[1][1] = ck;
-	c[0][1] = c[1][0] = ck*nu;
-	c[2][2] = ck*(1 - nu) / 2.;
 
 	//Plain Strain
 	ck = E*(1. - nu) / ((1. + nu)*(1. - 2 * nu));
