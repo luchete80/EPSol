@@ -47,34 +47,58 @@
 #include <vector>
 
 using namespace std;
+using namespace FluxSol;
 
 class Eulerian_ViscoPlastic{
 
 public:
-Eulerian_ViscoPlastic();
+    Eulerian_ViscoPlastic();
+    void setup();
+	void assemble();
 
 private:
 //Matrices
 //Gauss
-FluxSol::GaussMatrices N,B,J,dHrs;
-
+    GaussMatrices N,B,J,dHrs;
+    
     Matrix<double> Nv,Nsig,NF,Ns;
-    Matrix<double> Bv,Bsig,BF,Bs;
+    Matrix<double> Bv,Bsig,BF,Bs,BL;
 
-FluxSol::Matrix<double> G(4,4),H(4,4);
+	FluxSol::Matrix<double> G,H,Kel;
+	
+	//Vectors
+	Vector<double> F,P,L;	//Unsymmetric vectors
+	
+	
+	//Material
+	Matrix<double>c;
+	double Ey,nu;
 
-//Material
-FluxSol::Matrix<double> c(4,4);
-ofstream logfile;
+    ofstream logfile;
 };
 
 
-int main()
+void Eulerian_ViscoPlastic::setup()
 {
 
 	ofstream logfile;
 	logfile.open("Logfile.txt");
-
+	
+	//Matrices
+	//Constants should be defined here
+	G=H=Matrix<double>(4,4);
+	G[0][0]=G[1][3]=G[2][3]=G[2][1]=1.;
+	H[0][0]=G[0][1]=1.;
+	
+	Ey = 200.0e9;
+	nu = 0.33;
+	
+	//Material
+    c=Matrix<double>(4,4);
+	double ck=Ey/((1.+nu)*(1.-2.*nu))
+	c[0][0]=c[1][1]=c[2][2]=ck*(1.-nu);
+	c[0][1]=c[0][2]=c[1][0]=c[2][0]=c[1][2]=c[2][1]=ck*(1.-nu);
+	
 	//Element can be construted from vertex too
 	//std::_Vertex
 
@@ -93,20 +117,19 @@ int main()
 	FluxSol::Element<2> e(v);
 	e.Set_Nodes(4, 0, 1, 2, 3);
 	//logfile << "Element Gauss Order: " << e.GaussOrder() << "\n\n";
-
-	N = e.H();
+	
+	//Shape functions 
+	//Nv = e.H();
+	Bv=Matrix<double>(4,8);
 
 	std::vector< FluxSol::Element<2> > ve;
 	ve.push_back(e);
 	FluxSol::FeGrid <2> g(v, ve);
-FluxSol::FEValues<2> fev(e, g);
+    FluxSol::FEValues<2> fev(e, g);
     J = fev.Jacobian();
     B = fev.shape_grad_matrix();
     dHdrs=fev.;shape_localgrad_matrix(); //COMPLETE
     ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
-
-
-	double val = shfngr.ShapeFn(0).Val(0.577, 0.577, 0.);
 
 	logfile << shfngr.ShapeFn(2).outstr();
 
@@ -116,58 +139,46 @@ FluxSol::FEValues<2> fev(e, g);
 		logfile << "\n Local Diff r Coeff \n";
 		logfile << df[0].outstr();
 		logfile << "\n Local Diff s Coeff \n";
-		logfile << df[1].outstr();
+		logfile << df[1].outstr();}
 
-	}
+	// logfile << "Jacobian Matrices \n\n";
+	// logfile << J.outstr();
 
-    G(0,0)=G(1,3)=G(2,3)=G(2,1)=1.;
+	// logfile << "Lineal Strain Matrices \n\n";
+	// logfile << B.outstr();
 
+	// logfile << "Shape Fn Matrices n\n";
+	// logfile << N.outstr();
 
-	logfile << "Jacobian Matrices \n\n";
-	logfile << J.outstr();
-
-	logfile << "Lineal Strain Matrices \n\n";
-	logfile << B.outstr();
-
-	logfile << "Shape Fn Matrices n\n";
-	logfile << N.outstr();
-
-	logfile << "Local grad Matrices \n\n";
-	logfile << dHdrs.outstr();
+	// logfile << "Local grad Matrices \n\n";
+	// logfile << dHdrs.outstr();
 
 
-	logfile << "Element Nodes Coordinates n\n";
-	//logfile << g.XYZ(e).outstr();
+	// logfile << "Element Nodes Coordinates n\n";
+	// //logfile << g.XYZ(e).outstr();
 
-	logfile << "Local derivative Functions n\n";
-	logfile << fev.shape_grad_matrix().outstr();
+	// logfile << "Local derivative Functions n\n";
+	// logfile << fev.shape_grad_matrix().outstr();
 
 
 
-	FluxSol::Matrix<double> Kel(8, 8);
+	Kel=Matrix<double> (44, 44);
+}
 
-	
 
+void Eulerian_ViscoPlastic::assemble()
+{
 
-	double E = 206.0e9;
-	double nu = 0.3;
-
-	//Plain Strain
-	ck = E*(1. - nu) / ((1. + nu)*(1. - 2 * nu));
-	c[0][0] = c[1][1] = ck;
-	c[0][1] = c[1][0] = ck*nu / (1. - nu);
-	c[2][2] = ck*(1 - 2 * nu) / (2.*(1. - nu));
-
+	for (int i=0;i<4;i++){
 	//C = E / (1 - nu*nu)*[1 nu 0; nu 1 0; 0 0 (1 - nu) / 2];
 	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 	for (int g = 0; g < intsch.NumPoints(); g++)
 	{
              Bs=fev.shape_grad_comps(g);
-
-             
+			 
              Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
              Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];
-
+			
 		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
 		for (int r = 0; r < 8; r++)
 		for (int c = 0; c < 8; c++){
@@ -176,7 +187,8 @@ FluxSol::FEValues<2> fev(e, g);
 			cout << "Kel: "<< Kel[r][c]<<endl;	
 		}
 
-	}
+	}//gauss points
+	}//ith function
 
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
