@@ -126,32 +126,33 @@ int main()
 	FluxSol::Matrix<double> c(3, 3);
 
 
-	double E = 206.0e9;
-	double nu = 0.3;
-
+	double E = 200.0e9;
+	double nu = 0.33;
+	double ck;
 	//Plain Stress
-	double ck = E / (1 - nu*nu);
-	c[0][0] = c[1][1] = ck;
-	c[0][1] = c[1][0] = ck*nu;
-	c[2][2] = ck*(1 - nu) / 2.;
+	// ck = E / (1 - nu*nu);
+	// c[0][0] = c[1][1] = ck;
+	// c[0][1] = c[1][0] = ck*nu;
+	// c[2][2] = ck*(1 - nu) / 2.;
 
 	//Plain Strain
-	ck = E*(1. - nu) / ((1. + nu)*(1. - 2 * nu));
+	ck = E*(1. - nu) / ((1. + nu)*(1. - 2.0 * nu));
 	c[0][0] = c[1][1] = ck;
 	c[0][1] = c[1][0] = ck*nu / (1. - nu);
-	c[2][2] = ck*(1 - 2 * nu) / (2.*(1. - nu));
+	c[2][2] = ck*(1. - 2. * nu) / (2.*(1. - nu));
 
 	//C = E / (1 - nu*nu)*[1 nu 0; nu 1 0; 0 0 (1 - nu) / 2];
 	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 	for (int g = 0; g < intsch.NumPoints(); g++)
 	{
 		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
-		for (int r = 0; r < 8; r++)
+		for (int r = 0; r < 8; r++){
 		for (int c = 0; c < 8; c++){
 			Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
-			cout << "weight" << intsch[g].w()<<endl;
-			cout << "Kel: "<< Kel[r][c]<<endl;	
-		}
+			//cout << "weight" << intsch[g].w()<<endl;
+			cout << "Kel: "<< Kel[r][c]<<" " ;	
+			//cout << "Jxw" << intsch[g].w()*J.Mat(g).det()<<endl;
+		}cout <<endl;}
 
 	}
 

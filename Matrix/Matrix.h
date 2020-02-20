@@ -429,7 +429,7 @@ inline Matrix<T>::Matrix
 			{
 				std::ostringstream strs;
 				s += " ";
-				strs << std::setprecision(3)<<this->v_[i][j];
+				strs << std::setprecision(8)<<this->v_[i][j];
 				s+= strs.str();
 			}
 			s += " \n";
