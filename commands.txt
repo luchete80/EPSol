@@ -7,6 +7,7 @@ set PETSC_DIR=D:\Luciano\Numerico\Libs\petsc-3.4.4
 set MPI_LIB_DIR=D:\Luciano\Programas\Microsoft-HPCPack-2008R2\Lib\amd64
 set MPI_INC_DIR=D:\Luciano\Programas\Microsoft-HPCPack-2008R2\Inc
 set PETSC_ARCH=arch-mswin-mpi1-release
+set METIS_DIR=D:\Luciano\Numerico\Libs\metis-5.1.0
 
 set PATH=C:\msys64\mingw64\bin;D:\Luciano\Programas\cmake\bin;%PATH%;%MPI_LIB_DIR%
 

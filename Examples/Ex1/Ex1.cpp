@@ -169,7 +169,7 @@ int main()
 	Kel[4][4] = Kel[5][5] = Kel[7][7] = 1.;
 	// //////////////////// LASPACK SOLVER ///////////////////////
 
-	PETSC_Solver<double,2> solver(8);
+	PETSC_Solver<double,2> solver(dofhandler.NumDoF());
 
 	
 	//DOFs 5, 6 and 8 restricted
