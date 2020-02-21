@@ -119,6 +119,7 @@ CSRGrid<dim>::CSRGrid(const FeGrid<dim> &g)
 	idx_t temp=0;
 	xadj.push_back(temp);
 	int pos=0;
+	cout << "Loop through nodes..."<<endl;
 	for (int n=0;n<g.NumNodes();n++)
 	{
 		for (int n2=0;n2<adj[n].size();n2++)

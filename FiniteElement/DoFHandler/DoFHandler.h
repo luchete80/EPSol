@@ -176,6 +176,8 @@ DoFHandler<dim>::DoFHandler(const FeGrid<dim> &g)
 	//Numbering
 	//Sets renumbering
 	CSRGrid <dim> csr (g);
+	
+	#ifdef USE_METIS
 
 	idx_t options[METIS_NOPTIONS];
 	METIS_SetDefaultOptions(options);
@@ -229,17 +231,17 @@ DoFHandler<dim>::DoFHandler(const FeGrid<dim> &g)
 	idx_t *xadj=csr.XAdj();
 	idx_t *adjncy=csr.Adjncy();
 
-	//for (int n=0;n<g.NumNodes()+1;n++)
-	//	cout << "csr xadj " << n << " = " <<xadj[n] <<endl;
+	for (int n=0;n<g.NumNodes()+1;n++)
+		cout << "csr xadj " << n << " = " <<xadj[n] <<endl;
 
-	//for (int n=0;n<csr.AdjncySize();n++)
-	//	cout << "adjncy " << " n " << adjncy[n]<<endl;
+	for (int n=0;n<csr.AdjncySize();n++)
+		cout << "adjncy " << " n " << adjncy[n]<<endl;
 
 
 	idx_t *perm=new idx_t[g.NumNodes()];
 	idx_t *iperm=new idx_t[g.NumNodes()];
 
-
+	cout << "Creating METIS Node ND"<<endl;
 	int error=METIS_NodeND((idx_t*)&g.NumNodes(), csr.XAdj(), csr.Adjncy(),NULL,options, perm, iperm);
 
 
@@ -259,7 +261,7 @@ DoFHandler<dim>::DoFHandler(const FeGrid<dim> &g)
 	//for (int x=0;x<	g.NumNodes();x++) cout << "iperm" << x << ": " << iperm[x] <<endl;
 
 	cout << "error : " <<error<<endl;
-
+	#endif
 
 }
 
