@@ -59,7 +59,8 @@ public:
 private:
 //Matrices
 //Gauss
-    GaussMatrices N,B,J,dHrs;
+// ELEMENTAL MATRICES AND VECTORS
+    GaussFullMatrices N,B,J,dHrs;
     
     Matrix<double> Nv,Nsig,NF,Ns;
     Matrix<double> Bv,Bsig,BF,Bs,BL;
@@ -67,12 +68,22 @@ private:
 	FluxSol::Matrix<double> G,H,Kel;
 	
 	//Vectors
-	Vector<double> U,F,P,L;	//Unsymmetric vectors
+	//Solution
+	Matrix<double> U,Uv,Usig,UF,Us;
+	//Deformation gradients
+	Matrix<double> F,P,L;	//Unsymmetric vectors
 	
+	//Residual 
+	Matrix<double> Rv,Rsig,RF,Rs,R;	//Unsymmetric vectors
+	
+	//Dimensions
+	int dim, dim_v,dim_sig,dim_F,dim_s;
+	enum field;
 	
 	//Material
 	Matrix<double>c;
 	double Ey,nu;
+	
 
     ofstream logfile;
 };
@@ -95,7 +106,7 @@ void Eulerian_ViscoPlastic::setup()
 	
 	//Material
     c=Matrix<double>(4,4);
-	double ck=Ey/((1.+nu)*(1.-2.*nu))
+	double ck=Ey/((1.+nu)*(1.-2.*nu));
 	c[0][0]=c[1][1]=c[2][2]=ck*(1.-nu);
 	c[0][1]=c[0][2]=c[1][0]=c[2][0]=c[1][2]=c[2][1]=ck*(1.-nu);
 	
@@ -128,7 +139,7 @@ void Eulerian_ViscoPlastic::setup()
     FluxSol::FEValues<2> fev(e, g);
     J = fev.Jacobian();
     B = fev.shape_grad_matrix();
-    dHdrs=fev.;shape_localgrad_matrix(); //COMPLETE
+    dHdrs=fev.shape_localgrad_matrix(); //COMPLETE
     ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
 
 	logfile << shfngr.ShapeFn(2).outstr();
@@ -160,6 +171,20 @@ void Eulerian_ViscoPlastic::setup()
 	// logfile << "Local derivative Functions n\n";
 	// logfile << fev.shape_grad_matrix().outstr();
 
+	//Solution (Fig 2.1)
+	dim_v=2;
+	dim_sig=dim_F=4;
+	dim_s=1;
+	dim=11;
+	R   =Matrix<double>(dim,1);
+	Rv  =Matrix<double>(dim_v,1);
+	Rsig=Matrix<double>(dim_sig,1);
+	//Deformation gradients
+	//Vector<double> F,P,L;	//Unsymmetric vectors
+	
+	//Residual 
+	//Vector<double> Rv,Rsig,RF,Rs,R;	//Unsymmetric vectors
+		
 
 
 	Kel=Matrix<double> (44, 44);
@@ -218,17 +243,6 @@ void Eulerian_ViscoPlastic::assemble()
 	for (int row = 0; row < 8; row++){
 		for (int col = 0; col < 8; col++)
 		{
-			//Rows Assembly
-			//Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
-			//Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
-			//PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
-				//v	- a logically two-dimensional array for storing the values
-				//m, idxm	- the number of rows and their global indices
-				//n, idxn	- the number of columns and their global indices
-			//double val = 
-			//solver.MatVal(vn[row],vn[col],1);
-			//Kgi[row][col]=Kel[row][col];
-			
 			solver.AddMatVal(row,col,Kel[row][col]);
 		}
 
