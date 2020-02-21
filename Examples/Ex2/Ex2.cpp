@@ -37,12 +37,20 @@ int main()
 	logfile.open("Logfile.txt");
 
 
-	const FluxSol::FEIntegrationScheme intsch(1,2);
+	FEIntegrationScheme intsch(1,2);
+	
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	FluxSol::FeGrid<2> grid(2.,1.,1.,2,1,1);
+	FluxSol::FeGrid<2> grid(1.,1.,1.,2,2,1);
+	
+	// FluxSol::FeGrid<2> grid;
+	// grid.Create_test(1.,1.,1.,2,2,1);
 	cout << "Total Grid Nodes" <<grid.NumNodes()<<endl;
+			for (int n = 0; n < grid.NumNodes(); n++)
+				cout<<grid.Nod(n).Coords()<<endl;
+			
+	grid.outstr();
 
 	FluxSol::DoFHandler<2> dofhandler(grid);
 	cout << "Global DOFs" << dofhandler.NumDoF()<<endl;
@@ -86,15 +94,19 @@ int main()
 			cout<<"GLOBAL DOFS"<<vn[i]<<endl;
 		
 		cout << "Creating values ..."<<endl;
-		FluxSol::FEValues<2> fev(grid.Elem(e),grid);
+		cout << "Element nodes:"<<grid.Elem(e).NumNodes()<<endl;
+		cout << grid.XYZ(grid.Elem(e)).outstr()<<endl;
+		FluxSol::FEValues<2> fev(Element<2>(grid.Elem(e)),grid);
 		
         J = fev.Jacobian();
 		B = fev.shape_grad_matrix();
 		
-        Kel.Clear();
-		cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
+		// B.outstr();
+        // Kel.Clear();
+		// cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
         for (int g = 0; g < intsch.NumPoints(); g++)
         {
+			cout << "J matrix " << J.Mat(g).outstr()<<endl;
 			cout << "B matrix " << B.Mat(g).outstr()<<endl;
 			
             FluxSol::Matrix<double> Kt = B.Mat(g).Tr()*c*B.Mat(g);
@@ -105,32 +117,30 @@ int main()
 			cout <<Kt.outstr();
         }
 		
-		logfile << "Stiffness Matrix \n\n";
-		logfile << Kel.outstr();
+		// logfile << "Stiffness Matrix \n\n";
+		// logfile << Kel.outstr();
 
-		cout <<"Dof Indices"<<endl;
-		for(int row = 0; row < 8; row++)
-			cout <<vn[row]<<endl;
+		// cout <<"Dof Indices"<<endl;
+		// for(int row = 0; row < 8; row++)
+			// cout <<vn[row]<<endl;
 				
-        for (int row = 0; row < 8; row++)
-        {
-            for (int col = 0; col < 8; col++)
-            {
-                //Rows Assembly
-                //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
-                //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
-				//PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
-					//v	- a logically two-dimensional array for storing the values
-					//m, idxm	- the number of rows and their global indices
-					//n, idxn	- the number of columns and their global indices
-				//double val = 
-				//solver.MatVal(vn[row],vn[col],1);
-                Kgi[vn[row]][vn[col]]+=Kel[row][col];
+        // for (int row = 0; row < 8; row++){
+            // for (int col = 0; col < 8; col++){
+                // //Rows Assembly
+                // //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
+                // //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
+				// //PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
+					// //v	- a logically two-dimensional array for storing the values
+					// //m, idxm	- the number of rows and their global indices
+					// //n, idxn	- the number of columns and their global indices
+				// //double val = 
+				// //solver.MatVal(vn[row],vn[col],1);
+                // Kgi[vn[row]][vn[col]]+=Kel[row][col];
 				
-				solver.AddMatVal(vn[row],vn[col],Kel[row][col]);
-            }
+				// solver.AddMatVal(vn[row],vn[col],Kel[row][col]);
+            // }
 
-        }
+        // }
 
 	}
 
@@ -148,69 +158,8 @@ int main()
 
 	}
 
-
-
-
-
-
-	for (int g = 0; g < intsch.NumPoints(); g++){
-		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
-		for (int r = 0; r < 8; r++)
-		for (int c = 0; c < 8; c++)
-			Kel[r][c] += Kg[r][c]*intsch[g].w()*J.Mat(g).det();}
-
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
-
-
-	//Assemble of Matrix
-	for (int e=0;e<grid.NumElem();e++)
-	{
-		
-		FluxSol::FEValues<2> fev(grid.Elem(e),grid);
-        vector <unsigned int > vn = dofhandler.get_dof_indices(e);
-
-        for (int i=0;i<8;i++)
-            cout<<vn[i]<<endl;
-
-        FluxSol::FEValues<2> feval(grid.Elem(e));
-
-        FluxSol::GaussFullMatrices J = fev.Jacobian();
-
-        FluxSol::GaussFullMatrices B = fev.shape_grad_matrix();
-
-        Kel.Clear();
-        for (int g = 0; g < intsch.NumPoints(); g++)
-        {
-			cout << "Gauss Point" << g<<endl;
-            cout << "Peso" << intsch[g].w();
-            FluxSol::Matrix<double> Kt = B.Mat(g).Tr()*c*B.Mat(g);
-            for (int r = 0; r < 8; r++)
-            for (int c = 0; c < 8; c++)
-                Kel[r][c] += Kt[r][c]*intsch[g].w()*J.Mat(g).det();
-
-        }
-
-            logfile << "Stiffness Matrix \n\n";
-            logfile << Kel.outstr();
-
-        for (int row = 0; row < 8; row++)
-        {
-            for (int col = 0; col < 8; col++)
-            {
-                //Rows Assembly
-                //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
-                //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
-                Kgi[vn[row]][vn[col]]+=Kel[row][col];
-                //Q_SetEntry(&Kg, vn[col]+1, vn[row],vn[row]+1,Kel[row][col]);
-            }
-
-            //Assembly of load vector
-
-        }
-
-	}
-
 
 
 

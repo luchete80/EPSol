@@ -28,6 +28,7 @@
 #include "Node.h"
 
 #include "Matrix\Matrix.h"
+#include <string>       // std::string
 
 using namespace std;
 
@@ -123,6 +124,77 @@ public _Grid
 
         inline const Element <dim> & Elem (const int &e) const{return *this->element[e];}
         inline const int & NumElem(){return this->Num_Cells();}
+		std::string outstr(){
+			
+		std::string s;
+		std::ostringstream strs;
+		
+		strs << "************** MESH INFO ************** "<<num_cells<<endl;
+		strs << "ve size "<<num_cells<<endl;
+
+			//Including inherited object in base container
+			//for (int e = 0; e < this->num_cells; e++)
+				//strs<<"";
+
+			for (int n = 0; n < this->num_nodes; n++)
+				strs<<this->node[n].Coords()<<endl;
+			
+			s+= strs.str();
+			return s;
+		}
+		
+		inline Create_test(const double &lex, const double &ley, const double &lez,
+				const int &nex, const int &ney, const int &nez)
+{
+	double dx=lex/nex;double dy=ley/ney;
+	cout << "Deltas " <<dx << ", "<<dy<<endl;
+	this->num_nodes=(nex+1)*(ney+1);
+	this->num_cells=0;
+
+	double x,y;
+	x=y=.0;
+	vector <int> vn;	//Connectivities
+	int n=0;
+	for (int nx=0;nx<=ney;nx++)
+	{
+		x=0.;
+		for (int ny=0;ny<=nex;ny++)
+		{
+			cout << "Node: "<<x<< " " << y <<endl;
+			this->node.push_back(Node(n,x,y,0.0));
+			x+=dx;
+		}
+		y+=dy;
+	}
+
+    //TO MODIFY, Z
+	//cout << "nex, ney" << nex << " "<< ney<<endl;
+	for (int ex=0;ex<nex;ex++)
+	{
+		for (int ey=0;ey<ney;ey++)
+		{
+			cout << "pushing back elems" <<endl;
+			vn.clear();
+			vn.push_back((nex+1)*(ey+1)+ex+1);
+			vn.push_back((nex+1)*(ey+1)+ex);
+			vn.push_back((nex+1)*ey + ex);
+			vn.push_back((nex+1)*ey + ex+1);
+			cout << "Nodes" <<(nex+1)*(ey+1)+ex+1<<" " <<
+							  (nex+1)*(ey+1)+ex<<" " <<
+							  (nex+1)*ey + ex<< " " << 
+							  (nex+1)*ey + ex+1<<endl;
+			//Create an element from node vector
+			//element.push_back(Element<dim>(vn));
+			Element <dim> temp(this->degree,vn);
+			Element <dim>* el=new Element <dim>;	//THIS IS NECESSARY IN ORDER TO ALLOCATE DATA, IF VECTOR IS FROM POINTERS
+			*el=temp;
+			element.push_back(el);
+
+			this->num_cells++;
+		}
+	}
+}
+		
 
 		//inline operator=(const FeGrid<dim> right){}
 

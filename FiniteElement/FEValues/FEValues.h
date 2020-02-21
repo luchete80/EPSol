@@ -138,6 +138,7 @@ namespace FluxSol
 
 		ShapeFunctionGroup shfngr = elref.CreateShapeFunctionGroup();
 
+		cout << "shfngr.Size()" << shfngr.Size()<<endl;
 		GaussFullMatrices temph(dim, shfngr.Size(), gi);
 		//vector<ShapeFunction> vsh;
 		//Evaluating in Gauss Points
@@ -153,24 +154,18 @@ namespace FluxSol
 						temph[g][comp][h] = vsh[comp].Val(gi[g]);
 						//temph[g][comp][h] = 1.;
 					}
-
+				
 			}
-
-			//	//can be done outside for
-			//	//can be done outside temph*this->grid.XYZ(elref);
-
-			//const
-
-
+			cout<<"temp h gauss point i"<<temph.Mat(g).outstr()<<endl;
 		}
 		//[dh1dr dh2dr ..]   x   [X1 Y1]
 		//[dh1ds dh2ds ..]       [X2 Y2]
 		//                       [.. ..]
 		this->shape_localgrad_matrices = temph;
-		//cout << "XYZ"<<this->grid.XYZ(elref).outstr();
-		//cout << "temph"<<temph.outstr();
+		cout << "XYZ"<<this->grid.XYZ(elref).outstr();
+		cout << "temph"<<temph.outstr();
 		GaussIntegrationScheme gitemp=temph.IntScheme();
-		//cout << "temph int scheme points"<<temph.IntScheme().NumPoints()<<endl;
+		cout << "temph int scheme points"<<temph.IntScheme().NumPoints()<<endl;
 		this->jacobian = temph*this->grid.XYZ(elref);
 		//for (int g = 0; g < gi.NumPoints(); g++)
         //    this->jacobian.Mat(g).Set_Determinant();

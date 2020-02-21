@@ -24,10 +24,10 @@ void FeGrid<dim>::Create(const double &lex, const double &ley, const double &lez
 	x=y=.0;
 	vector <int> vn;	//Connectivities
 	int n=0;
-	for (int nx=0;nx<=nex;nx++)
+	for (int ny=0;ny<=ney;ny++)
 	{
 		x=0.;
-		for (int ny=0;ny<=ney;ny++)
+		for (int nx=0;nx<=nex;nx++)
 		{
 			//cout << "Node"<<x<< " " << y <<endl;
 			this->node.push_back(Node(n,x,y,0.0));
@@ -38,9 +38,9 @@ void FeGrid<dim>::Create(const double &lex, const double &ley, const double &lez
 
     //TO MODIFY, Z
 	//cout << "nex, ney" << nex << " "<< ney<<endl;
-	for (int ex=0;ex<nex;ex++)
+	for (int ey=0;ey<ney;ey++)
 	{
-		for (int ey=0;ey<ney;ey++)
+		for (int ex=0;ex<nex;ex++)		
 		{
 			cout << "pushing back elems" <<endl;
 			vn.clear();
