@@ -55,14 +55,15 @@ public:
     Eulerian_ViscoPlastic();
     void setup();
 	void assemble();
+	void calc_res();
 
 private:
 //Matrices
 //Gauss
 // ELEMENTAL MATRICES AND VECTORS
-    GaussFullMatrices N,B,J,dHrs;
+    GaussFullMatrices B,J,dHrs;
     
-    Matrix<double> Nv,Nsig,NF,Ns;
+    vector< Matrix<double> > N;//Nv,Nsig,NF,Ns;
     Matrix<double> Bv,Bsig,BF,Bs,BL;
 
 	FluxSol::Matrix<double> G,H,Kel;
@@ -74,10 +75,10 @@ private:
 	Matrix<double> F,P,L;	//Unsymmetric vectors
 	
 	//Residual 
-	Matrix<double> Rv,Rsig,RF,Rs,R;	//Unsymmetric vectors
+	Matrix<double> R;	//Nv,Nsig,NF,Ns;
 	
 	//Dimensions
-	int dim, dim_v,dim_sig,dim_F,dim_s;
+	int dim[4];
 	enum field;
 	
 	//Material
@@ -109,18 +110,8 @@ void Eulerian_ViscoPlastic::setup()
 	double ck=Ey/((1.+nu)*(1.-2.*nu));
 	c[0][0]=c[1][1]=c[2][2]=ck*(1.-nu);
 	c[0][1]=c[0][2]=c[1][0]=c[2][0]=c[1][2]=c[2][1]=ck*(1.-nu);
+	c[2][2]=ck*(0.5-nu);
 	
-	//Element can be construted from vertex too
-	//std::_Vertex
-
-	std::vector<FluxSol::Node> v;
-
-	//TO MODIFY: "ADDNODEFUNCTION IN GRID"
-	v.push_back(FluxSol::Node(0, 1.0, 1.0, 0.0));
-	v.push_back(FluxSol::Node(1, 0.0, 1.0, 0.0));
-	v.push_back(FluxSol::Node(2, 0.0, 0.0, 0.0));
-	v.push_back(FluxSol::Node(3, 1.0, 0.0, 0.0));
-
 	const FluxSol::FEIntegrationScheme intsch(1,2);
 
 
@@ -137,48 +128,26 @@ void Eulerian_ViscoPlastic::setup()
 	ve.push_back(e);
 	FluxSol::FeGrid <2> g(v, ve);
     FluxSol::FEValues<2> fev(e, g);
-    J = fev.Jacobian();
+    
+	J = fev.Jacobian();
     B = fev.shape_grad_matrix();
+   
     dHdrs=fev.shape_localgrad_matrix(); //COMPLETE
     ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
-
-	logfile << shfngr.ShapeFn(2).outstr();
-
-	for (int d = 0; d < 4; d++){
-		logfile << "\n Shape Fn " << d << "\n";
-		vector<FluxSol::ShapeFunction> df = shfngr.ShapeFn(d).diff();
-		logfile << "\n Local Diff r Coeff \n";
-		logfile << df[0].outstr();
-		logfile << "\n Local Diff s Coeff \n";
-		logfile << df[1].outstr();}
-
-	// logfile << "Jacobian Matrices \n\n";
-	// logfile << J.outstr();
-
-	// logfile << "Lineal Strain Matrices \n\n";
-	// logfile << B.outstr();
-
-	// logfile << "Shape Fn Matrices n\n";
-	// logfile << N.outstr();
-
-	// logfile << "Local grad Matrices \n\n";
-	// logfile << dHdrs.outstr();
-
-
-	// logfile << "Element Nodes Coordinates n\n";
-	// //logfile << g.XYZ(e).outstr();
-
-	// logfile << "Local derivative Functions n\n";
-	// logfile << fev.shape_grad_matrix().outstr();
+	// Shape Functions
+	//To MODIFY REFER TO dim
+    N[0]=Matrix<double>(2, 8);//v
+	N[1]=Matrix<double>(4,16);//sig
+	N[2]=Matrix<double>(4,16);//F
+	N[3]=Matrix<double>(1, 4);//s
 
 	//Solution (Fig 2.1)
-	dim_v=2;
-	dim_sig=dim_F=4;
-	dim_s=1;
-	dim=11;
-	R   =Matrix<double>(dim,1);
-	Rv  =Matrix<double>(dim_v,1);
-	Rsig=Matrix<double>(dim_sig,1);
+	dim[0]=2;
+	dim[1]=[2]=4;
+	dim[3]=1;
+	//R   =Matrix<double>(11,1);
+	for (int i=0;i<4;i++)
+		R[i]=Matrix<double>(dim[i],1);
 	//Deformation gradients
 	//Vector<double> F,P,L;	//Unsymmetric vectors
 	
@@ -199,21 +168,19 @@ void Eulerian_ViscoPlastic::assemble()
 	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 	for (int g = 0; g < intsch.NumPoints(); g++)
 	{
-             Bs=fev.shape_grad_comps(g);
-			 
-             Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
-             Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];
+		Bs=fev.shape_grad_comps(g);
+		 
+		Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
+		Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];
 			
 		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
 		for (int r = 0; r < 8; r++)
-		for (int c = 0; c < 8; c++){
-			Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
-			cout << "weight" << intsch[g].w()<<endl;
-			cout << "Kel: "<< Kel[r][c]<<endl;	
-		}
+			for (int c = 0; c < 8; c++){
+				Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
+				cout << "weight" << intsch[g].w()<<endl;
+				cout << "Kel: "<< Kel[r][c]<<endl;	
+	}}}
 
-	}//gauss points
-	}//ith function
 
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
@@ -261,4 +228,12 @@ void Eulerian_ViscoPlastic::assemble()
 	return 0;
 
 
+}
+
+void Eulerian_ViscoPlastic::calc_res()
+{
+	//R[0]=B[0].tr()*P - N[0].tr()*tP;
+	// Rsig j = Bsig mjk * vk * Usig j - C mj E.(e)j   
+	//R[1]=(N[1].tr()+tau(e)*v) * ()
+	
 }
