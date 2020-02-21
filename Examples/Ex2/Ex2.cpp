@@ -54,7 +54,7 @@ int main()
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	FluxSol::FeGrid<2> grid(2.,2.,1.,1,1,1);
+	FluxSol::FeGrid<2> grid(1.,1.,1.,2,2,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
@@ -112,7 +112,7 @@ int main()
         J = fev.Jacobian();
 		B = fev.shape_grad_matrix();
 		
-		// B.outstr();
+		B.outstr();
         // Kel.Clear();
 		cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
         for (int g = 0; g < intsch.NumPoints(); g++)
@@ -130,48 +130,62 @@ int main()
 		
 		cout <<Kel.outstr();
 		
-		// logfile << "Stiffness Matrix \n\n";
-		// logfile << Kel.outstr();
+		logfile << "Stiffness Matrix \n\n";
+		logfile << Kel.outstr();
 
-		// cout <<"Dof Indices"<<endl;
-		// for(int row = 0; row < 8; row++)
-			// cout <<vn[row]<<endl;
+		cout <<"Dof Indices"<<endl;
+		for(int row = 0; row < 8; row++)
+			cout <<vn[row]<<endl;
 				
-        // for (int row = 0; row < 8; row++){
-            // for (int col = 0; col < 8; col++){
-                // //Rows Assembly
-                // //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
-                // //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
-				// //PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
-					// //v	- a logically two-dimensional array for storing the values
-					// //m, idxm	- the number of rows and their global indices
-					// //n, idxn	- the number of columns and their global indices
-				// //double val = 
-				// //solver.MatVal(vn[row],vn[col],1);
-                // Kgi[vn[row]][vn[col]]+=Kel[row][col];
+        for (int row = 0; row < 8; row++){
+            for (int col = 0; col < 8; col++){
+                //Rows Assembly
+                //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
+                //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
+				//PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
+					//v	- a logically two-dimensional array for storing the values
+					//m, idxm	- the number of rows and their global indices
+					//n, idxn	- the number of columns and their global indices
+				//double val = 
+				//solver.MatVal(vn[row],vn[col],1);
+                Kgi[vn[row]][vn[col]]+=Kel[row][col];
 				
-				// solver.AddMatVal(vn[row],vn[col],Kel[row][col]);
-            // }
+				solver.AddMatVal(vn[row],vn[col],Kel[row][col]);
+            }
 
-        // }
+        }
 
 	}
+	
+	solver.Flush();
+	
+	cout << "Applying BCs..."<<endl;
+	
+	int dof;
+	int fix[]={0,1,5};
+	for (int f=0;f<3;f++){
+		dof=fix[f];
+		cout << "adj dofs"<<endl;
+		for (int i = 0; i < dofhandler.Adj_DoF_Number()[dof]; i++){
+			int adjdof = dofhandler.AdjDoF(dof,i);
+			cout << adjdof << " ";
+			//Have to set up only the nonzero matrix values
+			solver.SetMatVal(dof,adjdof,0.);
+			solver.SetMatVal(adjdof,dof,0.);}
+		solver.SetMatVal(dof,dof,1.);	}	
 
-	// for (int d = 0; d < 4; d++)
-	// {
-		// logfile << "\n Shape Fn "<<d <<"\n";
-		// vector<FluxSol::ShapeFunction> df = shfngr.ShapeFn(d).diff();
-		// logfile << "\n Local Diff r Coeff \n";
-		// logfile << df[0].outstr();
-		// logfile << "\n Local Diff s Coeff \n";
-		// logfile << df[1].outstr();
+				
+	solver.SetbValues(6,1000.0);
+	
 
-	// }
-
+	solver.ViewInfo();
+	solver.Solve();
+	solver.ViewInfo();
+	
+	logfile.close();
+	
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
-
-
 
 	
 	logfile.close();
