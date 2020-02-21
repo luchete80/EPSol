@@ -144,25 +144,10 @@ int main(int argc,char **args)
 		for(int row = 0; row < 8; row++)
 			cout <<vn[row]<<endl;
 				
-        for (int row = 0; row < 8; row++)
-        {
-            for (int col = 0; col < 8; col++)
-            {
-                //Rows Assembly
-                //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
-                //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
-				//PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
-					//v	- a logically two-dimensional array for storing the values
-					//m, idxm	- the number of rows and their global indices
-					//n, idxn	- the number of columns and their global indices
-				//double val = 
-				//solver.MatVal(vn[row],vn[col],1);
-                Kgi[vn[row]][vn[col]]+=Kel[row][col];
-				
-				solver.AddMatVal(vn[row],vn[col],Kel[row][col]);
-            }
-
-        }
+        for (int row = 0; row < 8; row++){
+            for (int col = 0; col < 8; col++){
+                Kgi[vn[row]][vn[col]]+=Kel[row][col];			
+				solver.AddMatVal(vn[row],vn[col],Kel[row][col]);}}
 
 	}
 	

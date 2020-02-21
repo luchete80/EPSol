@@ -36,25 +36,13 @@ int main()
 	ofstream logfile;
 	logfile.open("Logfile.txt");
 	
-	std::vector<FluxSol::Node> v;
-	//TO MODIFY: "ADDNODEFUNCTION IN GRID"
-	v.push_back(FluxSol::Node(0, 1.0, 1.0, 0.0));
-	v.push_back(FluxSol::Node(1, 0.0, 1.0, 0.0));
-	v.push_back(FluxSol::Node(2, 0.0, 0.0, 0.0));
-	v.push_back(FluxSol::Node(3, 1.0, 0.0, 0.0));
 
-
-	//FluxSol::QuadLinearElement e(v);
-	FluxSol::Element<2> el(v);
-	el.Set_Nodes(4, 0, 1, 2, 3);
-	
-	
 	FEIntegrationScheme intsch(1,2);
 	
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	FluxSol::FeGrid<2> grid(1.,1.,1.,2,2,1);
+	FluxSol::FeGrid<2> grid(1.,1.,1.,2,1,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
@@ -77,7 +65,7 @@ int main()
 	FluxSol::Matrix<double> Kel(8, 8);
 	FluxSol::Matrix<double> c(3, 3);
 
-	PETSC_Solver<double,2> solver(8);
+	PETSC_Solver<double,2> solver(dofhandler.NumDoF());
     Matrix<double> Kgi(dofhandler.NumDoF(),dofhandler.NumDoF());	
 
 	double E = 200.0e9;
@@ -92,8 +80,7 @@ int main()
 	c[2][2] = ck*(1 - 2*nu) / (2.*(1.-nu));
 	
 
-	//for (int e=0;e<grid.NumElem();e++)
-		for (int e=0;e<1;e++)
+	for (int e=0;e<grid.NumElem();e++)
 	{
 		cout <<"Element: " << e <<endl;
 		// TO BE MODIFIED: DONT INCLUDE GRID
@@ -113,7 +100,7 @@ int main()
 		B = fev.shape_grad_matrix();
 		
 		B.outstr();
-        // Kel.Clear();
+        Kel=0.;
 		cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
         for (int g = 0; g < intsch.NumPoints(); g++)
         {
@@ -138,18 +125,7 @@ int main()
 			cout <<vn[row]<<endl;
 				
         for (int row = 0; row < 8; row++){
-            for (int col = 0; col < 8; col++){
-                //Rows Assembly
-                //Laspack ,r from 1, c sparse matrix from 0, columntotal from 1
-                //Q_SetEntry(&Kg, r from 1, c from 0,c from 1,Kel[r][c]);
-				//PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
-					//v	- a logically two-dimensional array for storing the values
-					//m, idxm	- the number of rows and their global indices
-					//n, idxn	- the number of columns and their global indices
-				//double val = 
-				//solver.MatVal(vn[row],vn[col],1);
-                Kgi[vn[row]][vn[col]]+=Kel[row][col];
-				
+            for (int col = 0; col < 8; col++){			
 				solver.AddMatVal(vn[row],vn[col],Kel[row][col]);
             }
 
