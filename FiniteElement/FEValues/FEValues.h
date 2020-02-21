@@ -129,7 +129,8 @@ namespace FluxSol
 	template <int dim>
 	inline void FEValues<dim>::SetJacobian()
 	{
-		GaussIntegrationScheme gi(elref.GaussOrder(), dim);
+		//GaussIntegrationScheme gi(elref.GaussOrder(), dim);
+		GaussIntegrationScheme gi(1, dim);	//TO MODIFY!!!!!!!!
 		cout << "GaussOrder "<<elref.GaussOrder()<<endl;
 		//GaussIntegrationScheme gi();
 		//Or elref.DIM()//
@@ -156,16 +157,16 @@ namespace FluxSol
 					}
 				
 			}
-			cout<<"temp h gauss point i"<<temph.Mat(g).outstr()<<endl;
+			//cout<<"temp h gauss point i"<<temph.Mat(g).outstr()<<endl;
 		}
 		//[dh1dr dh2dr ..]   x   [X1 Y1]
 		//[dh1ds dh2ds ..]       [X2 Y2]
 		//                       [.. ..]
 		this->shape_localgrad_matrices = temph;
-		cout << "XYZ"<<this->grid.XYZ(elref).outstr();
-		cout << "temph"<<temph.outstr();
+		//cout << "XYZ"<<this->grid.XYZ(elref).outstr();
+		//cout << "temph"<<temph.outstr();
 		GaussIntegrationScheme gitemp=temph.IntScheme();
-		cout << "temph int scheme points"<<temph.IntScheme().NumPoints()<<endl;
+		//cout << "temph int scheme points"<<temph.IntScheme().NumPoints()<<endl;
 		this->jacobian = temph*this->grid.XYZ(elref);
 		//for (int g = 0; g < gi.NumPoints(); g++)
         //    this->jacobian.Mat(g).Set_Determinant();
@@ -190,9 +191,10 @@ namespace FluxSol
 	//[]
 	inline void FEValues<dim>::Set_shape_grad_matrix()
 	{
-
+		cout <<"CREATING Set_shape_grad_matrix"<<endl;
 		GaussFullMatrices m;
-		GaussIntegrationScheme gi(elref.GaussOrder(), dim);
+		//GaussIntegrationScheme gi(elref.GaussOrder(), dim); //TO MODiFY!
+		GaussIntegrationScheme gi(1, dim);
 
 		ShapeFunctionGroup shfngr = elref.CreateShapeFunctionGroup();
 
@@ -308,13 +310,13 @@ namespace FluxSol
 		GaussFullMatrices ret(elref.Field_Dim(), shfngr.Size()*elref.Field_Dim(), gi);
 		GaussFullMatrices retcomp(1, shfngr.Size(), gi);
 
-        cout << "Loop through points..."<<endl;
+        //cout << "Loop through points..."<<endl;
 		for (int g = 0; g < gi.NumPoints(); g++) //Gauss Point
 		{
-		    cout << "point "<<g<<endl;
+		    //cout << "point "<<g<<endl;
 			for (int h = 0; h < shfngr.Size(); h++) //Shape Function Number
 			{
-			    cout << "h " << endl;
+			    //cout << "h " << endl;
 				//TO MODIFY
 				retcomp[g][0][h] = shfngr.ShapeFn(h).Val(gi[g]);
 				for (int comp = 0; comp < elref.Field_Dim(); comp++)

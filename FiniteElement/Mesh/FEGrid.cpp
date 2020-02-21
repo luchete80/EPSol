@@ -54,7 +54,8 @@ void FeGrid<dim>::Create(const double &lex, const double &ley, const double &lez
 			Element <dim> temp(this->degree,vn);
 			Element <dim>* el=new Element <dim>;	//THIS IS NECESSARY IN ORDER TO ALLOCATE DATA, IF VECTOR IS FROM POINTERS
 			*el=temp;
-			element.push_back(el);
+			//element.push_back(el);
+			element.push_back(new Element <dim>(1,vn));
 
 			this->num_cells++;
 		}

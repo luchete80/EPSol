@@ -232,6 +232,7 @@ template <int dim>
 Element<dim>::Element(const int &p, const std::vector<int> &v)
 :Element(p)
 {
+	this->gaussor=1;
 	this->AddConnectivity(v);
 }
 

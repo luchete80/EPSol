@@ -35,14 +35,26 @@ int main()
 
 	ofstream logfile;
 	logfile.open("Logfile.txt");
+	
+	std::vector<FluxSol::Node> v;
+	//TO MODIFY: "ADDNODEFUNCTION IN GRID"
+	v.push_back(FluxSol::Node(0, 1.0, 1.0, 0.0));
+	v.push_back(FluxSol::Node(1, 0.0, 1.0, 0.0));
+	v.push_back(FluxSol::Node(2, 0.0, 0.0, 0.0));
+	v.push_back(FluxSol::Node(3, 1.0, 0.0, 0.0));
 
 
+	//FluxSol::QuadLinearElement e(v);
+	FluxSol::Element<2> el(v);
+	el.Set_Nodes(4, 0, 1, 2, 3);
+	
+	
 	FEIntegrationScheme intsch(1,2);
 	
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	FluxSol::FeGrid<2> grid(1.,1.,1.,2,2,1);
+	FluxSol::FeGrid<2> grid(2.,2.,1.,1,1,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
@@ -57,14 +69,10 @@ int main()
 	
 	dofhandler.outstr();
 
-	Element<2> e(grid.Elem(0));
-	e.Set_Nodes(4,0,1,2,3);
-	logfile << "Element Gauss Order: " << e.GaussOrder()<<"\n\n";
-
 	cout << "Assemblying matrix" <<endl;
 	
 	FluxSol::GaussFullMatrices J,B,dHdrs;
-	FluxSol::ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
+	//FluxSol::ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
 
 	FluxSol::Matrix<double> Kel(8, 8);
 	FluxSol::Matrix<double> c(3, 3);
@@ -84,7 +92,8 @@ int main()
 	c[2][2] = ck*(1 - 2*nu) / (2.*(1.-nu));
 	
 
-	for (int e=0;e<grid.NumElem();e++)
+	//for (int e=0;e<grid.NumElem();e++)
+		for (int e=0;e<1;e++)
 	{
 		cout <<"Element: " << e <<endl;
 		// TO BE MODIFIED: DONT INCLUDE GRID
@@ -94,16 +103,18 @@ int main()
 			cout<<"GLOBAL DOFS"<<vn[i]<<endl;
 		
 		cout << "Creating values ..."<<endl;
-		cout << "Element nodes:"<<grid.Elem(e).NumNodes()<<endl;
-		cout << grid.XYZ(grid.Elem(e)).outstr()<<endl;
-		FluxSol::FEValues<2> fev(Element<2>(grid.Elem(e)),grid);
+		//cout << "Element nodes:"<<grid.Elem(e).NumNodes()<<endl;
+		//cout << grid.XYZ(grid.Elem(e)).outstr()<<endl;
+		FluxSol::FEValues<2> fev(grid.Elem(e),grid);
+		//FluxSol::FEValues<2> fev(el,grid);
+		cout << "Element " << e << "Gauss Order: "<<grid.Elem(e).GaussOrder()<<endl;
 		
         J = fev.Jacobian();
 		B = fev.shape_grad_matrix();
 		
 		// B.outstr();
         // Kel.Clear();
-		// cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
+		cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
         for (int g = 0; g < intsch.NumPoints(); g++)
         {
 			cout << "J matrix " << J.Mat(g).outstr()<<endl;
@@ -116,6 +127,8 @@ int main()
 			
 			cout <<Kt.outstr();
         }
+		
+		cout <<Kel.outstr();
 		
 		// logfile << "Stiffness Matrix \n\n";
 		// logfile << Kel.outstr();
@@ -144,19 +157,16 @@ int main()
 
 	}
 
+	// for (int d = 0; d < 4; d++)
+	// {
+		// logfile << "\n Shape Fn "<<d <<"\n";
+		// vector<FluxSol::ShapeFunction> df = shfngr.ShapeFn(d).diff();
+		// logfile << "\n Local Diff r Coeff \n";
+		// logfile << df[0].outstr();
+		// logfile << "\n Local Diff s Coeff \n";
+		// logfile << df[1].outstr();
 
-	logfile << shfngr.ShapeFn(2).outstr();
-
-	for (int d = 0; d < 4; d++)
-	{
-		logfile << "\n Shape Fn "<<d <<"\n";
-		vector<FluxSol::ShapeFunction> df = shfngr.ShapeFn(d).diff();
-		logfile << "\n Local Diff r Coeff \n";
-		logfile << df[0].outstr();
-		logfile << "\n Local Diff s Coeff \n";
-		logfile << df[1].outstr();
-
-	}
+	// }
 
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
