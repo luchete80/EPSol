@@ -31,29 +31,40 @@ c[0,1]=c[1,0]=ck*nu / (1. - nu)
 c[2,2]=ck*(1 - 2 * nu) / (2.*(1. - nu))
 print ("C matrix")
 print(c)
-	
-for i in range(2):
-    for j in range(2):
-        r=gauss[i]
-        s=gauss[j]
+for e in range (4)	
+    #Calculate 
+    #Calculate deformation gradient E, for that
+    #Clculate D (2.13, 2.14)
+    #Calculate La (ij)
+    #Calculate Almansi deformation gradient E (A.5)
+    #Ea ij= 
+    #Calculate sigma
+    #Calculate Pi (2.31) Gij Cjk˙¯-Gij LM ksig(k)
+ePi=
 
-        #Numerated as in Bathe
-        dHrs=matrix([[(1+s),-(1+s),-(1-s),(1-s)], [(1+r),(1-r),-(1-r),-(1+r)] ])
-        #Numerated as in deal.ii
-        #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
-        dHrs/=4
-        J=dHrs*X2
-        dHxy=linalg.inv(J)*dHrs
-        for k in range(4):
-            B[0,2*k  ]=dHxy[0,k]
-            B[1,2*k+1]=dHxy[1,k]
-            B[2,2*k  ]=dHxy[1,k]
-            B[2,2*k+1]=dHxy[0,k]
-        w=0.25
-        #print (B)
-        K+=(B.transpose()*c*B*w)
-        print (K)
-print (K)
+    for i in range(2):
+        for j in range(2):
+            r=gauss[i]
+            s=gauss[j]
+
+            #Numerated as in Bathe
+            dHrs=matrix([[(1+s),-(1+s),-(1-s),(1-s)], [(1+r),(1-r),-(1-r),-(1+r)] ])
+            #Numerated as in deal.ii
+            #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
+            dHrs/=4
+            J=dHrs*X2
+            dHxy=linalg.inv(J)*dHrs
+            for k in range(4):
+                B[0,2*k  ]=dHxy[0,k]
+                B[1,2*k+1]=dHxy[1,k]
+                B[2,2*k  ]=dHxy[1,k]
+                B[2,2*k+1]=dHxy[0,k]
+            w=0.25
+            #print (B)
+            K+=(B.transpose()*c*B*w)
+            print (K)
+    print (K)
+
 #Boundary conditions
 #Numerated as in Bathe
 for i in range(8):
