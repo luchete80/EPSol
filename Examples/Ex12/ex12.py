@@ -32,12 +32,25 @@ c[2,2]=ck*(1 - 2 * nu) / (2.*(1. - nu))
 print ("C matrix")
 print(c)
 for e in range (4)	
+
+    #Galerkin strain integration
     #Calculate 
-    #Calculate deformation gradient E, for that
-    #Clculate D (2.13, 2.14)
+    #Calculate deformation gradient Fij, for that
+    #Calculate Velocity gradient Lij
+    #Lij=dvi/dxj(2.4) like velocity Jacobian??
+    #Calculate Rate of Def Tensor D (2.13, 2.14)
+    #D(th)ij=alpha vk dT/dxk deltaij 2.13
+    #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
+    #With evp = f(sigma,s) (Sec. 2.4.2)
+    #Nij Direction of plastic flow
+    #
+    #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
+    #
     #Calculate La (ij)
+    #Laij=F(-1)ki F(-1)kl Le lj
     #Calculate Almansi deformation gradient E (A.5)
-    #Ea ij= 
+    #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
+    
     #Calculate sigma
     #Calculate Pi (2.31) Gij Cjk˙¯-Gij LM ksig(k)
 ePi=
