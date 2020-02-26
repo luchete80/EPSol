@@ -88,16 +88,28 @@ for e in range (4):
                 Bv[2,2*k+1]=dHxy[0,k]
                 Bv[3,2*k+1]=dHxy[1,k]
             
-    #Galerkin strain integration
-    #Calculate deformation gradient Fij, for that
-    #Calculate Velocity gradient Lij
+            #Galerkin strain integration
+            #Calculate deformation gradient Fij, for that
+            #Calculate Velocity gradient Lij
             #Lij=dvi/dxj(2.4) 
             #According to B.11 d(phi)/dxj=J-1(ij) dphi/drj = Bvjk Vk
-            dVxy=Bv*Ve #(4x1)
-            for k in range(4):
-                for l in range(4):
-                    LM[k,l]=dVxy[]
-            #Befor Strain tensors, DEFORMATIONS
+            dVxy=Bv*Ve #(4x1)(vx,x vx,y vy,x vy,y)T 
+            
+            #Stabilization factor tau 2.26
+            #tau=beta*he/(2|v|)
+            #See beta estability paramter
+            #LM (2.33 p23)
+            LM[0,0]=LM[2,2]=dVxy[0]
+            LM[0,l]=LM[2,3]=dVxy[1]
+            LM[1,0]=LM[3,2]=dVxy[2]
+            LM[1,1]=LM[3,3]=dVxy[3]
+            
+            #BL interpolators BLijk (4,4,8) (B.17 p165)
+            
+            #Set tractions tP (2.34)
+            
+            
+            #Before Strain tensors, DEFORMATIONS
             #With evp = f(sigma,s) (Sec. 2.4.2)
             #eps_vp=A sinh (psi (sigma/s))^(1/m) (2.57 p27)
             #Calculate Rate of Def Tensor D (2.13, 2.14)
@@ -108,14 +120,16 @@ for e in range (4):
     #
     #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
     #
-    #Calculate La (ij)
-    #Laij=F(-1)ki F(-1)kl Le lj
-    #Calculate Almansi deformation gradient E (A.5)
-    #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
+            #Calculate La (ij)
+            #Laij=F(-1)ki F(-1)kl Le lj
+            #Calculate Almansi deformation gradient E (A.5)
+            #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
 
-        w=0.25 #TO MODIFY
-    #Calculate sigma
-    #Calculate Pi (2.31) Gij Cjk˙¯-Gij LM ksig(k)
+            w=0.25 #TO MODIFY
+            #Calculate sigma
+            #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) + 
+            #Attention double contraction
+            P=G*c*E-G*LM*sig
             #print (B)
             #K+=(B.transpose()*c*B*w)
             #print (K)
