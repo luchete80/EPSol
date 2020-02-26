@@ -40,7 +40,7 @@ class outfile
 
 	public:
 	//Constructors
-	outfile(string name, FeGrid &grid<2>);
+	outfile(string name, FluxSol::FeGrid &grid<2>);
 
 }
 	
