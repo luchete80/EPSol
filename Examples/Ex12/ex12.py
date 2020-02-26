@@ -14,6 +14,9 @@ X2=matrix([[1,1],[0,1],[0,0],[1,0]])
 #Numerated as in deal.ii
 #X2=matrix([[0,0],[1,0],[0,1],[1,1]])
 
+#Nodal values
+Ve=matrix(numpy.matlib.zeros((1, 8)))
+
 #Shape Functions
 Ns=matrix(numpy.matlib.zeros((1, 4)))
 Nv=matrix(numpy.matlib.zeros((2, 8)))
@@ -23,9 +26,20 @@ NsigF=matrix(numpy.matlib.zeros((4, 16)))
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 8)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
+LM=matrix(numpy.matlib.zeros((4, 4)))
 
 K=matrix(numpy.matlib.zeros((44, 44)))
 R=matrix(numpy.matlib.zeros((44, 1)))
+dVxy=matrix(numpy.matlib.zeros((4, 2)))
+
+
+#Material properties (Table 2.1 p28)
+#HSLA-65 steel with strain rate between e-3 and e-4
+A0=6.34e11
+psi=3.25
+m=0.1956
+n=0.06869
+s0=80.0e6
 
 
 print (K)
@@ -48,7 +62,7 @@ G=matrix([[1,0,0,0],[0,0,0,1],[0,0,0,1],[0,1,0,0]])
 H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]]) 
     
 for e in range (4):
-
+    #Obtain Ve from global
     for i in range(2):
         for j in range(2):
             r=gauss[i]
@@ -62,29 +76,34 @@ for e in range (4):
             dHrs/=4
             J=dHrs*X2
             dHxy=linalg.inv(J)*dHrs
-            for k in range(4):
-                #shape functions
-                Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
-                #derivatives
-                Bv[0,2*k  ]=dHxy[0,k]
-                Bv[1,2*k+1]=dHxy[1,k]
-                Bv[2,2*k  ]=dHxy[1,k]
-                Bv[2,2*k+1]=dHxy[0,k]
-            w=0.25 #TO MODIFY
             #Calculate shape functions
             #Bs=J-1 dHrs(B.13)
             Bs=dHxy
+            for k in range(4):
+                #shape functions
+                Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
+                #derivatives Bv (B.14)
+                Bv[0,2*k  ]=dHxy[0,k]
+                Bv[1,2*k  ]=dHxy[1,k]
+                Bv[2,2*k+1]=dHxy[0,k]
+                Bv[3,2*k+1]=dHxy[1,k]
+            
     #Galerkin strain integration
     #Calculate deformation gradient Fij, for that
     #Calculate Velocity gradient Lij
             #Lij=dvi/dxj(2.4) 
-            #According to B.11 d(phi)/dij=J-1 ij dphi/drj = Bv V
-            
-    #Calculate Rate of Def Tensor D (2.13, 2.14)
-    #D(th)ij=alpha vk dT/dxk deltaij 2.13
-    #IN THIS EXAMPLE THIS IS 0
+            #According to B.11 d(phi)/dxj=J-1(ij) dphi/drj = Bvjk Vk
+            dVxy=Bv*Ve #(4x1)
+            for k in range(4):
+                for l in range(4):
+                    LM[k,l]=dVxy[]
+            #Befor Strain tensors, DEFORMATIONS
+            #With evp = f(sigma,s) (Sec. 2.4.2)
+            #eps_vp=A sinh (psi (sigma/s))^(1/m) (2.57 p27)
+            #Calculate Rate of Def Tensor D (2.13, 2.14)
+            #D(th)ij=alpha vk dT/dxk deltaij 2.13
+            #IN THIS EXAMPLE THIS DTH 0
     #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
-    #With evp = f(sigma,s) (Sec. 2.4.2)
     #Nij Direction of plastic flow
     #
     #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
@@ -94,7 +113,7 @@ for e in range (4):
     #Calculate Almansi deformation gradient E (A.5)
     #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
 
-    
+        w=0.25 #TO MODIFY
     #Calculate sigma
     #Calculate Pi (2.31) Gij Cjk˙¯-Gij LM ksig(k)
             #print (B)
