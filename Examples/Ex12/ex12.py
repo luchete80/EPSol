@@ -1,7 +1,7 @@
 # https://docs.sympy.org/latest/tutorial/matrices.html
 #Plain strain/stress 1 element example
 from numpy import *
-import numpy.matlib
+import numpy.matlib #for zeros
 
 import array as arr
 
@@ -14,9 +14,20 @@ X2=matrix([[1,1],[0,1],[0,0],[1,0]])
 #Numerated as in deal.ii
 #X2=matrix([[0,0],[1,0],[0,1],[1,1]])
 
-K=matrix(numpy.matlib.zeros((8, 8)))
-B=matrix(numpy.matlib.zeros((3, 8)))
+#Shape Functions
+Ns=matrix(numpy.matlib.zeros((1, 4)))
+Nv=matrix(numpy.matlib.zeros((2, 8)))
+NsigF=matrix(numpy.matlib.zeros((4, 16)))
+
+#Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
+Bs=matrix(numpy.matlib.zeros((2, 8)))
+Bv=matrix(numpy.matlib.zeros((4, 8)))
+
+K=matrix(numpy.matlib.zeros((44, 44)))
+R=matrix(numpy.matlib.zeros((44, 1)))
+
+
 print (K)
 print (X2[0,0])
 print (X2[2,1])
@@ -31,15 +42,47 @@ c[0,1]=c[1,0]=ck*nu / (1. - nu)
 c[2,2]=ck*(1 - 2 * nu) / (2.*(1. - nu))
 print ("C matrix")
 print(c)
-for e in range (4)	
+#Set G and H matrices
+#2.32
+G=matrix([[1,0,0,0],[0,0,0,1],[0,0,0,1],[0,1,0,0]]) 
+H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]]) 
+    
+for e in range (4):
 
+    for i in range(2):
+        for j in range(2):
+            r=gauss[i]
+            s=gauss[j]
+
+            #Numerated as in Bathe
+            Ns  =0.25*matrix([(1+s)*(1+r),(1-r)*(1+s),(1-s)*(1-r),(1-s)*(1-r)])            
+            dHrs=matrix([[(1+s),-(1+s),-(1-s),(1-s)], [(1+r),(1-r),-(1-r),-(1+r)] ])
+            #Numerated as in deal.ii
+            #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
+            dHrs/=4
+            J=dHrs*X2
+            dHxy=linalg.inv(J)*dHrs
+            for k in range(4):
+                #shape functions
+                Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
+                #derivatives
+                Bv[0,2*k  ]=dHxy[0,k]
+                Bv[1,2*k+1]=dHxy[1,k]
+                Bv[2,2*k  ]=dHxy[1,k]
+                Bv[2,2*k+1]=dHxy[0,k]
+            w=0.25 #TO MODIFY
+            #Calculate shape functions
+            #Bs=J-1 dHrs(B.13)
+            Bs=dHxy
     #Galerkin strain integration
-    #Calculate 
     #Calculate deformation gradient Fij, for that
     #Calculate Velocity gradient Lij
-    #Lij=dvi/dxj(2.4) like velocity Jacobian??
+            #Lij=dvi/dxj(2.4) 
+            #According to B.11 d(phi)/dij=J-1 ij dphi/drj = Bv V
+            
     #Calculate Rate of Def Tensor D (2.13, 2.14)
     #D(th)ij=alpha vk dT/dxk deltaij 2.13
+    #IN THIS EXAMPLE THIS IS 0
     #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
     #With evp = f(sigma,s) (Sec. 2.4.2)
     #Nij Direction of plastic flow
@@ -50,33 +93,14 @@ for e in range (4)
     #Laij=F(-1)ki F(-1)kl Le lj
     #Calculate Almansi deformation gradient E (A.5)
     #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
+
     
     #Calculate sigma
     #Calculate Pi (2.31) Gij Cjk˙¯-Gij LM ksig(k)
-ePi=
-
-    for i in range(2):
-        for j in range(2):
-            r=gauss[i]
-            s=gauss[j]
-
-            #Numerated as in Bathe
-            dHrs=matrix([[(1+s),-(1+s),-(1-s),(1-s)], [(1+r),(1-r),-(1-r),-(1+r)] ])
-            #Numerated as in deal.ii
-            #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
-            dHrs/=4
-            J=dHrs*X2
-            dHxy=linalg.inv(J)*dHrs
-            for k in range(4):
-                B[0,2*k  ]=dHxy[0,k]
-                B[1,2*k+1]=dHxy[1,k]
-                B[2,2*k  ]=dHxy[1,k]
-                B[2,2*k+1]=dHxy[0,k]
-            w=0.25
             #print (B)
-            K+=(B.transpose()*c*B*w)
-            print (K)
-    print (K)
+            #K+=(B.transpose()*c*B*w)
+            #print (K)
+    #print (K)
 
 #Boundary conditions
 #Numerated as in Bathe
