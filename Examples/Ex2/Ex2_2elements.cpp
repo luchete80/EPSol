@@ -29,21 +29,6 @@
 // Plain Stress / Strain Problem
 // 10 x 10 Elements,4 node each, loaded as previous example
 using namespace FluxSol;
-
-class outfile
-{
-	protected:
-	//To check if new fields have same mesh
-	//Fv_CC_Grid &grid;
-	vector <Vec3D> node_data;   //Results
-	//vector <> cell_data;		//Element results
-
-	public:
-	//Constructors
-	template <int dim>
-	outfile(string name, FeGrid &grid<dim>);
-
-}
 	
 int main()
 {

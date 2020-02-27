@@ -30,20 +30,23 @@
 // 10 x 10 Elements,4 node each, loaded as previous example
 using namespace FluxSol;
 
+namespace FluxSol{
 class outfile
 {
 	protected:
 	//To check if new fields have same mesh
 	//Fv_CC_Grid &grid;
+	FluxSol::FeGrid<2> &grid;
 	vector <Vec3D> node_data;   //Results
 	//vector <> cell_data;		//Element results
 
 	public:
 	//Constructors
-	outfile(string name, FluxSol::FeGrid &grid<2>);
+	outfile(string name, FluxSol::FeGrid<2> &grid);
 
+};
 }
-	
+
 int main()
 {
 
@@ -56,7 +59,7 @@ int main()
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	FluxSol::FeGrid<2> grid(1.,1.,1.,2,1,1);
+	FluxSol::FeGrid<2> grid(1.,1.,1.,50,50,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
@@ -185,7 +188,7 @@ int main()
 }
 
 
-outfile::outfile(string name, FeGrid &grid<2>)
+outfile::outfile(string name, FeGrid<2> &grid)
 {
 	int Rank=0;
 	
