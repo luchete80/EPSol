@@ -42,7 +42,7 @@ class outfile
 
 	public:
 	//Constructors
-	outfile(string name, FluxSol::FeGrid<2> &g);
+	outfile(string name, FluxSol::FeGrid<2> &,const vector<Vec3D> &);
 
 };
 }
@@ -177,7 +177,16 @@ int main()
 	
 	logfile.close();
 	
-	outfile of("output.vtk",grid);
+	std::vector<Vec3D> res;
+	Vec3D v;
+	for (int n = 0; n < grid.NumNodes(); n++){
+		for (int d = 0; d < 2; d++)
+		    v[d]=solver.X(2*n+d);
+		res.push_back(v);
+		//cout << v <<endl;
+	}
+	
+	outfile of("output.vtk",grid,res);
 	
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
@@ -187,8 +196,9 @@ int main()
 	return 0;
 }
 
-
-outfile::outfile(string name, FeGrid<2> &g)
+//VTK XML TYPE
+//There is also an ASCII type
+outfile::outfile(string name, FeGrid<2> &g,const vector<Vec3D> &vres)
 :grid(g)
 {
 	int Rank=0;
@@ -215,46 +225,59 @@ outfile::outfile(string name, FeGrid<2> &g)
 			file << grid.Elem(c).NodePos(n) << "\t";}
 		file << endl;}
 	
-	// file << "</DataArray>" << endl;
-	// file << "<DataArray Name=\"offsets\" type=\"Int32\" format=\"ascii\" >" << endl;
-	// int offset=0;
-	// for (int c=0;c<grid.Num_Cells();++c) {
-		// offset+=grid.Cell(c).Num_Vertex();
-		// file << offset << endl;}
-	// file << "</DataArray>" << endl;
+	file << "</DataArray>" << endl;
 	
-	// file << "<DataArray Name=\"types\" type=\"UInt8\" format=\"ascii\" >" << endl;
-	// for (int c=0;c<grid.Num_Cells();++c) {
-		// if (grid.Cell(c).Num_Vertex()==4) file << "10" << endl; // Tetra
+	file << "<DataArray Name=\"offsets\" type=\"Int32\" format=\"ascii\" >" << endl;
+	int offset=0;
+	for (int c=0;c<grid.NumElem();++c) {
+		offset+=grid.Elem(c).NumNodes();
+		file << offset << endl;}
+	file << "</DataArray>" << endl;
+	
+	file << "<DataArray Name=\"types\" type=\"UInt8\" format=\"ascii\" >" << endl;
+	for (int c=0;c<grid.NumElem();++c) {
+		// if (grid.Cell(c).Num_Vertex()==4) 
+		file << "10" << endl; // Tetra
 		// if (grid.Cell(c).Num_Vertex()==8) file << "12" << endl; // Hexa
 		// if (grid.Cell(c).Num_Vertex()==6) file << "13" << endl; // Prism
 		// if (grid.Cell(c).Num_Vertex()==5) file << "14" << endl; // Pyramid (Wedge)
-	// }
-	// file << endl;
-	// file << "</DataArray>" << endl;;
+	}
+	file << endl;
+	file << "</DataArray>" << endl;;
 	
-	// file << "</Cells>" << endl;
+	file << "</Cells>" << endl;
 	
-	// file << "<CellData Scalars=\"scalars\" format=\"ascii\">" << endl;
+	file << "<PointData Scalars=\"scalars\" format=\"ascii\">" << endl;
 	
-	// //Begin data field output
-	// file << "<DataArray Name=\"";
+	//Begin data field output
+	file << "<DataArray Name=\"";
 
-	// file << "Var";
-	// file << "\" type=\"Float32\" format=\"ascii\" >" << endl;
+	file << "x-displacement";
+	file << "\" type=\"Float32\" format=\"ascii\" >" << endl;
 
-	// //If scalars
-	// for (int n=0;n<grid.Num_Nodes();n++)
-		// file << field.Val(n).Comp()[0] << endl;
+	//If scalars
+	for (int n=0;n<grid.NumNodes();n++)
+		    file << vres[n][0] << endl;
 
-	// file << "</DataArray>" << endl;
+	file << "</DataArray>" << endl;
+
+	file << "<DataArray Name=\"";
+
+	file << "y-displacement";
+	file << "\" type=\"Float32\" format=\"ascii\" >" << endl;
+
+	//If scalars
+	for (int n=0;n<grid.NumNodes();n++)
+		    file << vres[n][1] << endl;
+
+	file << "</DataArray>" << endl;
 
 	// // End of data output
-	// file << "</CellData>" << endl;
+	 file << "</PointData>" << endl;
 	
-	// file << "</Piece>" << endl;
-	// file << "</UnstructuredGrid>" << endl;
-	// file << "</VTKFile>" << endl;
-	// file.close();
+	file << "</Piece>" << endl;
+	file << "</UnstructuredGrid>" << endl;
+	file << "</VTKFile>" << endl;
+	file.close();
 
 }
