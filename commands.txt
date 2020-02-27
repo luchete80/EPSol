@@ -10,6 +10,7 @@ set PETSC_ARCH=arch-mswin-mpi1-release
 set METIS_DIR=D:\Luciano\Numerico\Libs\metis-5.1.0
 
 set PATH=D:\Luciano\Programas\msys64\mingw64\bin;D:\Luciano\Programas\cmake\bin;%PATH%;%MPI_LIB_DIR%
+
 set PATH=C:\msys64\mingw64\bin;D:\Luciano\Programas\cmake\bin;%PATH%;%MPI_LIB_DIR%
 
 

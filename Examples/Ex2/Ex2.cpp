@@ -42,7 +42,7 @@ class outfile
 
 	public:
 	//Constructors
-	outfile(string name, FluxSol::FeGrid<2> &grid);
+	outfile(string name, FluxSol::FeGrid<2> &g);
 
 };
 }
@@ -59,7 +59,7 @@ int main()
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	FluxSol::FeGrid<2> grid(1.,1.,1.,50,50,1);
+	FluxSol::FeGrid<2> grid(1.,1.,1.,2,1,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
@@ -188,31 +188,32 @@ int main()
 }
 
 
-outfile::outfile(string name, FeGrid<2> &grid)
+outfile::outfile(string name, FeGrid<2> &g)
+:grid(g)
 {
 	int Rank=0;
+	//grid=g;
+	string fileName=name;
+	ofstream file;
+	file.open((fileName).c_str(),ios::out);
+	file << "<?xml version=\"1.0\"?>" << endl;
+	file << "<VTKFile type=\"UnstructuredGrid\">" << endl;
+	file << "<UnstructuredGrid>" << endl;
+	file << "<Piece NumberOfPoints=\"" << grid.NumNodes() << "\" NumberOfCells=\"" << grid.NumElem() << "\">" << endl;
+	file << "<Points>" << endl;
+	file << "<DataArray NumberOfComponents=\"3\" type=\"Float32\" format=\"ascii\" >" << endl;
+	for (int n=0;n<grid.NumNodes();++n) {
+		for (int i=0; i<3; ++i) file<< setw(16) << setprecision(8) << scientific << grid.Nod(n).Coords()[i] << endl;
+	}
+	file << "</DataArray>" << endl;
+	file << "</Points>" << endl;
+	file << "<Cells>" << endl;
 	
-	// string fileName=name;
-	// ofstream file;
-	// file.open((fileName).c_str(),ios::out);
-	// file << "<?xml version=\"1.0\"?>" << endl;
-	// file << "<VTKFile type=\"UnstructuredGrid\">" << endl;
-	// file << "<UnstructuredGrid>" << endl;
-	// file << "<Piece NumberOfPoints=\"" << grid.Num_Verts() << "\" NumberOfCells=\"" << grid.Num_Cells() << "\">" << endl;
-	// file << "<Points>" << endl;
-	// file << "<DataArray NumberOfComponents=\"3\" type=\"Float32\" format=\"ascii\" >" << endl;
-	// for (int n=0;n<grid.Num_Verts();++n) {
-		// for (int i=0; i<3; ++i) file<< setw(16) << setprecision(8) << scientific << grid.Node(n).Comp()[i] << endl;
-	// }
-	// file << "</DataArray>" << endl;
-	// file << "</Points>" << endl;
-	// file << "<Cells>" << endl;
-	
-	// file << "<DataArray Name=\"connectivity\" type=\"Int32\" format=\"ascii\" >" << endl;
-	// for (int c=0;c<grid.Num_Cells();++c) {
-		// for (int n=0;n<grid.Cell(c).Num_Vertex();++n) {
-			// file << grid.Cell(c).Vert(n) << "\t";}
-		// file << endl;}
+	file << "<DataArray Name=\"connectivity\" type=\"Int32\" format=\"ascii\" >" << endl;
+	for (int c=0;c<grid.NumElem();++c) {
+		for (int n=0;n<grid.Elem(c).NumNodes();++n) {
+			file << grid.Elem(c).NodePos(n) << "\t";}
+		file << endl;}
 	
 	// file << "</DataArray>" << endl;
 	// file << "<DataArray Name=\"offsets\" type=\"Int32\" format=\"ascii\" >" << endl;
