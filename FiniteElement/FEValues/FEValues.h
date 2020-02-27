@@ -131,15 +131,15 @@ namespace FluxSol
 	{
 		//GaussIntegrationScheme gi(elref.GaussOrder(), dim);
 		GaussIntegrationScheme gi(1, dim);	//TO MODIFY!!!!!!!!
-		cout << "GaussOrder "<<elref.GaussOrder()<<endl;
+		//cout << "GaussOrder "<<elref.GaussOrder()<<endl;
 		//GaussIntegrationScheme gi();
 		//Or elref.DIM()//
 		GaussFullMatrices ret(dim, dim, gi);
-		cout << "GaussOrder gi"<<gi.NumPoints()<<endl;
+		//cout << "GaussOrder gi"<<gi.NumPoints()<<endl;
 
 		ShapeFunctionGroup shfngr = elref.CreateShapeFunctionGroup();
 
-		cout << "shfngr.Size()" << shfngr.Size()<<endl;
+		//cout << "shfngr.Size()" << shfngr.Size()<<endl;
 		GaussFullMatrices temph(dim, shfngr.Size(), gi);
 		//vector<ShapeFunction> vsh;
 		//Evaluating in Gauss Points
@@ -212,7 +212,7 @@ namespace FluxSol
 		//TO MODIFY, MAKE VIRTUAL
 		if (dim==2 && elref.Field_Dim()==2)
 		{
-			cout << "Creating derivatives"<<endl;
+			//cout << "Creating derivatives"<<endl;
 			for (int g = 0; g < gi.NumPoints(); g++)
 			{
 				cout <<"gi" << g<<endl;
@@ -240,7 +240,7 @@ namespace FluxSol
 				}
 
 			}
-			cout << "Creating Matrices"<<endl;
+			//cout << "Creating Matrices"<<endl;
 			shape_grad_matrices = ret;
 			shape_grad_components=retcomp;
 		}
@@ -250,9 +250,9 @@ namespace FluxSol
 		{
 			for (int g = 0; g < gi.NumPoints(); g++)
 			{
-				cout << "setting local grad"<<endl;
+				//cout << "setting local grad"<<endl;
 				Matrix<double> dHdrst_T = this->shape_localgrad_matrices.Mat(g).Tr();
-				cout << "setting global grad"<<endl;
+				//cout << "setting global grad"<<endl;
 				Matrix<double> dHdX = dHdrst_T *this->jacobian.Mat(g).inv();
 
                 //cout << "dhdrst "<< dHdrst_T.outstr()<<endl;
@@ -273,9 +273,8 @@ namespace FluxSol
 			shape_grad_matrices = retcomp;
 			shape_grad_components=retcomp;
 		}
-		else
-        {
-            cout << "ERROR: Shape Grad Matrix Not Set"<<endl;
+		else{
+            //cout << "ERROR: Shape Grad Matrix Not Set"<<endl;
         }
 
 
@@ -325,11 +324,11 @@ namespace FluxSol
 
 		}
 
-        cout << "assign matrix"<<endl;
+        //cout << "assign matrix"<<endl;
 		shape_value_matrices = ret;
-        cout << "assign matrix 2"<<endl;
+        //cout << "assign matrix 2"<<endl;
 		shape_value_components=retcomp;
-		cout << "values assigned "<<endl;
+		//cout << "values assigned "<<endl;
 	}
 
 	template <int dim>

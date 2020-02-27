@@ -42,7 +42,8 @@ void FeGrid<dim>::Create(const double &lex, const double &ley, const double &lez
 	{
 		for (int ex=0;ex<nex;ex++)		
 		{
-			cout << "pushing back elems" <<endl;
+			//ifdef DEBUG
+			//cout << "pushing back elems" <<endl;
 			vn.clear();
 			vn.push_back((nex+1)*(ey+1)+ex+1);
 			vn.push_back((nex+1)*(ey+1)+ex);
@@ -55,6 +56,7 @@ void FeGrid<dim>::Create(const double &lex, const double &ley, const double &lez
 			Element <dim>* el=new Element <dim>;	//THIS IS NECESSARY IN ORDER TO ALLOCATE DATA, IF VECTOR IS FROM POINTERS
 			*el=temp;
 			//element.push_back(el);
+			//TO MODIFY
 			element.push_back(new Element <dim>(1,vn));
 
 			this->num_cells++;
