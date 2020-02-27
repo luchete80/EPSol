@@ -15,7 +15,7 @@ X2=matrix([[1,1],[0,1],[0,0],[1,0]])
 #X2=matrix([[0,0],[1,0],[0,1],[1,1]])
 
 #Nodal values
-Ve=matrix(numpy.matlib.zeros((1, 8)))
+Ve=matrix(numpy.matlib.zeros((8, 1)))
 
 #Shape Functions
 Ns=matrix(numpy.matlib.zeros((1, 4)))
@@ -31,6 +31,11 @@ LM=matrix(numpy.matlib.zeros((4, 4)))
 K=matrix(numpy.matlib.zeros((44, 44)))
 R=matrix(numpy.matlib.zeros((44, 1)))
 dVxy=matrix(numpy.matlib.zeros((4, 2)))
+
+#Symmetric tensors
+E=matrix(numpy.matlib.zeros((4, 1)))
+sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
+sig=matrix(numpy.matlib.zeros((4, 1)))
 
 
 #Material properties (Table 2.1 p28)
@@ -50,7 +55,7 @@ ey=200.e9
 nu=0.33
 
 ck = ey*(1. - nu) / ((1. + nu)*(1. - 2. * nu))
-c=matrix(numpy.matlib.zeros((3, 3)))
+c=matrix(numpy.matlib.zeros((4, 4)))
 c[0,0]=c[1,1]=ck;					
 c[0,1]=c[1,0]=ck*nu / (1. - nu)
 c[2,2]=ck*(1 - 2 * nu) / (2.*(1. - nu))
@@ -93,14 +98,15 @@ for e in range (4):
             #Calculate Velocity gradient Lij
             #Lij=dvi/dxj(2.4) 
             #According to B.11 d(phi)/dxj=J-1(ij) dphi/drj = Bvjk Vk
-            dVxy=Bv*Ve #(4x1)(vx,x vx,y vy,x vy,y)T 
+            dVxy=Bv*Ve #(4x8)*(8x1)=4x1(4x1)(vx,x vx,y vy,x vy,y)T 
             
             #Stabilization factor tau 2.26
             #tau=beta*he/(2|v|)
             #See beta estability paramter
             #LM (2.33 p23)
+            #Attention: SE DIFFERENCES WITH L_ in 2.28
             LM[0,0]=LM[2,2]=dVxy[0]
-            LM[0,l]=LM[2,3]=dVxy[1]
+            LM[0,1]=LM[2,3]=dVxy[1]
             LM[1,0]=LM[3,2]=dVxy[2]
             LM[1,1]=LM[3,3]=dVxy[3]
             
@@ -115,11 +121,11 @@ for e in range (4):
             #Calculate Rate of Def Tensor D (2.13, 2.14)
             #D(th)ij=alpha vk dT/dxk deltaij 2.13
             #IN THIS EXAMPLE THIS DTH 0
-    #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
-    #Nij Direction of plastic flow
-    #
-    #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
-    #
+            #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
+            #Nij Direction of plastic flow
+            #
+            #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
+            #
             #Calculate La (ij)
             #Laij=F(-1)ki F(-1)kl Le lj
             #Calculate Almansi deformation gradient E (A.5)
@@ -129,7 +135,8 @@ for e in range (4):
             #Calculate sigma
             #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) + 
             #Attention double contraction
-            P=G*c*E-G*LM*sig
+            P=G*c*E
+            #-G*LM*sig
             #print (B)
             #K+=(B.transpose()*c*B*w)
             #print (K)
@@ -137,13 +144,13 @@ for e in range (4):
 
 #Boundary conditions
 #Numerated as in Bathe
-for i in range(8):
-    K[4,i] = K[i,4] = 0.0
-    K[5,i] = K[i,5] = 0.0
-    K[7,i] = K[i,7] = 0.0
+# for i in range(8):
+    # K[4,i] = K[i,4] = 0.0
+    # K[5,i] = K[i,5] = 0.0
+    # K[7,i] = K[i,7] = 0.0
 	
-K[4,4] = K[5,5] = K[7,7] = 1.;
-R=[0,0,1000.0,0,0,0,0,0]
+# K[4,4] = K[5,5] = K[7,7] = 1.;
+# R=[0,0,1000.0,0,0,0,0,0]
 
 # #Numerated as in deal.ii
 # for i in range(8):
@@ -156,8 +163,8 @@ R=[0,0,1000.0,0,0,0,0,0]
 
 print (K)
 
-U=linalg.solve(K, R)
+#U=linalg.solve(K, R)
 print ("Results")
-print(U)
+#print(U)
 
 
