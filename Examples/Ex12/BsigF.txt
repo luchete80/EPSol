@@ -1,0 +1,13 @@
+Is in the form
+[B]=[4,16,2]
+Bijk vk Uj (sig,F)
+So, j should be alterned and k:1,2
+
+Bs[]=[h1,x h2,x h3,x h4,x]
+     [h1,x h2,x h3,x h4,x]
+
+
+Bij[0]=[h1,x 0 h2,x 0 
+
+
+B4_i[n=0]=

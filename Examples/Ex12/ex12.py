@@ -26,6 +26,12 @@ NsigF=matrix(numpy.matlib.zeros((4, 16)))
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 8)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
+#BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
+BsigF=arange(128).reshape(4,16,2) #
+temp4x16=matrix(numpy.matlib.zeros((4, 16)))
+B4i=arange(32).reshape(4,4,2) #
+#(4,16,2)
+print(BsigF[0])
 LM=matrix(numpy.matlib.zeros((4, 4)))
 
 K=matrix(numpy.matlib.zeros((44, 44)))
@@ -54,11 +60,11 @@ print (X2[2,1])
 ey=200.e9
 nu=0.33
 
-ck = ey*(1. - nu) / ((1. + nu)*(1. - 2. * nu))
+ck = ey/ ((1. + nu)*(1. - 2. * nu))
 c=matrix(numpy.matlib.zeros((4, 4)))
-c[0,0]=c[1,1]=ck;					
-c[0,1]=c[1,0]=ck*nu / (1. - nu)
-c[2,2]=ck*(1 - 2 * nu) / (2.*(1. - nu))
+c[0,0]=c[1,1]=c[2,2]=ck*(1.-nu)					
+c[0,1]=c[1,0]=c[0,2]=c[2,0]=c[2,1]=c[1,2]=ck*nu
+c[3,3]=ck*(.5 - nu)
 print ("C matrix")
 print(c)
 #Set G and H matrices
@@ -68,10 +74,10 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
     
 for e in range (4):
     #Obtain Ve from global
-    for i in range(2):
-        for j in range(2):
-            r=gauss[i]
-            s=gauss[j]
+    for ig in range(2):
+        for jg in range(2):
+            r=gauss[ig]
+            s=gauss[jg]
 
             #Numerated as in Bathe
             Ns  =0.25*matrix([(1+s)*(1+r),(1-r)*(1+s),(1-s)*(1-r),(1-s)*(1-r)])            
@@ -81,6 +87,7 @@ for e in range (4):
             dHrs/=4
             J=dHrs*X2
             dHxy=linalg.inv(J)*dHrs
+            detJ=linalg.det(J)
             #Calculate shape functions
             #Bs=J-1 dHrs(B.13)
             Bs=dHxy
@@ -92,6 +99,16 @@ for e in range (4):
                 Bv[1,2*k  ]=dHxy[1,k]
                 Bv[2,2*k+1]=dHxy[0,k]
                 Bv[3,2*k+1]=dHxy[1,k]
+                
+            for i in range(4):
+                for l in range(4):
+                    for m in range(4):  
+                        for n in range(2):
+                            if (l==m):
+                                B4i[l,m,n]=Bs[n,i]
+                            else
+                                B4i[l,m,n]=0.
+                BsigF[i,]=B4i[l,m,n]
             
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
@@ -133,10 +150,19 @@ for e in range (4):
 
             w=0.25 #TO MODIFY
             #Calculate sigma
+            #2.31 Comes first from 2.2
+            #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
             #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) + 
             #Attention double contraction
-            P=G*c*E
-            #-G*LM*sig
+            P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
+            
+            #RESIDUALS ******************* 2.36 to 2.39 *****************************
+            Rv  =Bv.transpose()*P*w*detJ #Remains the summ of particular gauss points
+            #Rsig[16x1] (4 per node)
+            #Construct vk Bsig mik
+            #for k in range(4):
+            #    temp=temp+
+            Rsig=(NsigF+NsigF).transpose()
             #print (B)
             #K+=(B.transpose()*c*B*w)
             #print (K)
