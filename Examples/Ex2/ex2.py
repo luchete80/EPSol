@@ -5,9 +5,9 @@ import numpy.matlib
 
 import array as arr
 #Data
-lx=1.
+lx=2.
 ly=1.
-nex=1
+nex=2
 ney=1
 #***** MESH**********
 dx=lx/nex
@@ -110,8 +110,8 @@ for e in range (numel):
     
     for row in range(8):
         for col in range (8):
-            K[vn.astype(int)[row],vn.astype(int)[col]]=Kel[row,col]
-#print (K)
+            K[vn.astype(int)[row],vn.astype(int)[col]]=K[vn.astype(int)[row],vn.astype(int)[col]]+Kel[row,col]
+print (K)
 
 #Boundary conditions
 #Bottom left node both directions
@@ -125,7 +125,7 @@ for f in range (3):
         K[dof,dof]=1.
 
 #Upper left node, x direction force			
-R[(2*nex)*(2*nex),0]=1000.
+R[2*(nex+1)*ney,0]=1000.
 print(R)
 
 U=linalg.solve(K, R)

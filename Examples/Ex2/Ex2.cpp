@@ -59,8 +59,9 @@ int main()
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	int ne=10;
-	FluxSol::FeGrid<2> grid(1.,1.,1.,ne,ne,1);
+	int nex=100;
+	int ney=100;
+	FluxSol::FeGrid<2> grid(1.,1.,1.,nex,ney,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
@@ -84,7 +85,6 @@ int main()
 	FluxSol::Matrix<double> c(3, 3);
 
 	PETSC_Solver<double,2> solver(dofhandler.NumDoF());
-    Matrix<double> Kgi(dofhandler.NumDoF(),dofhandler.NumDoF());	
 
 	double E = 200.0e9;
 	double nu = 0.33;
@@ -140,7 +140,7 @@ int main()
 	cout << "Applying BCs..."<<endl;
 	
 	int dof;
-	int fix[]={0,1,2*(ne+1)-1};
+	int fix[]={0,1,2*(nex+1)-1};
 	for (int f=0;f<3;f++){
 		dof=fix[f];
 		//cout << "adj dofs"<<endl;
@@ -152,8 +152,8 @@ int main()
 			solver.SetMatVal(adjdof,dof,0.);}
 		solver.SetMatVal(dof,dof,1.);	}	
 
-				
-	solver.SetbValues((2*ne)*(2*ne),1000.0);
+	//2*(nex+1)*ny			
+	solver.SetbValues(2*(nex+1)*ney,1000.0);
 	
 
 	solver.ViewInfo();
