@@ -35,23 +35,43 @@ print(BsigF[0])
 LM=matrix(numpy.matlib.zeros((4, 4)))
 
 K=matrix(numpy.matlib.zeros((44, 44)))
-R=matrix(numpy.matlib.zeros((44, 1)))
+K=matrix(numpy.matlib.zeros((44, 44)))
+
+R =matrix(numpy.matlib.zeros((44, 1)))
+RF  =matrix(numpy.matlib.zeros((16, 1)))
+Rsig=matrix(numpy.matlib.zeros((16, 1)))
+Rs  =matrix(numpy.matlib.zeros((4, 1)))
+Rv  =matrix(numpy.matlib.zeros((8, 1)))
+
+U =matrix(numpy.matlib.zeros((44, 1)))
+UF  =matrix(numpy.matlib.zeros((16, 1)))
+Usig=matrix(numpy.matlib.zeros((16, 1)))
 dVxy=matrix(numpy.matlib.zeros((4, 2)))
 
 #Symmetric tensors
 E=matrix(numpy.matlib.zeros((4, 1)))
-sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
-sig=matrix(numpy.matlib.zeros((4, 1)))
 
+#Stress
+sig=matrix(numpy.matlib.zeros((4, 1)))   #Stress Gauss Points
+sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
+
+
+
+
+v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
 
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
-A0=6.34e11
-psi=3.25
-m=0.1956
-n=0.06869
-s0=80.0e6
-
+mat_A0 =6.34e11
+mat_psi=3.25
+mat_m  =0.1956
+mat_n  =0.06869
+mat_s0 =80.0e6
+mat_Q  =312.35e3
+mat_R  =8.314
+mat_a  =1.5
+mat_h0 =3093.1e6
+mat_s0 =125.1e6
 
 print (K)
 print (X2[0,0])
@@ -110,6 +130,10 @@ for e in range (4):
                                 B4i[l,m,n]=0.
                 BsigF[i,]=B4i[l,m,n]
             
+            #Get nodal velocity
+            Ve=
+            #Interpolate velocity
+            v=Nv*Ve
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
             #Calculate Velocity gradient Lij
@@ -156,13 +180,45 @@ for e in range (4):
             #Attention double contraction
             P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
             
+            #Calculate stabilization parameter
+            tau=1.
+            #STRESSES**********
+            #From 2.27 Plane Strain Symmetric tensors are defined as 
+            #t=[txx tyy tzz tyz]
+            pi=1./3.*(sig[0]+sig[1]+sig[2])
+            for i in range(3): #Only daigonal is modified
+                sig_d=sig[i]-pi
+                
+            for k in range(4):
+                sig_eq=sqrt(1.5*(sig_d[k])
+            #*** STRAINS
+            #Equivalent strain rate
+            mat_A=mat_A0*exp(-mat_Q/mat_R)
+            epsr_eq=mat_A*(sinh(psi*sig_eq/s))^(1./mat_m)
+            
+            #Evaluate g function 2.58/4.48
+            #g_sigs=h0*|(1-s/s*)|*sign(1-s/s*)A(sinh())
+            #With s*
+            #s*=s~(edot~_vp/A)^n
+            
             #RESIDUALS ******************* 2.36 to 2.39 *****************************
             Rv  =Bv.transpose()*P*w*detJ #Remains the summ of particular gauss points
             #Rsig[16x1] (4 per node)
             #Construct vk Bsig mik
-            #for k in range(4):
-            #    temp=temp+
-            Rsig=(NsigF+NsigF).transpose()
+            temp4x16=0
+            for m in range(4):
+                for i in range(16):
+                    for k in range(2):
+                        temp4x16[m,i]=temp4x16+B[m,i,k]*v[k,1]
+                        
+            Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)
+            RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)
+            Rs  =(Ns+tau*Bs.transpose()*v)*(Bs.transpose()*v*Us-g_sigs)
+            
+            #R Assembly
+            
+            #TANGENT MATRIX
+            
             #print (B)
             #K+=(B.transpose()*c*B*w)
             #print (K)

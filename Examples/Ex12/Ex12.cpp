@@ -63,7 +63,7 @@ private:
 // ELEMENTAL MATRICES AND VECTORS
     GaussFullMatrices B,J,dHrs;
     
-    vector< Matrix<double> > N;//Nv,Nsig,NF,Ns;
+    Matrix<double> Nv,NsigF,Ns;//Nv,Nsig,NF,Ns;
     Matrix<double> Bv,Bsig,BF,Bs,BL;
 
 	FluxSol::Matrix<double> G,H,Kel;
@@ -78,7 +78,7 @@ private:
 	Matrix<double> R;	//Nv,Nsig,NF,Ns;
 	
 	//Dimensions
-	int dim[4];
+	int dof[4];
 	enum field;
 	
 	//Material
@@ -136,18 +136,21 @@ void Eulerian_ViscoPlastic::setup()
     ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
 	// Shape Functions
 	//To MODIFY REFER TO dim
-    N[0]=Matrix<double>(2, 8);//v
-	N[1]=Matrix<double>(4,16);//sig
-	N[2]=Matrix<double>(4,16);//F
+	//Shape and gradient MATRICES
+	//These are not grouped into an array because
+	//1: Two of them are equal
+	//2: Bsig and BF are THREE DIM ARRAY
+    Nv=Matrix<double>(2, 8);//v
+	NsigF[1]=Matrix<double>(4,16);//sig
 	N[3]=Matrix<double>(1, 4);//s
 
 	//Solution (Fig 2.1)
-	dim[0]=2;
-	dim[1]=[2]=4;
-	dim[3]=1;
+	dof[0]=8;		//Velocity: dim=2 x 4 nodes
+	dof[1]=[2]=16;	//Deformation
+	dof[3]=4;
 	//R   =Matrix<double>(11,1);
 	for (int i=0;i<4;i++)
-		R[i]=Matrix<double>(dim[i],1);
+		R[i]=Matrix<double>(dof[i],1);
 	//Deformation gradients
 	//Vector<double> F,P,L;	//Unsymmetric vectors
 	
