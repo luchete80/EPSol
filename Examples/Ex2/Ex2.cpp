@@ -140,7 +140,7 @@ int main()
 	cout << "Applying BCs..."<<endl;
 	
 	int dof;
-	int fix[]={0,1,(2*ne)-1};
+	int fix[]={0,1,2*(ne+1)-1};
 	for (int f=0;f<3;f++){
 		dof=fix[f];
 		//cout << "adj dofs"<<endl;
@@ -153,7 +153,7 @@ int main()
 		solver.SetMatVal(dof,dof,1.);	}	
 
 				
-	solver.SetbValues(2*ne*(ne-1),1000.0);
+	solver.SetbValues((2*ne)*(2*ne),1000.0);
 	
 
 	solver.ViewInfo();
