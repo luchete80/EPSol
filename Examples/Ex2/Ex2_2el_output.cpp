@@ -59,14 +59,13 @@ int main()
 
 	//Mesh
 	//FeGrid(const double &lex, const double &ley, const double &lez,
-	int ne=10;
-	FluxSol::FeGrid<2> grid(1.,1.,1.,ne,ne,1);
+	FluxSol::FeGrid<2> grid(1.,1.,1.,2,1,1);
 	
 	// FluxSol::FeGrid<2> grid;
 	// grid.Create_test(1.,1.,1.,2,2,1);
-	// cout << "Total Grid Nodes" <<grid.NumNodes()<<endl;
-			// for (int n = 0; n < grid.NumNodes(); n++)
-				// cout<<grid.Nod(n).Coords()<<endl;
+	cout << "Total Grid Nodes" <<grid.NumNodes()<<endl;
+			for (int n = 0; n < grid.NumNodes(); n++)
+				cout<<grid.Nod(n).Coords()<<endl;
 			
 	grid.outstr();
 
@@ -100,31 +99,47 @@ int main()
 
 	for (int e=0;e<grid.NumElem();e++)
 	{
-		//cout <<"Element: " << e <<endl;
+		cout <<"Element: " << e <<endl;
 		// TO BE MODIFIED: DONT INCLUDE GRID
         vector <unsigned int> vn = dofhandler.get_dof_indices(e);
+
+		for (int i=0;i<vn.size();i++)
+			cout<<"GLOBAL DOFS"<<vn[i]<<endl;
+		
+		cout << "Creating values ..."<<endl;
+		//cout << "Element nodes:"<<grid.Elem(e).NumNodes()<<endl;
+		//cout << grid.XYZ(grid.Elem(e)).outstr()<<endl;
 		FluxSol::FEValues<2> fev(grid.Elem(e),grid);
+		//FluxSol::FEValues<2> fev(el,grid);
+		cout << "Element " << e << "Gauss Order: "<<grid.Elem(e).GaussOrder()<<endl;
 		
         J = fev.Jacobian();
 		B = fev.shape_grad_matrix();
 		
-		//B.outstr();
+		B.outstr();
         Kel=0.;
-		//cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
+		cout << "Creating Elemental Stiffness Matrix, GaussPoints: "<< intsch.NumPoints() <<endl;
         for (int g = 0; g < intsch.NumPoints(); g++)
         {
-			// cout << "J matrix " << J.Mat(g).outstr()<<endl;
-			// cout << "B matrix " << B.Mat(g).outstr()<<endl;
+			cout << "J matrix " << J.Mat(g).outstr()<<endl;
+			cout << "B matrix " << B.Mat(g).outstr()<<endl;
 			
             FluxSol::Matrix<double> Kt = B.Mat(g).Tr()*c*B.Mat(g);
             for (int r = 0; r < 8; r++)
 				for (int c = 0; c < 8; c++)
 					Kel[r][c] += Kt[r][c]*intsch[g].w()*J.Mat(g).det();
 			
-			//cout <<Kt.outstr();
+			cout <<Kt.outstr();
         }
 		
+		cout <<Kel.outstr();
+		
+		logfile << "Stiffness Matrix \n\n";
+		logfile << Kel.outstr();
 
+		cout <<"Dof Indices"<<endl;
+		for(int row = 0; row < 8; row++)
+			cout <<vn[row]<<endl;
 				
         for (int row = 0; row < 8; row++){
             for (int col = 0; col < 8; col++){			
@@ -140,10 +155,10 @@ int main()
 	cout << "Applying BCs..."<<endl;
 	
 	int dof;
-	int fix[]={0,1,(2*ne)-1};
+	int fix[]={0,1,5};
 	for (int f=0;f<3;f++){
 		dof=fix[f];
-		//cout << "adj dofs"<<endl;
+		cout << "adj dofs"<<endl;
 		for (int i = 0; i < dofhandler.Adj_DoF_Number()[dof]; i++){
 			int adjdof = dofhandler.AdjDoF(dof,i);
 			cout << adjdof << " ";
@@ -153,7 +168,7 @@ int main()
 		solver.SetMatVal(dof,dof,1.);	}	
 
 				
-	solver.SetbValues(2*ne*(ne-1),1000.0);
+	solver.SetbValues(6,1000.0);
 	
 
 	solver.ViewInfo();
