@@ -1,5 +1,6 @@
 # https://docs.sympy.org/latest/tutorial/matrices.html
 #Plain strain/stress 1 element example
+#import math
 from numpy import *
 import numpy.matlib #for zeros
 
@@ -55,10 +56,19 @@ E=matrix(numpy.matlib.zeros((4, 1)))
 sig=matrix(numpy.matlib.zeros((4, 1)))   #Stress Gauss Points
 sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
 
-
+P=matrix(numpy.matlib.zeros((4, 1))) 
 
 
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
+
+class bMatrix: #Block matrix
+    
+    def __init__(self,i,j):
+        m=matrix(numpy.matlib.zeros((i, j)))
+
+    # def show_all(self):
+        # print(self.left, self.right)
+#Kt=[bMatrix() for i in range (4),bMatrix for i in range (4)]
 
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
@@ -126,12 +136,12 @@ for e in range (4):
                         for n in range(2):
                             if (l==m):
                                 B4i[l,m,n]=Bs[n,i]
-                            else
+                            else:
                                 B4i[l,m,n]=0.
                 BsigF[i,]=B4i[l,m,n]
             
             #Get nodal velocity
-            Ve=
+            #Ve=
             #Interpolate velocity
             v=Nv*Ve
             #Galerkin strain integration
@@ -172,13 +182,13 @@ for e in range (4):
             #Calculate Almansi deformation gradient E (A.5)
             #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
 
-            w=0.25 #TO MODIFY
+            w=1. #TO MODIFY
             #Calculate sigma
             #2.31 Comes first from 2.2
             #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
             #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) + 
             #Attention double contraction
-            P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
+            #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
             
             #Calculate stabilization parameter
             tau=1.
@@ -190,30 +200,30 @@ for e in range (4):
                 sig_d=sig[i]-pi
                 
             for k in range(4):
-                sig_eq=sqrt(1.5*(sig_d[k])
+                sig_eq=sqrt(1.5*(sig_d[k]))
             #*** STRAINS
             #Equivalent strain rate
-            mat_A=mat_A0*exp(-mat_Q/mat_R)
-            epsr_eq=mat_A*(sinh(psi*sig_eq/s))^(1./mat_m)
+            #mat_A=mat_A0*math.exp(-mat_Q/mat_R)
+            #epsr_eq=mat_A*(np.sinh(psi*sig_eq/s))**(1./mat_m)
             
             #Evaluate g function 2.58/4.48
             #g_sigs=h0*|(1-s/s*)|*sign(1-s/s*)A(sinh())
             #With s*
             #s*=s~(edot~_vp/A)^n
-            
+            wJ=w*detJ
             #RESIDUALS ******************* 2.36 to 2.39 *****************************
-            Rv  =Bv.transpose()*P*w*detJ #Remains the summ of particular gauss points
+            Rv  =Bv.transpose()*P #Remains the summ of particular gauss points
             #Rsig[16x1] (4 per node)
             #Construct vk Bsig mik
-            temp4x16=0
+            temp4x16=0.
             for m in range(4):
                 for i in range(16):
                     for k in range(2):
                         temp4x16[m,i]=temp4x16+B[m,i,k]*v[k,1]
                         
-            Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)
-            RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)
-            Rs  =(Ns+tau*Bs.transpose()*v)*(Bs.transpose()*v*Us-g_sigs)
+            Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
+            RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
+            Rs  =(Ns+tau*Bs.transpose()*v)*(Bs.transpose()*v*Us-g_sigs)*wJ
             
             #R Assembly
             

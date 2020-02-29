@@ -62,9 +62,12 @@ private:
 //Gauss
 // ELEMENTAL MATRICES AND VECTORS
     GaussFullMatrices B,J,dHrs;
-    
+    //Shape
     Matrix<double> Nv,NsigF,Ns;//Nv,Nsig,NF,Ns;
-    Matrix<double> Bv,Bsig,BF,Bs,BL;
+    
+	//Shape derivatives
+	Matrix<double> Bv,Bs,BL,LM;
+	vector < Matrix <double> >BsigF;
 
 	FluxSol::Matrix<double> G,H,Kel;
 	
@@ -75,6 +78,8 @@ private:
 	Matrix<double> F,P,L;	//Unsymmetric vectors
 	
 	//Residual 
+	vector < vector <Matrix <double> > > Kt;
+
 	Matrix<double> R;	//Nv,Nsig,NF,Ns;
 	
 	//Dimensions
@@ -84,7 +89,8 @@ private:
 	//Material
 	Matrix<double>c;
 	double Ey,nu;
-	
+
+	Matrix<double> Ve;
 
     ofstream logfile;
 };
@@ -154,9 +160,44 @@ void Eulerian_ViscoPlastic::setup()
 	//Deformation gradients
 	//Vector<double> F,P,L;	//Unsymmetric vectors
 	
-	//Residual 
-	//Vector<double> Rv,Rsig,RF,Rs,R;	//Unsymmetric vectors
-		
+	// #Nodal values
+	// Ve=Matrix<double>(8, 1)))
+
+
+	// #Derivatives
+	// dHxy=Matrix<double>(2, 4)))
+	// Bs=Matrix<double>(2, 8)))
+	// Bv=Matrix<double>(4, 8)))
+	// #BsigF=[Matrix<double>(4, 16))),Matrix<double>(4, 8)))]
+	// BsigF=arange(128).reshape(4,16,2) #
+	// temp4x16=Matrix<double>(4, 16)))
+	// B4i=arange(32).reshape(4,4,2) #
+	// #(4,16,2)
+	// print(BsigF[0])
+	LM=Matrix<double>(4, 4)
+
+	//R =Matrix<double>(44, 1)
+	RF  =Matrix<double>(16, 1)
+	Rsig=Matrix<double>(16, 1)
+	Rs  =Matrix<double>(4, 1)
+	Rv  =Matrix<double>(8, 1)
+
+	// U =Matrix<double>(44, 1)))
+	UF  =Matrix<double>(16, 1);
+	Usig=Matrix<double>(16, 1);
+	dVxy=Matrix<double>(4, 2);
+
+	// #Symmetric tensors
+	E=Matrix<double>(4, 1)))
+
+	// #Stress
+	sig=Matrix<double>(4, 1);   #Stress Gauss Points
+	sig_d=Matrix<double>(4, 1); #Deviatoric
+
+	P=Matrix<double>(4, 1);
+
+
+	v=Matrix<double>(2, 1);    #Gauss Point velocity			
 
 
 	Kel=Matrix<double> (44, 44);
