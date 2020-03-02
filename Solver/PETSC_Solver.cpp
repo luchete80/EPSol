@@ -118,7 +118,7 @@ void PETSC_Solver<number,dim>::PETSC_Init()
 	*/
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-	ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+	ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 	/*
 	Set runtime options, e.g.,
 	-ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>

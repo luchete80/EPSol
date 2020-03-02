@@ -121,7 +121,6 @@ int main()
 				for (int c = 0; c < 8; c++)
 					Kel[r][c] += Kt[r][c]*intsch[g].w()*J.Mat(g).det();
 			
-			//cout <<Kt.outstr();
         }
 		
 
@@ -132,6 +131,8 @@ int main()
             }
 
         }
+		
+		cout <<Kel.outstr();
 
 	}
 	

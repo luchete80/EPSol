@@ -137,9 +137,12 @@ for e in range (4):
                             if (l==m):
                                 B4i[l,m,n]=Bs[n,i]
                             else:
-                                B4i[l,m,n]=0.
-                BsigF[i,]=B4i[l,m,n]
-            
+                                B4i[l,m,n]=0.              
+                for l in range(4):
+                    for m in range(4):  
+                        for n in range(2):
+                            BsigF[4*i+l,m,n]=B4i[l,m,n]
+                            
             #Get nodal velocity
             #Ve=
             #Interpolate velocity
@@ -162,7 +165,12 @@ for e in range (4):
             LM[1,1]=LM[3,3]=dVxy[3]
             
             #BL interpolators BLijk (4,4,8) (B.17 p165)
-            
+            for k in range(8):
+                BL[1,1,k]=BL[3,3,k]=Bv[1,k]
+                BL[1,2,k]=BL[3,4,k]=Bv[3,k]
+                BL[2,1,k]=BL[4,3,k]=Bv[2,k]
+                BL[2,2,k]=BL[4,4,k]=Bv[4,k]
+                BL[1,3,k]=BL[1,4,k]=BL[2,3,k]=BL[2,4,k]=BL[3,1,k]=BL[3,2,k]=BL[4,1,k]=BL[4,2,k]=0.            
             #Set tractions tP (2.34)
             
             
@@ -211,7 +219,7 @@ for e in range (4):
             #With s*
             #s*=s~(edot~_vp/A)^n
             wJ=w*detJ
-            #RESIDUALS ******************* 2.36 to 2.39 *****************************
+            #RESIDUALS ******************* 4.26 to 2.29 *****************************
             Rv  =Bv.transpose()*P #Remains the summ of particular gauss points
             #Rsig[16x1] (4 per node)
             #Construct vk Bsig mik
@@ -223,7 +231,7 @@ for e in range (4):
                         
             Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
             RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
-            Rs  =(Ns+tau*Bs.transpose()*v)*(Bs.transpose()*v*Us-g_sigs)*wJ
+            Rs  =(Ns+tau*v*Bs).transpose()*(v*Bs*Us-g_sigs)*wJ
             
             #R Assembly
             

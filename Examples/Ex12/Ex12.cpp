@@ -66,8 +66,9 @@ private:
     Matrix<double> Nv,NsigF,Ns;//Nv,Nsig,NF,Ns;
     
 	//Shape derivatives
-	Matrix<double> Bv,Bs,BL,LM;
-	vector < Matrix <double> >BsigF;
+	Matrix<double> Bv,Bs,LM;
+	vector < Matrix <double> >BsigF, BL;
+	Matrix <double> temp4x16;
 
 	FluxSol::Matrix<double> G,H,Kel;
 	
@@ -78,7 +79,7 @@ private:
 	Matrix<double> F,P,L;	//Unsymmetric vectors
 	
 	//Residual 
-	vector < vector <Matrix <double> > > Kt;
+	vector < vector <Matrix <double> > > Kt; 
 
 	Matrix<double> R;	//Nv,Nsig,NF,Ns;
 	
@@ -172,8 +173,12 @@ void Eulerian_ViscoPlastic::setup()
 	// BsigF=arange(128).reshape(4,16,2) #
 	// temp4x16=Matrix<double>(4, 16)))
 	// B4i=arange(32).reshape(4,4,2) #
+	vector < vector <vector double > > B4i;
 	// #(4,16,2)
 	// print(BsigF[0])
+	for (int i=0;i<2;i++)	BsigF.push_back(<Matrix<double>(4, 16));
+	temp4x16=<Matrix<double>(4, 16)
+	
 	LM=Matrix<double>(4, 4)
 
 	//R =Matrix<double>(44, 1)
@@ -201,6 +206,15 @@ void Eulerian_ViscoPlastic::setup()
 
 
 	Kel=Matrix<double> (44, 44);
+	
+	// for (int i=0;i<4;i++)
+		// for (int j=0;j<4;j++)
+			// for (int k=0;k<4;k++)
+				// B4i.push_back(0.)
+			
+	for (int i=0;i<4;i++)
+		BL.push_back(Matrix<double>(4,2));
+							
 }
 
 
@@ -212,12 +226,44 @@ void Eulerian_ViscoPlastic::assemble()
 	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 	for (int g = 0; g < intsch.NumPoints(); g++)
 	{
+
 		Bs=fev.shape_grad_comps(g);
 		 
 		Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
 		Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];
+
+
+		for (int k=0;k<4;k++){
+		#shape functions
+		Nv[0][2*k ]=Nv[1][2*k+1]=Ns[0,k];
+		#derivatives Bv (B.14)
+		Bv[0][2*k  ]=dHxy[0,k];
+		Bv[1][2*k  ]=dHxy[1,k];
+		Bv[2][2*k+1]=dHxy[0,k];
+		Bv[3][2*k+1]=dHxy[1,k];}
+		
+		for (int k=0;k<8;k++){
+			BL[1][1][k]=BL[3][3][k]=Bv[1][k];
+			BL[1][2][k]=BL[3][4][k]=Bv[3][k];
+			BL[2][1][k]=BL[4][3][k]=Bv[2][k];
+			BL[2][2][k]=BL[4][4][k]=Bv[4][k];
+			BL[1][3][k]=BL[1][4][k]=BL[2][3][k]=BL[2][4][k]=BL[3][1][k]=BL[3][2][k]=BL[4][1][k]=BL[4][2][k]=0.;}
+		
+		for (int i=0;i<4;i++){
+			for (int l=0;l<4;l++)
+				for (int m=0;m<4;m++)
+					for (int n=0;n<4;n++)
+						if (l==m)
+							B4i[l,m,n]=Bs[n,i];
+						else
+							B4i[l,m,n]=0.;        
+			for (int l=0;l<4;l++)
+				for for (int m=0;m<4;m++) 
+					for (int n=0;n<4;n++)
+						BsigF[4*i+l][m][n]=B4i[l][m][n];}//For i 
+		
 			
-		FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
+		//FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
 		for (int r = 0; r < 8; r++)
 			for (int c = 0; c < 8; c++){
 				Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
