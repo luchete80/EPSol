@@ -6,17 +6,74 @@ import numpy.matlib #for zeros
 
 import array as arr
 
+#----------------------------
+#Input Data------------------
+form=1
+lx=1.
+ly=1.
+nex=10
+ney=10
+#-------------
+
+
+#***** MESH**********
+dx=lx/nex
+dy=ly/ney
+numel=nex*ney
+vn=zeros(8) #Dof connectivity
+numnodes=(nex+1)*(ney+1)
+node=zeros((numnodes, 2))
+elnodes=zeros((numel, 4))#Connectivity
+elnodes.astype(int)
+#print (node)
+#Mesh generation 
+y=0.
+n=0
+for nx in range (ney+1):
+    x=0.
+    for ny in range (nex+1):
+        #print("Node: "+str(x)+" , "+str(y))
+        #this->node.push_back(Node(n,x,y,0.0))
+        node[n]=[x,y]
+        x=x+dx
+        n=n+1
+    y=y+dy
+    
+print(node)
+#Connectivity
+e=0
+for ey in range (ney):
+    for ex in range (nex):
+        elnodes[e]=[(nex+1)*(ey+1)+ex+1,
+                    (nex+1)*(ey+1)+ex,
+                    (nex+1)*ey + ex,
+                    (nex+1)*ey + ex+1]
+        e=e+1
+print(elnodes)
+#-------------------------- MESH
+#Formulation type and DOFs
+if form==1:
+    ndof =11
+    edof=ndof*4
+else:
+    eldof=11
+    
 #X is combines per row to calculate J
 p=1.0/1.732050807568877
 gauss=[-p,p]
-wi=[0.777,0.777]
 #Numerated as in Bathe
-X2=matrix([[1,1],[0,1],[0,0],[1,0]])
-#Numerated as in deal.ii
-#X2=matrix([[0,0],[1,0],[0,1],[1,1]])
+X2=numpy.matlib.zeros((4, 2))
 
+#Main variables values
 #Nodal values
-Ve=matrix(numpy.matlib.zeros((8, 1)))
+U =matrix(numpy.matlib.zeros((44, 1)))
+UV=matrix(numpy.matlib.zeros((8, 1)))
+Usig=matrix(numpy.matlib.zeros((16, 1)))
+UF =matrix(numpy.matlib.zeros((16, 1)))
+UF=matrix(numpy.matlib.zeros((16, 1)))
+S=matrix(numpy.matlib.zeros((4, 1)))
+
+v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
 
 #Shape Functions
 Ns=matrix(numpy.matlib.zeros((1, 4)))
@@ -46,9 +103,6 @@ Rsig=matrix(numpy.matlib.zeros((16, 1)))
 Rs  =matrix(numpy.matlib.zeros((4, 1)))
 Rv  =matrix(numpy.matlib.zeros((8, 1)))
 
-U =matrix(numpy.matlib.zeros((44, 1)))
-UF  =matrix(numpy.matlib.zeros((16, 1)))
-Usig=matrix(numpy.matlib.zeros((16, 1)))
 dVxy=matrix(numpy.matlib.zeros((4, 2)))
 BL  = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 
@@ -61,8 +115,6 @@ sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
 
 P=matrix(numpy.matlib.zeros((4, 1))) 
 
-
-v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
 
 class bMatrix: #Block matrix
     
@@ -108,17 +160,24 @@ print(c)
 #2.32
 G=matrix([[1,0,0,0],[0,0,0,1],[0,0,0,1],[0,1,0,0]]) 
 H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]]) 
-    
+
+#ELEMENT LOOP  
 for e in range (4):
     #Obtain Ve from global
+    Kel=0.
+    for n in range(4):
+        X2[n]=node[elnodes.astype(int)[e][n]]
+    print ("Element Nodes")
+    print (X2)
+    
     for ig in range(2):
         for jg in range(2):
-            r=gauss[ig]
-            s=gauss[jg]
+            rg=gauss[ig]
+            sg=gauss[jg]
 
             #Numerated as in Bathe
-            Ns  =0.25*matrix([(1+s)*(1+r),(1-r)*(1+s),(1-s)*(1-r),(1-s)*(1-r)])            
-            dHrs=matrix([[(1+s),-(1+s),-(1-s),(1-s)], [(1+r),(1-r),-(1-r),-(1+r)] ])
+            Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1-rg)])            
+            dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
             #Numerated as in deal.ii
             #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
             dHrs/=4
@@ -148,18 +207,34 @@ for e in range (4):
                 for l in range(4):
                     for m in range(4):  
                         for n in range(2):
-                            BsigF[4*i+l,m,n]=B4i[l,m,n]
+                            BsigF[l,4*i+m,n]=B4i[l,m,n]
                             
-            #Get nodal velocity
-            #Ve=
             #Interpolate velocity
-            v=Nv*Ve
+            for n in range (4):
+                d=elnodes.astype(int)[e][n]
+                for i in range (8):
+                    UV[i,0]=U[ndof*d+i]
+                for j in range (16):
+                    Usig[i,0]=U[edof*d+2+i]
+                    if (form==1):
+                        Usig[i,0]=U[edof*d+2+i]
+                        UF  [i,0]=U[edof*d+6+i]
+                    else:
+                        UF  [i,0]=U[edof*d+2+i]
+            
+            v  =Nv*UV
+            s  =Ns*Us
+            F  =NsigF*UF
+            if (form==1):
+                sig=NsigF*Usig
+            else:
+                Fvp  =NsigF*UFvp
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
             #Calculate Velocity gradient Lij
             #Lij=dvi/dxj(2.4) 
             #According to B.11 d(phi)/dxj=J-1(ij) dphi/drj = Bvjk Vk
-            dVxy=Bv*Ve #(4x8)*(8x1)=4x1(4x1)(vx,x vx,y vy,x vy,y)T 
+            dVxy=Bv*UV #(4x8)*(8x1)=4x1(4x1)(vx,x vx,y vy,x vy,y)T 
             
             #Stabilization factor tau 2.26
             #tau=beta*he/(2|v|)
@@ -195,6 +270,7 @@ for e in range (4):
             #Calculate La (ij)
             #Laij=F(-1)ki F(-1)kl Le lj
             #Calculate Almansi deformation gradient E (A.5)
+            #Calculate 
             #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
 
             w=1. #TO MODIFY
@@ -244,7 +320,7 @@ for e in range (4):
             
             #TANGENT MATRIX
             
-            dRdUn=Bv.transpose()*( G*c*dEdU -G*)
+            #dRdUn=Bv.transpose()*( G*c*dEdU -G*)
             #Index Form
                 # for i in range(16):
                     # for p in range(2):
