@@ -8,7 +8,7 @@ import array as arr
 
 #----------------------------
 #Input Data------------------
-form=1
+form=2
 lx=1.
 ly=1.
 nex=10
@@ -54,9 +54,10 @@ print(elnodes)
 #Formulation type and DOFs
 if form==1:
     ndof =11
-    edof=ndof*4
 else:
-    eldof=11
+    ndof =12
+
+edof=ndof*4
     
 #X is combines per row to calculate J
 p=1.0/1.732050807568877
@@ -75,8 +76,7 @@ UFvp=matrix(numpy.matlib.zeros((16, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
 Ftg  =matrix(numpy.matlib.zeros((2,2))) #Gradient deformation in tensor form
 
-S=matrix(numpy.matlib.zeros((4, 1)))
-
+S=matrix(numpy.matlib.zeros((4, 1)))    #Nodal internal variable
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
 
 #Shape Functions
@@ -90,8 +90,13 @@ Bs=matrix(numpy.matlib.zeros((2, 8)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
 BsigF=arange(128).reshape(4,16,2) #
+BFvp =arange(200).reshape(5,20,2) #
+
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
+temp5x16=matrix(numpy.matlib.zeros((5, 20)))
+
 B4i=arange(32).reshape(4,4,2) #
+B5i=arange(50).reshape(5,5,2) #
 #(4,16,2)
 #print(BsigF[0])
 LM=matrix(numpy.matlib.zeros((4, 4)))
@@ -123,8 +128,8 @@ BL  = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 
 
 #Stress
-sig=matrix(numpy.matlib.zeros((4, 1)))   #Stress Gauss Points
-sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
+sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points
+sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric
 
 P=matrix(numpy.matlib.zeros((4, 1))) 
 
@@ -211,7 +216,7 @@ for e in range (4):
                 Bv[1,2*k  ]=dHxy[1,k]
                 Bv[2,2*k+1]=dHxy[0,k]
                 Bv[3,2*k+1]=dHxy[1,k]
-                
+            
             for i in range(4):
                 for l in range(4):
                     for m in range(4):  
@@ -224,6 +229,19 @@ for e in range (4):
                     for m in range(4):  
                         for n in range(2):
                             BsigF[l,4*i+m,n]=B4i[l,m,n]
+            if form==2:
+                for i in range(5):
+                    for l in range(5):
+                        for m in range(5):  
+                            for n in range(2):
+                                if (l==m):
+                                    B5i[l,m,n]=Bs[n,i]
+                                else:
+                                    B5i[l,m,n]=0.              
+                    for l in range(5):
+                        for m in range(5):  
+                            for n in range(2):
+                                BFvp[l,5*i+m,n]=B5i[l,m,n]            
                             
             #Interpolate velocity
             for n in range (4):
@@ -339,11 +357,17 @@ for e in range (4):
                 for i in range(16):
                     for k in range(2):
                         temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
+            
+            if form==2:
+                for m in range(5):
+                    for i in range(16):
+                        for k in range(2):
+                            temp5x16[m,i]=temp5x16[m,i]+BFvp[m,i,k]*v[k,0]
                         
             if (form==1):
                 Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
-            #else:
-            #    RFvp=(NFvp+temp4x16*tau).transpose()
+            else: #4.29
+                RFvp=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp)
             RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
             Rs  =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
             
