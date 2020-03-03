@@ -71,6 +71,7 @@ UV=matrix(numpy.matlib.zeros((8, 1)))
 Usig=matrix(numpy.matlib.zeros((16, 1)))
 UF =matrix(numpy.matlib.zeros((16, 1)))
 UF=matrix(numpy.matlib.zeros((16, 1)))
+Us=matrix(numpy.matlib.zeros((4, 1)))
 S=matrix(numpy.matlib.zeros((4, 1)))
 
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
@@ -115,6 +116,9 @@ sig_d=matrix(numpy.matlib.zeros((4, 1))) #Deviatoric
 
 P=matrix(numpy.matlib.zeros((4, 1))) 
 
+#Global matrices
+#Uglob=matrix(numpy.matlib.zeros((ndof*numnodes, ndof*numnodes)))
+Uglob=zeros(ndof*numnodes)
 
 class bMatrix: #Block matrix
     
@@ -213,14 +217,14 @@ for e in range (4):
             for n in range (4):
                 d=elnodes.astype(int)[e][n]
                 for i in range (8):
-                    UV[i,0]=U[ndof*d+i]
+                    UV[i,0]=Uglob[ndof*d+i]
                 for j in range (16):
-                    Usig[i,0]=U[edof*d+2+i]
+                    Usig[i,0]=Uglob[edof*d+2+i]
                     if (form==1):
-                        Usig[i,0]=U[edof*d+2+i]
-                        UF  [i,0]=U[edof*d+6+i]
+                        Usig[i,0]=Uglob[edof*d+2+i]
+                        UF  [i,0]=Uglob[edof*d+6+i]
                     else:
-                        UF  [i,0]=U[edof*d+2+i]
+                        UF  [i,0]=Uglob[edof*d+2+i]
             
             v  =Nv*UV
             s  =Ns*Us
