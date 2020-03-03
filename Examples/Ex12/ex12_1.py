@@ -66,12 +66,15 @@ X2=numpy.matlib.zeros((4, 2))
 
 #Main variables values
 #Nodal values
-U =matrix(numpy.matlib.zeros((44, 1)))
-UV=matrix(numpy.matlib.zeros((8, 1)))
+U   =matrix(numpy.matlib.zeros((44, 1)))
+UV  =matrix(numpy.matlib.zeros((8, 1)))
 Usig=matrix(numpy.matlib.zeros((16, 1)))
-UF =matrix(numpy.matlib.zeros((16, 1)))
-UF=matrix(numpy.matlib.zeros((16, 1)))
-Us=matrix(numpy.matlib.zeros((4, 1)))
+UF  =matrix(numpy.matlib.zeros((16, 1)))
+UF  =matrix(numpy.matlib.zeros((16, 1)))
+UFvp=matrix(numpy.matlib.zeros((16, 1)))
+Us  =matrix(numpy.matlib.zeros((4, 1)))
+Ftg  =matrix(numpy.matlib.zeros((2,2))) #Gradient deformation in tensor form
+
 S=matrix(numpy.matlib.zeros((4, 1)))
 
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
@@ -104,7 +107,10 @@ Rsig=matrix(numpy.matlib.zeros((16, 1)))
 Rs  =matrix(numpy.matlib.zeros((4, 1)))
 Rv  =matrix(numpy.matlib.zeros((8, 1)))
 
-dVxy=matrix(numpy.matlib.zeros((4, 2)))
+#These are the same but reorganized
+dVxy=zeros(4)
+L   =matrix(numpy.matlib.zeros((2, 2)))
+
 BL  = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 
 #Symmetric tensors
@@ -226,19 +232,33 @@ for e in range (4):
                     else:
                         UF  [i,0]=Uglob[edof*d+2+i]
             
-            v  =Nv*UV
+            v  =Nv*UV #[2x8 x (8x1)]
             s  =Ns*Us
-            F  =NsigF*UF
+            F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
+            #Ftg=
             if (form==1):
                 sig=NsigF*Usig
             else:
-                Fvp  =NsigF*UFvp
+                Fvp=NsigF*UFvp
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
             #Calculate Velocity gradient Lij
             #Lij=dvi/dxj(2.4) 
             #According to B.11 d(phi)/dxj=J-1(ij) dphi/drj = Bvjk Vk
-            dVxy=Bv*UV #(4x8)*(8x1)=4x1(4x1)(vx,x vx,y vy,x vy,y)T 
+            
+            #Formulation 1
+            #Calculate La (ij) 2.9 
+            #Laij=F(-1)ki F(-1)kl Le lj
+            
+            #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
+            #Calculate Almansi deformation gradient E (A.5)
+            #Calculate 
+            #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
+            dVxy=Bv*UV #(4x8)*(8x1)=(4x1) (vx,x vx,y vy,x vy,y)T 
+            L[0,0]=dVxy[0]
+            L[0,1]=dVxy[1]
+            L[1,0]=dVxy[2]
+            L[1,0]=dVxy[3]
             
             #Stabilization factor tau 2.26
             #tau=beta*he/(2|v|)
@@ -249,6 +269,7 @@ for e in range (4):
             LM[0,1]=LM[2,3]=dVxy[1]
             LM[1,0]=LM[3,2]=dVxy[2]
             LM[1,1]=LM[3,3]=dVxy[3]
+           
             
             #BL interpolators BLijk (4,4,8) (B.17 p165)
             for k in range(8):
@@ -269,13 +290,7 @@ for e in range (4):
             #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
             #Nij Direction of plastic flow
             #
-            #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
-            #
-            #Calculate La (ij)
-            #Laij=F(-1)ki F(-1)kl Le lj
-            #Calculate Almansi deformation gradient E (A.5)
-            #Calculate 
-            #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
+
 
             w=1. #TO MODIFY
             #Calculate sigma
@@ -290,12 +305,12 @@ for e in range (4):
             #STRESSES**********
             #From 2.27 Plane Strain Symmetric tensors are defined as 
             #t=[txx tyy tzz tyz]
-            pi=1./3.*(sig[0]+sig[1]+sig[2])
+            pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
             for i in range(3): #Only daigonal is modified
-                sig_d=sig[i]-pi
+                sig_d[i,0]=sig[i,0]-pi
                 
             for k in range(4):
-                sig_eq=sqrt(1.5*(sig_d[k]))
+                sig_eq=sqrt(1.5*(sig_d[k,0]))
             #*** STRAINS
             #Equivalent strain rate
             #mat_A=mat_A0*math.exp(-mat_Q/mat_R)
@@ -310,11 +325,13 @@ for e in range (4):
             Rv  =Bv.transpose()*P #Remains the summ of particular gauss points
             #Rsig[16x1] (4 per node)
             #Construct vk Bsig mik
-            temp4x16=0.
+            for m in range(4):
+                for i in range(16):
+                        temp4x16[m,i]=0.
             for m in range(4):
                 for i in range(16):
                     for k in range(2):
-                        temp4x16[m,i]=temp4x16+B[m,i,k]*v[k,1]
+                        temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
                         
             Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
             RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
