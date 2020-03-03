@@ -107,14 +107,20 @@ Rsig=matrix(numpy.matlib.zeros((16, 1)))
 Rs  =matrix(numpy.matlib.zeros((4, 1)))
 Rv  =matrix(numpy.matlib.zeros((8, 1)))
 
+#Formulation 1
+#-----------------------------------
+#Symmetric tensors
+Ee =matrix(numpy.matlib.zeros((4, 1)))
+Eet=matrix(numpy.matlib.zeros((2, 2))) #Tensor form 
+
+
+
 #These are the same but reorganized
 dVxy=zeros(4)
 L   =matrix(numpy.matlib.zeros((2, 2)))
 
 BL  = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 
-#Symmetric tensors
-E=matrix(numpy.matlib.zeros((4, 1)))
 
 #Stress
 sig=matrix(numpy.matlib.zeros((4, 1)))   #Stress Gauss Points
@@ -186,11 +192,11 @@ for e in range (4):
             sg=gauss[jg]
 
             #Numerated as in Bathe
-            Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1-rg)])            
+            Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
             dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
             #Numerated as in deal.ii
             #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
-            dHrs/=4
+            dHrs/=4.
             J=dHrs*X2
             dHxy=linalg.inv(J)*dHrs
             detJ=linalg.det(J)
@@ -317,6 +323,7 @@ for e in range (4):
             #epsr_eq=mat_A*(np.sinh(psi*sig_eq/s))**(1./mat_m)
             
             #Evaluate g function 2.58/4.48
+            g_sigs=1.
             #g_sigs=h0*|(1-s/s*)|*sign(1-s/s*)A(sinh())
             #With s*
             #s*=s~(edot~_vp/A)^n
@@ -333,9 +340,12 @@ for e in range (4):
                     for k in range(2):
                         temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
                         
-            Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
+            if (form==1):
+                Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
+            #else:
+            #    RFvp=(NFvp+temp4x16*tau).transpose()
             RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
-            Rs  =(Ns+tau*v*Bs).transpose()*(v*Bs*Us-g_sigs)*wJ
+            Rs  =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
             
             #R Assembly
             
