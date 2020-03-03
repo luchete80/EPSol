@@ -252,11 +252,11 @@ for e in range (4):
             
             #BL interpolators BLijk (4,4,8) (B.17 p165)
             for k in range(8):
-                BL[1,1,k]=BL[3,3,k]=Bv[1,k]
-                BL[1,2,k]=BL[3,4,k]=Bv[3,k]
-                BL[2,1,k]=BL[4,3,k]=Bv[2,k]
-                BL[2,2,k]=BL[4,4,k]=Bv[4,k]
-                BL[1,3,k]=BL[1,4,k]=BL[2,3,k]=BL[2,4,k]=BL[3,1,k]=BL[3,2,k]=BL[4,1,k]=BL[4,2,k]=0.
+                BL[0,0,k]=BL[2,2,k]=Bv[0,k]
+                BL[0,1,k]=BL[2,3,k]=Bv[2,k]
+                BL[1,0,k]=BL[3,2,k]=Bv[1,k]
+                BL[1,1,k]=BL[3,3,k]=Bv[3,k]
+                BL[0,2,k]=BL[0,3,k]=BL[1,2,k]=BL[1,3,k]=BL[2,0,k]=BL[2,1,k]=BL[3,0,k]=BL[3,1,k]=0.
             #Set tractions tP (2.34)
             
             
