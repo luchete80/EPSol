@@ -85,6 +85,8 @@ Nv=matrix(numpy.matlib.zeros((2, 8)))
 NsigF=matrix(numpy.matlib.zeros((4, 16)))
 NFvp=matrix(numpy.matlib.zeros((5, 20)))
 
+DM=matrix(numpy.matlib.zeros((5, 5)))
+
 #Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 8)))
@@ -377,6 +379,7 @@ for e in range (4):
                 RFvp=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp-DM*NFvp*UFvp)*wJ
             RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
             Rs  =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
+            
             
             #R Assembly
             
