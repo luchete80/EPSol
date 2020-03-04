@@ -91,7 +91,7 @@ Bs=matrix(numpy.matlib.zeros((2, 8)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
 BsigF=arange(128).reshape(4,16,2) #
-BFvp =arange(160).reshape(4,20,2) #
+BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 temp5x16=matrix(numpy.matlib.zeros((5, 20)))
@@ -214,7 +214,7 @@ for e in range (4):
                 #shape functions
                 Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
                 for j in range(4):
-				    NFsig[j,4*k+j]=Ns[0,k]
+                    NsigF[j,4*k+j]=Ns[0,k]
 
 
                 #derivatives Bv (B.14)
