@@ -11,8 +11,8 @@ import array as arr
 form=2
 lx=1.
 ly=1.
-nex=10
-ney=10
+nex=2
+ney=2
 #-------------
 
 
@@ -58,7 +58,7 @@ else:
     ndof =12
 
 edof=ndof*4
-    
+dof=ndof*numnodes
 #X is combines per row to calculate J
 p=1.0/1.732050807568877
 gauss=[-p,p]
@@ -72,7 +72,7 @@ UV  =matrix(numpy.matlib.zeros((8, 1)))
 Usig=matrix(numpy.matlib.zeros((16, 1)))
 UF  =matrix(numpy.matlib.zeros((16, 1)))
 UF  =matrix(numpy.matlib.zeros((16, 1)))
-UFvp=matrix(numpy.matlib.zeros((16, 1)))
+UFvp=matrix(numpy.matlib.zeros((20, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
 Ftg  =matrix(numpy.matlib.zeros((2,2))) #Gradient deformation in tensor form
 
@@ -83,6 +83,7 @@ v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
 Ns=matrix(numpy.matlib.zeros((1, 4)))
 Nv=matrix(numpy.matlib.zeros((2, 8)))
 NsigF=matrix(numpy.matlib.zeros((4, 16)))
+NFvp=matrix(numpy.matlib.zeros((5, 20)))
 
 #Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
@@ -90,7 +91,7 @@ Bs=matrix(numpy.matlib.zeros((2, 8)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
 BsigF=arange(128).reshape(4,16,2) #
-BFvp =arange(200).reshape(5,20,2) #
+BFvp =arange(160).reshape(4,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 temp5x16=matrix(numpy.matlib.zeros((5, 20)))
@@ -109,6 +110,7 @@ K=matrix(numpy.matlib.zeros((44, 44)))
 R =matrix(numpy.matlib.zeros((44, 1)))
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
+RFvp=matrix(numpy.matlib.zeros((20, 1)))
 Rs  =matrix(numpy.matlib.zeros((4, 1)))
 Rv  =matrix(numpy.matlib.zeros((8, 1)))
 
@@ -135,7 +137,7 @@ P=matrix(numpy.matlib.zeros((4, 1)))
 
 #Global matrices
 #Uglob=matrix(numpy.matlib.zeros((ndof*numnodes, ndof*numnodes)))
-Uglob=zeros(ndof*numnodes)
+Uglob=zeros(dof)
 
 class bMatrix: #Block matrix
     
@@ -229,8 +231,9 @@ for e in range (4):
                     for m in range(4):  
                         for n in range(2):
                             BsigF[l,4*i+m,n]=B4i[l,m,n]
+            #Ec. D.20 p177
             if form==2:
-                for i in range(5):
+                for i in range(4):
                     for l in range(5):
                         for m in range(5):  
                             for n in range(2):
@@ -241,7 +244,7 @@ for e in range (4):
                     for l in range(5):
                         for m in range(5):  
                             for n in range(2):
-                                BFvp[l,5*i+m,n]=B5i[l,m,n]            
+                                BFvp[l,4*i+m,n]=B5i[l,m,n]            
                             
             #Interpolate velocity
             for n in range (4):
@@ -249,12 +252,12 @@ for e in range (4):
                 for i in range (8):
                     UV[i,0]=Uglob[ndof*d+i]
                 for j in range (16):
-                    Usig[i,0]=Uglob[edof*d+2+i]
+                    Usig[i,0]=Uglob[ndof*d+2+i]
                     if (form==1):
-                        Usig[i,0]=Uglob[edof*d+2+i]
-                        UF  [i,0]=Uglob[edof*d+6+i]
+                        Usig[i,0]=Uglob[ndof*d+2+i]
+                        UF  [i,0]=Uglob[ndof*d+6+i]
                     else:
-                        UF  [i,0]=Uglob[edof*d+2+i]
+                        UF  [i,0]=Uglob[ndof*d+2+i]
             
             v  =Nv*UV #[2x8 x (8x1)]
             s  =Ns*Us
@@ -263,7 +266,7 @@ for e in range (4):
             if (form==1):
                 sig=NsigF*Usig
             else:
-                Fvp=NsigF*UFvp
+                Fvp=NFvp*UFvp
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
             #Calculate Velocity gradient Lij
