@@ -253,6 +253,7 @@ for e in range (4):
                                 BFvp[l,4*i+m,n]=B5i[l,m,n]            
                             
             #Interpolate velocity
+            #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
             for n in range (4):
                 d=elnodes.astype(int)[e][n]
                 for i in range (8):
@@ -346,8 +347,9 @@ for e in range (4):
                 sig_eq=sqrt(1.5*(sig_d[k,0]))
             #*** STRAINS
             #Equivalent strain rate
-            #mat_A=mat_A0*math.exp(-mat_Q/mat_R)
-            #epsr_eq=mat_A*(np.sinh(psi*sig_eq/s))**(1./mat_m)
+            mat_A=mat_A0*math.exp(-mat_Q/mat_R)
+            if (s!=0):
+                epsr_eq=mat_A*(sinh(mat_psi*sig_eq/s))**(1./mat_m)
             
             #Evaluate g function 2.58/4.48
             g_sigs=1.
@@ -355,6 +357,8 @@ for e in range (4):
             #With s*
             #s*=s~(edot~_vp/A)^n
             wJ=w*detJ
+            
+            # *****************************************************************
             #RESIDUALS ******************* 2.26 to 2.39 *****************************
             Rv  =Bv.transpose()*P #Remains the summ of particular gauss points
             #Rsig[16x1] (4 per node)
