@@ -374,7 +374,7 @@ for e in range (4):
             if (form==1):
                 Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
             else: #4.29
-                RFvp=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp)
+                RFvp=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp-DM*NFvp*UFvp)*wJ
             RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
             Rs  =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
             
