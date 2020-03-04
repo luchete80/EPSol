@@ -213,6 +213,10 @@ for e in range (4):
             for k in range(4):
                 #shape functions
                 Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
+                for j in range(4):
+				    NFsig[j,4*k+j]=Ns[0,k]
+
+
                 #derivatives Bv (B.14)
                 Bv[0,2*k  ]=dHxy[0,k]
                 Bv[1,2*k  ]=dHxy[1,k]
@@ -363,7 +367,7 @@ for e in range (4):
             
             if form==2:
                 for m in range(5):
-                    for i in range(16):
+                    for i in range(20):
                         for k in range(2):
                             temp5x16[m,i]=temp5x16[m,i]+BFvp[m,i,k]*v[k,0]
                         
