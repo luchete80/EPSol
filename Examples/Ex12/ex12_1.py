@@ -84,7 +84,6 @@ UF  =matrix(numpy.matlib.zeros((16, 1)))
 UF  =matrix(numpy.matlib.zeros((16, 1)))
 UFvp=matrix(numpy.matlib.zeros((20, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
-Ftg  =matrix(numpy.matlib.zeros((2,2))) #Gradient deformation in tensor form
 
 #Gauss variables
 F   = matrix(numpy.matlib.zeros((4,1)))#Tensor form
@@ -295,17 +294,18 @@ for e in range (4):
                             
             #Interpolate velocity
             #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
+            #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
             for n in range (4):
                 d=elnodes.astype(int)[e][n]
                 for i in range (8):
                     UV[i,0]=Uglob[ndof*d+i]
                 for j in range (16):
-                    Usig[i,0]=Uglob[ndof*d+2+i]
+                    Usig[j,0]=Uglob[ndof*d+2+j]
                     if (form==1):
-                        Usig[i,0]=Uglob[ndof*d+2+i]
-                        UF  [i,0]=Uglob[ndof*d+6+i]
+                        Usig[j,0]=Uglob[ndof*d+2+j]
+                        UF  [j,0]=Uglob[ndof*d+6+j]
                     else:
-                        UF  [i,0]=Uglob[ndof*d+2+i]
+                        UF  [j,0]=Uglob[ndof*d+2+j]
             
             v  =Nv*UV #[2x8 x (8x1)]
             s  =float(Ns*Us)

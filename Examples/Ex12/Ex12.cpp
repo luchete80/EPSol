@@ -53,15 +53,19 @@ class Eulerian_ViscoPlastic{
 
 public:
     Eulerian_ViscoPlastic();
+	void calc_matrices();
     void setup();
 	void assemble();
 	void calc_res();
 
 private:
+
+	FeGrid <2> grid;
+	FluxSol::FEValues<2> fev;
 //Matrices
 //Gauss
 // ELEMENTAL MATRICES AND VECTORS
-    GaussFullMatrices B,J,dHrs;
+    GaussFullMatrices B,J,dHdrs;
     //Shape
     Matrix<double> Nv,NsigF,Ns;//Nv,Nsig,NF,Ns;
     
@@ -74,24 +78,32 @@ private:
 	
 	//Vectors
 	//Solution
-	Matrix<double> U,Uv,Usig,UF,Us;
+	Matrix<double> U,UV,Usig,UF,Us,Ft;
 	//Deformation gradients
 	Matrix<double> F,P,L;	//Unsymmetric vectors
+	
+	//Stress
+	Matrix<double> sig,sig_d,N_d;	//Unsymmetric vectors
 	
 	//Residual 
 	vector < vector <Matrix <double> > > Kt; 
 
-	Matrix<double> R;	//Nv,Nsig,NF,Ns;
+	vector < Matrix<double> > R;			//Nv,Nsig,NF,Ns;
+	
+	Vector <double> dVxy;
 	
 	//Dimensions
 	int dof[4];
-	enum field;
+	//enum field;
 	
 	//Material
 	Matrix<double>c;
 	double Ey,nu;
 
-	Matrix<double> Ve;
+	//Global matrices
+	//Uglob=matrix(numpy.matlib.zeros((ndof*numnodes, ndof*numnodes)))
+	//Uglob=zeros(dof)
+	int form;	//Formulation
 
     ofstream logfile;
 };
@@ -122,9 +134,7 @@ void Eulerian_ViscoPlastic::setup()
 	const FluxSol::FEIntegrationScheme intsch(1,2);
 
 
-	//FluxSol::QuadLinearElement e(v);
-	FluxSol::Element<2> e(v);
-	e.Set_Nodes(4, 0, 1, 2, 3);
+//	e.Set_Nodes(4, 0, 1, 2, 3);
 	//logfile << "Element Gauss Order: " << e.GaussOrder() << "\n\n";
 	
 	//Shape functions 
@@ -132,32 +142,28 @@ void Eulerian_ViscoPlastic::setup()
 	Bv=Matrix<double>(4,8);
 
 	std::vector< FluxSol::Element<2> > ve;
-	ve.push_back(e);
-	FluxSol::FeGrid <2> g(v, ve);
-    FluxSol::FEValues<2> fev(e, g);
-    
-	J = fev.Jacobian();
-    B = fev.shape_grad_matrix();
+
+	this->grid=FeGrid <2> (1.,1.,1.,10,10,1);
    
     dHdrs=fev.shape_localgrad_matrix(); //COMPLETE
-    ShapeFunctionGroup shfngr = e.CreateShapeFunctionGroup();
+    ShapeFunctionGroup shfngr = this->grid.Elem(0).CreateShapeFunctionGroup();
 	// Shape Functions
 	//To MODIFY REFER TO dim
 	//Shape and gradient MATRICES
 	//These are not grouped into an array because
 	//1: Two of them are equal
 	//2: Bsig and BF are THREE DIM ARRAY
-    Nv=Matrix<double>(2, 8);//v
-	NsigF[1]=Matrix<double>(4,16);//sig
-	N[3]=Matrix<double>(1, 4);//s
+    Nv	 =Matrix<double>(2, 8);//v
+	NsigF=Matrix<double>(4,16);//sig
+	Ns	 =Matrix<double>(1, 4);//s
 
 	//Solution (Fig 2.1)
 	dof[0]=8;		//Velocity: dim=2 x 4 nodes
-	dof[1]=[2]=16;	//Deformation
+	dof[1]=dof[2]=16;	//Deformation
 	dof[3]=4;
 	//R   =Matrix<double>(11,1);
 	for (int i=0;i<4;i++)
-		R[i]=Matrix<double>(dof[i],1);
+		R.push_back(Matrix<double>(dof[i],1));
 	//Deformation gradients
 	//Vector<double> F,P,L;	//Unsymmetric vectors
 	
@@ -173,36 +179,36 @@ void Eulerian_ViscoPlastic::setup()
 	// BsigF=arange(128).reshape(4,16,2) #
 	// temp4x16=Matrix<double>(4, 16)))
 	// B4i=arange(32).reshape(4,4,2) #
-	vector < vector <vector double > > B4i;
+	vector < vector <vector < double > > > B4i;
 	// #(4,16,2)
 	// print(BsigF[0])
-	for (int i=0;i<2;i++)	BsigF.push_back(<Matrix<double>(4, 16));
-	temp4x16=<Matrix<double>(4, 16)
+	for (int i=0;i<2;i++)	BsigF.push_back(Matrix<double> (4, 16));
+	temp4x16=Matrix<double>(4, 16);
 	
-	LM=Matrix<double>(4, 4)
+	LM=Matrix<double>(4, 4);
 
-	//R =Matrix<double>(44, 1)
-	RF  =Matrix<double>(16, 1)
-	Rsig=Matrix<double>(16, 1)
-	Rs  =Matrix<double>(4, 1)
-	Rv  =Matrix<double>(8, 1)
+	// //R =Matrix<double>(44, 1)
+	// RF  =Matrix<double>(16, 1);
+	// Rsig=Matrix<double>(16, 1);
+	// Rs  =Matrix<double>(4, 1);
+	// Rv  =Matrix<double>(8, 1);
 
 	// U =Matrix<double>(44, 1)))
 	UF  =Matrix<double>(16, 1);
 	Usig=Matrix<double>(16, 1);
-	dVxy=Matrix<double>(4, 2);
+	//dVxy=Matrix<double>(4, 2);
 
 	// #Symmetric tensors
-	E=Matrix<double>(4, 1)))
+	E=Matrix<double>(4, 1);
 
 	// #Stress
-	sig=Matrix<double>(4, 1);   #Stress Gauss Points
-	sig_d=Matrix<double>(4, 1); #Deviatoric
+	sig=Matrix<double>(4, 1);   //Stress Gauss Points
+	sig_d=Matrix<double>(4, 1); //Deviatoric
 
 	P=Matrix<double>(4, 1);
 
 
-	v=Matrix<double>(2, 1);    #Gauss Point velocity			
+	v=Matrix<double>(2, 1);    //Gauss Point velocity			
 
 
 	Kel=Matrix<double> (44, 44);
@@ -210,68 +216,106 @@ void Eulerian_ViscoPlastic::setup()
 	// for (int i=0;i<4;i++)
 		// for (int j=0;j<4;j++)
 			// for (int k=0;k<4;k++)
-				// B4i.push_back(0.)
-			
+				// B4i.push_back(0.)			
 	for (int i=0;i<4;i++)
 		BL.push_back(Matrix<double>(4,2));
-							
+
+	//These are the same but reorganized
+	dVxy=Vector<double>(4);
+	L   =Matrix<double> (2, 2);
+	//BL      = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
+	temp8x1 = Vector<double> (8,1);
+
+
+	//Stress
+	sig  =Matrix<double>(4, 1);     //#Stress Gauss Points
+	sig_d=Matrix<double>(4, 1);     //#Deviatoric, is also symmetric
+	N_d  =Matrix<double>(4, 1);  	//#Direction of plastic strain
+
+	P=Matrix<double>(4, 1); 
+	
 }
 
+void Eulerian_ViscoPlastic::calc_matrices()
+{
+
+	
+}
 
 void Eulerian_ViscoPlastic::assemble()
 {
-
-	for (int i=0;i<4;i++){
-	//C = E / (1 - nu*nu)*[1 nu 0; nu 1 0; 0 0 (1 - nu) / 2];
-	cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
-	for (int g = 0; g < intsch.NumPoints(); g++)
-	{
-
-		Bs=fev.shape_grad_comps(g);
-		 
-		Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
-		Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];
+	
+	for (int e=0;e<this->grid.NumElem();e++){
 
 
-		for (int k=0;k<4;k++){
-		#shape functions
-		Nv[0][2*k ]=Nv[1][2*k+1]=Ns[0,k];
-		#derivatives Bv (B.14)
-		Bv[0][2*k  ]=dHxy[0,k];
-		Bv[1][2*k  ]=dHxy[1,k];
-		Bv[2][2*k+1]=dHxy[0,k];
-		Bv[3][2*k+1]=dHxy[1,k];}
+		for (int n=0;n<4;n++){
+			int d=elnodes[e][n];
+			for (int i=0;i<8;i++)
+				UV[i][0]=Uglob[ndof*d+i];
+			for (int j=0;j<16;j++)
+				Usig[i,0]=Uglob[ndof*d+2+j];
+				if (form==1)
+					Usig[j][0]=Uglob[ndof*d+2+j];
+					UF  [j][0]=Uglob[ndof*d+6+j];
+				else
+					UF  [j][0]=Uglob[ndof*d+2+j];}
+		//C = E / (1 - nu*nu)*[1 nu 0; nu 1 0; 0 0 (1 - nu) / 2];
+		cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
+
+		this->fev =FEValues<2>(this->grid.Elem(e), this->grid);
 		
-		for (int k=0;k<8;k++){
-			BL[1][1][k]=BL[3][3][k]=Bv[1][k];
-			BL[1][2][k]=BL[3][4][k]=Bv[3][k];
-			BL[2][1][k]=BL[4][3][k]=Bv[2][k];
-			BL[2][2][k]=BL[4][4][k]=Bv[4][k];
-			BL[1][3][k]=BL[1][4][k]=BL[2][3][k]=BL[2][4][k]=BL[3][1][k]=BL[3][2][k]=BL[4][1][k]=BL[4][2][k]=0.;}
-		
-		for (int i=0;i<4;i++){
-			for (int l=0;l<4;l++)
-				for (int m=0;m<4;m++)
-					for (int n=0;n<4;n++)
-						if (l==m)
-							B4i[l,m,n]=Bs[n,i];
-						else
-							B4i[l,m,n]=0.;        
-			for (int l=0;l<4;l++)
-				for for (int m=0;m<4;m++) 
-					for (int n=0;n<4;n++)
-						BsigF[4*i+l][m][n]=B4i[l][m][n];}//For i 
-		
+		J = fev.Jacobian();
+		B = fev.shape_grad_matrix();
+	
+		for (int g = 0; g < intsch.NumPoints(); g++)
+		{
+			Bs=this->fev.shape_grad_comps(g);
+			for (int i=0;i<4;i++){ 
+			Bv[0][2*i  ]=B[2][2*i]=Bs[0][i];
+			Bv[1][2*i+1]=B[2][2*i]=Bs[0][i];}
+
+
+			for (int k=0;k<4;k++){
+			//shape functions
+			Nv[0][2*k ]=Nv[1][2*k+1]=Ns[0,k];
+			//derivatives Bv (B.14)
+			Bv[0][2*k  ]=Bs[0,k];
+			Bv[1][2*k  ]=Bs[1,k];
+			Bv[2][2*k+1]=Bs[0,k];
+			Bv[3][2*k+1]=Bs[1,k];}
 			
-		//FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
-		for (int r = 0; r < 8; r++)
-			for (int c = 0; c < 8; c++){
-				Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
-				cout << "weight" << intsch[g].w()<<endl;
-				cout << "Kel: "<< Kel[r][c]<<endl;	
-	}}}
+			for (int k=0;k<8;k++){
+				BL[1][1][k]=BL[3][3][k]=Bv[1][k];
+				BL[1][2][k]=BL[3][4][k]=Bv[3][k];
+				BL[2][1][k]=BL[4][3][k]=Bv[2][k];
+				BL[2][2][k]=BL[4][4][k]=Bv[4][k];
+				BL[1][3][k]=BL[1][4][k]=BL[2][3][k]=BL[2][4][k]=BL[3][1][k]=BL[3][2][k]=BL[4][1][k]=BL[4][2][k]=0.;}
+			
+			for (int i=0;i<4;i++){
+				for (int l=0;l<4;l++){
+					for (int m=0;m<4;m++)
+						for (int n=0;n<4;n++)
+							if (l==m)
+								B4i[l,m,n]=Bs[n,i];
+							else
+								B4i[l,m,n]=0.;        
+				for (int l=0;l<4;l++)
+					for (int m=0;m<4;m++) 
+						for (int n=0;n<4;n++)
+							BsigF[4*i+l][m][n]=B4i[l][m][n];}}//For i 
+			
+				
+			//FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
+			for (int r = 0; r < 8; r++)
+				for (int c = 0; c < 8; c++){
+					Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
+					cout << "weight" << intsch[g].w()<<endl;
+					cout << "Kel: "<< Kel[r][c]<<endl;	}
+		}//gauss points
+	}
 
-
+}//Element
+	
 	logfile << "Stiffness Matrix \n\n";
 	logfile << Kel.outstr();
 
