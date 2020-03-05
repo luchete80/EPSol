@@ -85,7 +85,9 @@ Nv=matrix(numpy.matlib.zeros((2, 8)))
 NsigF=matrix(numpy.matlib.zeros((4, 16)))
 NFvp=matrix(numpy.matlib.zeros((5, 20)))
 
-DM=matrix(numpy.matlib.zeros((5, 5)))   #4.24
+Dvp=matrix(numpy.matlib.zeros((4, 1)))      #From plastic deformation direction
+DM =matrix(numpy.matlib.zeros((5, 5)))   #4.24
+temp2x2=matrix(numpy.matlib.zeros((2, 2)))
 
 #Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
@@ -133,7 +135,8 @@ BL  = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 
 #Stress
 sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points
-sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric
+sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
+N_d  =matrix(numpy.matlib.zeros((4, 1)))    #Direction of plastic strain
 
 P=matrix(numpy.matlib.zeros((4, 1))) 
 
@@ -315,24 +318,10 @@ for e in range (4):
             #Set tractions tP (2.34)
             
             
-            #Before Strain tensors, DEFORMATIONS
-            #With evp = f(sigma,s) (Sec. 2.4.2)
-            #eps_vp=A sinh (psi (sigma/s))^(1/m) (2.57 p27)
-            #Calculate Rate of Def Tensor D (2.13, 2.14)
-            #D(th)ij=alpha vk dT/dxk deltaij 2.13
-            #IN THIS EXAMPLE THIS DTH 0
-            #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
-            #Nij Direction of plastic flow
-            #Assemble DM matrix
-            if form==2:
-                for i in range(2):
-                    for j in range(2):
-                        DM[i,j]=DM[i+2,j+2]=Dvp[i,j]
-                        DM[3,3]=Dvp[0,0]
                 
             w=1. #TO MODIFY
             #Calculate sigma
-            #2.31 Comes first from 2.2
+            #2.31 Comes first from 2.2 (Then 2.31)
             #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
             #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) + 
             #Attention double contraction
@@ -345,21 +334,46 @@ for e in range (4):
             #t=[txx tyy tzz tyz]
             pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
             for i in range(3): #Only daigonal is modified
-                sig_d[i,0]=sig[i,0]-pi
+                sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
                 
             for k in range(4):
                 sig_eq=sqrt(1.5*(sig_d[k,0]))
             #*** STRAINS
             #Equivalent strain rate
             mat_A=mat_A0*math.exp(-mat_Q/mat_R)
+            #Equivalent viscoplastic strain rate
+            epsr_vp_eq=0.
             if (s!=0):
-                epsr_eq=mat_A*(sinh(mat_psi*sig_eq/s))**(1./mat_m)
+                epsr_vp_eq=mat_A*(sinh(mat_psi*sig_eq/s))**(1./mat_m)
             
+            #print (epsr_vp_eq)
             #Evaluate g function 2.58/4.48
             g_sigs=1.
             #g_sigs=h0*|(1-s/s*)|*sign(1-s/s*)A(sinh())
             #With s*
             #s*=s~(edot~_vp/A)^n
+            #Direction of plastic Strain: 2.16
+            N_d=sqrt(3./2.)*sig_d/sig_eq
+            Dvp=sqrt(3./2.)*epsr_vp_eq*N_d
+            print ("Nd",N_d)
+            #With evp = f(sigma,s) (Sec. 2.4.2)
+            #eps_vp=A sinh (psi (sigma/s))^(1/m) (2.57 p27)
+            #Calculate Rate of Def Tensor D (2.13, 2.14)
+            #D(th)ij=alpha vk dT/dxk deltaij 2.13
+            #IN THIS EXAMPLE THIS DTH 0
+            #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
+            #Nij Direction of plastic flow
+            #Assemble DM matrix 4.24 p92
+            if form==2:
+                #for i in range(2):
+                #    for j in range(2):
+                #Dvp comes from N, which comes from 
+                #Dvp is [x y z yz]
+                DM[0,0]=DM[2,2]=Dvp[0]
+                DM[1,1]=DM[3,3]=Dvp[1]
+                DM[1,0]=DM[3,2]=DM[0,1]=DM[2,3]=Dvp[3]
+                DM[3,3]=Dvp[2]
+            
             wJ=w*detJ
             
             # *****************************************************************
