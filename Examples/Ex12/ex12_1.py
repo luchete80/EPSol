@@ -85,7 +85,7 @@ Nv=matrix(numpy.matlib.zeros((2, 8)))
 NsigF=matrix(numpy.matlib.zeros((4, 16)))
 NFvp=matrix(numpy.matlib.zeros((5, 20)))
 
-DM=matrix(numpy.matlib.zeros((5, 5)))
+DM=matrix(numpy.matlib.zeros((5, 5)))   #4.24
 
 #Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
@@ -323,9 +323,13 @@ for e in range (4):
             #IN THIS EXAMPLE THIS DTH 0
             #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
             #Nij Direction of plastic flow
-            #
-
-
+            #Assemble DM matrix
+            if form==2:
+                for i in range(2):
+                    for j in range(2):
+                        DM[i,j]=DM[i+2,j+2]=Dvp[i,j]
+                        DM[3,3]=Dvp[0,0]
+                
             w=1. #TO MODIFY
             #Calculate sigma
             #2.31 Comes first from 2.2
