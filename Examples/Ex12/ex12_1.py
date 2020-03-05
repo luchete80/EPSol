@@ -57,6 +57,16 @@ if form==1:
 else:
     ndof =12
 
+#Element dimension and DOF PER VARIABLE! 
+var_dim =[2,4,4,1]
+var_edof=zeros(4)
+if form==2:
+    var_dim =[2,4,5,1]
+for i in range(4):
+    var_edof[i]=4*var_dim[i]  
+    
+print ("var_edof",var_edof)
+
 edof=ndof*4
 dof=ndof*numnodes
 #X is combines per row to calculate J
@@ -130,7 +140,8 @@ Eet=matrix(numpy.matlib.zeros((2, 2))) #Tensor form
 dVxy=zeros(4)
 L   =matrix(numpy.matlib.zeros((2, 2)))
 
-BL  = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
+BL      = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
+temp8x1 = matrix(numpy.matlib.zeros((8, 1))) 
 
 
 #Stress
@@ -151,11 +162,32 @@ class bMatrix: #Block matrix
 
     # def show_all(self):
         # print(self.left, self.right)
-Kt=[ [matrix(numpy.matlib.zeros((2, 2))), matrix(numpy.matlib.zeros((2, 2)))],
-     [matrix(numpy.matlib.zeros((2, 2))),matrix(numpy.matlib.zeros((2, 2)))]]
-     
-print ("Kt")
-print (Kt)
+#Matrix Tangent 
+#U derivatives
+#
+# Kt_U=[[matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1])))],
+      # [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]]
+   
+#Matrix Double Entry
+#Example in formulation 1:
+# (8x8)  (8x16) (8x16) (8x4)
+# (16x8) (16 x 16) ..  ..
+Kt=[
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[3])))
+     ],
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[3])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[3])))
+     ]    
+    ]     
+
+print("Kt_0",Kt[0][0])
 
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
@@ -220,7 +252,6 @@ for e in range (4):
                 Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
                 for j in range(4):
                     NsigF[j,4*k+j]=Ns[0,k]
-
 
                 #derivatives Bv (B.14)
                 Bv[0,2*k  ]=dHxy[0,k]
@@ -335,7 +366,7 @@ for e in range (4):
             pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
             for i in range(3): #Only daigonal is modified
                 sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
-                
+            print ("sigd",sig_d[i][0])   
             for k in range(4):
                 sig_eq=sqrt(1.5*(sig_d[k,0]))
             #*** STRAINS
@@ -403,11 +434,57 @@ for e in range (4):
             Rs  =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
             
             
-            #R Assembly
-            
-            #TANGENT MATRIX
-            
+            #R Assembly            
+            #TANGENT MATRIX   
+            #PAGES 25 y 94
             #dRdUn=Bv.transpose()*( G*c*dEdU -G*)
+            # for j,n in range(8,8):
+                # for i in range(8,8):
+                # Kt[0][0]=   Kt[0][0]+B[i][j]*(
+                            # #*G[i][p]*C[p][k]
+                            # -G[i][l]*BL[l][k][n]*sigma[k]
+                            # +G[i][k]*sigma[k]*H[m][l]*BL[m][l][n]*
+                            # wJ)   
+            #temp8x1=0
+            for l,m,n in range(4,4,8):
+                temp8x1[l]=temp8x1[m][l]+BL[m][l][n]
+            print("temp",G*sig)  
+            Kt[0][0]=   Kt[0][0]+Bv.transpose()*(
+                        #G[i][p]*C[p][k]
+                        #-G[i][l]*BL[l][k][n]*sigma[k]
+                        +G*sig*temp8x1*
+                        wJ)
+            #for i in range(4):
+            #Kt.clear()
+            #F derivatives (2.49 to 2.52)
+            if (form==1):
+                find=int(2)
+            else:
+                find=int(1)
+
+            #K_t[find,0]   =K_t[find,0]+ (NF*BsigF)
+            Kt[find][find]= (Kt[find][find]+
+                            (NsigF+temp4x16*tau).transpose()*
+                            (temp4x16-LM*NsigF)*wJ)
+                
+            #S derivatives -- COMMON TO BOTH FORMULATIONS
+            #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
+            #dRs/dUv
+            # print("test",tau*Bs.transpose()*Nv*(2.*v*Bs*Us * g_sigs) 
+            print("test",float(2.0*(Bs*Us).transpose()*v))
+            Kt[3][0]=(Kt[3][0]+
+                      (Ns.transpose()*(Bs*Us).transpose()*Nv +
+                      tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs))*
+                      wJ)     
+            Kt[3][3]=Kt[3][3]+(
+                      (Ns+tau*v.transpose()*Bs).transpose()*
+                      (v.transpose()*Bs)*
+                      wJ) 
+
+              # (Ns[i]*Bs[k][j]*Us[j]*Nv[k][p] +
+              # tau*Bs[k][i]*Nv[k][p]*(2.*Bs[m][j]*Us[j]*v[m] * g_sigs))*
+              # wJ) 
+                     
             #Index Form
                 # for i in range(16):
                     # for p in range(2):
@@ -437,7 +514,7 @@ for e in range (4):
 # K[0,0] = K[1,1] = K[3,3] = 1.;
 # R=[0,0,0,0,1000.0,0,0,0]
 
-print (K)
+#print (K)
 
 #U=linalg.solve(K, R)
 print ("Results")
