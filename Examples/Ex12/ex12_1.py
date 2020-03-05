@@ -86,6 +86,10 @@ UFvp=matrix(numpy.matlib.zeros((20, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
 Ftg  =matrix(numpy.matlib.zeros((2,2))) #Gradient deformation in tensor form
 
+#Gauss variables
+F   = matrix(numpy.matlib.zeros((4,1)))#Tensor form
+Ft  = matrix(numpy.matlib.zeros((2,2)))#Tensor form
+
 S=matrix(numpy.matlib.zeros((4, 1)))    #Nodal internal variable
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
 
@@ -139,7 +143,6 @@ Eet=matrix(numpy.matlib.zeros((2, 2))) #Tensor form
 #These are the same but reorganized
 dVxy=zeros(4)
 L   =matrix(numpy.matlib.zeros((2, 2)))
-
 BL      = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 temp8x1 = matrix(numpy.matlib.zeros((8, 1))) 
 
@@ -259,6 +262,8 @@ for e in range (4):
                 Bv[2,2*k+1]=dHxy[0,k]
                 Bv[3,2*k+1]=dHxy[1,k]
             
+            ################            
+            ## 
             for i in range(4):
                 for l in range(4):
                     for m in range(4):  
@@ -271,7 +276,9 @@ for e in range (4):
                     for m in range(4):  
                         for n in range(2):
                             BsigF[l,4*i+m,n]=B4i[l,m,n]
-            #Ec. D.20 p177
+            
+            ###################
+            ## Ec. D.20 p177 
             if form==2:
                 for i in range(4):
                     for l in range(5):
@@ -301,9 +308,9 @@ for e in range (4):
                         UF  [i,0]=Uglob[ndof*d+2+i]
             
             v  =Nv*UV #[2x8 x (8x1)]
-            s  =Ns*Us
+            s  =float(Ns*Us)
             F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-            #Ftg=
+            Ft=
             if (form==1):
                 sig=NsigF*Usig
             else:
@@ -447,12 +454,12 @@ for e in range (4):
                             # wJ)   
             #temp8x1=0
             for l,m,n in range(4,4,8):
-                temp8x1[l]=temp8x1[m][l]+BL[m][l][n]
-            print("temp",G*sig)  
+                temp8x1[l]=temp8x1[l]+BL[m][l][n]
+            #print("temp",temp8x1[0])  
             Kt[0][0]=   Kt[0][0]+Bv.transpose()*(
                         #G[i][p]*C[p][k]
                         #-G[i][l]*BL[l][k][n]*sigma[k]
-                        +G*sig*temp8x1*
+                        +G*sig*temp8x1.transpose()*
                         wJ)
             #for i in range(4):
             #Kt.clear()
