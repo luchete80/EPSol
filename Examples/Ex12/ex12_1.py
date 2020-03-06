@@ -6,6 +6,8 @@ import numpy.matlib #for zeros
 
 import array as arr
 
+import deriv
+
 #----------------------------
 #Input Data------------------
 form=2
@@ -81,13 +83,18 @@ U   =matrix(numpy.matlib.zeros((44, 1)))
 UV  =matrix(numpy.matlib.zeros((8, 1)))
 Usig=matrix(numpy.matlib.zeros((16, 1)))
 UF  =matrix(numpy.matlib.zeros((16, 1)))
-UF  =matrix(numpy.matlib.zeros((16, 1)))
 UFvp=matrix(numpy.matlib.zeros((20, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
 
 #Gauss variables
-F   = matrix(numpy.matlib.zeros((4,1)))#Tensor form
-Ft  = matrix(numpy.matlib.zeros((2,2)))#Tensor form
+F     = matrix(numpy.matlib.zeros((4,1)))#Tensor form
+Ft    = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Ft_inv= matrix(numpy.matlib.zeros((3,3)))#Tensor form
+
+#Formulation 2
+Fet  = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Fvp  = matrix(numpy.matlib.zeros((4,1)))#Tensor form
+Fvpt = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 
 S=matrix(numpy.matlib.zeros((4, 1)))    #Nodal internal variable
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
@@ -118,13 +125,14 @@ B5i=arange(50).reshape(5,5,2) #
 #(4,16,2)
 #print(BsigF[0])
 LM=matrix(numpy.matlib.zeros((4, 4)))
-dEdU=matrix(numpy.matlib.zeros((4, 2)))
+#Only returns derivatives respectives to F and Fvp
+dEdU=[matrix(numpy.matlib.zeros((4, 4))),matrix(numpy.matlib.zeros((4, 5)))]
 
 
 K=matrix(numpy.matlib.zeros((44, 44)))
 K=matrix(numpy.matlib.zeros((44, 44)))
 
-R =matrix(numpy.matlib.zeros((44, 1)))
+R   =matrix(numpy.matlib.zeros((44, 1)))
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
 RFvp=matrix(numpy.matlib.zeros((20, 1)))
@@ -224,11 +232,13 @@ G=matrix([[1,0,0,0],[0,0,0,1],[0,0,0,1],[0,1,0,0]])
 H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]]) 
 
 #ELEMENT LOOP  
+it=0
 for e in range (4):
     #Obtain Ve from global
     Kel=0.
     for n in range(4):
         X2[n]=node[elnodes.astype(int)[e][n]]
+    print ("Element ", e)
     print ("Element Nodes")
     print (X2)
     
@@ -297,20 +307,23 @@ for e in range (4):
             #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
             for n in range (4):
                 d=elnodes.astype(int)[e][n]
-                for i in range (8):
+                print("d len Uglob i",d,len(Uglob),ndof*d+2)
+                for i in range (var_dim[0]):    #Velocity is var 0
                     UV[i,0]=Uglob[ndof*d+i]
-                for j in range (16):
-                    Usig[j,0]=Uglob[ndof*d+2+j]
+                for j in range (var_dim[1]):
+                    print("J",j)
                     if (form==1):
-                        Usig[j,0]=Uglob[ndof*d+2+j]
+                        Usig[j,0]=Uglob[ndof*d+var_dim[0]+j]
                         UF  [j,0]=Uglob[ndof*d+6+j]
-                    else:
-                        UF  [j,0]=Uglob[ndof*d+2+j]
-            
+                    else: #Fig 4.1, Z is not translated to Fvpt
+                        UF  [j,0]=Uglob[ndof*d+var_dim[0]+j]
+                for j in range (var_dim[2]):
+                        UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
+                        
             v  =Nv*UV #[2x8 x (8x1)]
             s  =float(Ns*Us)
             F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-            Ft=
+            #Ft=
             if (form==1):
                 sig=NsigF*Usig
             else:
@@ -414,6 +427,25 @@ for e in range (4):
             
             wJ=w*detJ
             
+            #Elastic part of F 4.6
+            #ATENTION F~ is not in the same order of NODAL variable 
+            if (it==0):
+                Ft=identity(3)
+                Fvpt=identity(3)
+                print(Ft)
+            else:
+                Ft[0,0]=F[0]
+                Ft[0,1]=F[1]
+                Ft[1,0]=F[2]
+                Ft[1,1]=F[3]
+                Ft[2,2]=1.
+                
+            visc=1.
+            
+            Fet=Ft*linalg.inv(Fvpt) #Remains thermal part
+            
+            dEdU=deriv.calc_dEdU(Fet)
+            
             # *****************************************************************
             #RESIDUALS ******************* 2.26 to 2.39 *****************************
             Rv  =Bv.transpose()*P #Remains the summ of particular gauss points
@@ -453,14 +485,18 @@ for e in range (4):
                             # +G[i][k]*sigma[k]*H[m][l]*BL[m][l][n]*
                             # wJ)   
             #temp8x1=0
-            for l,m,n in range(4,4,8):
-                temp8x1[l]=temp8x1[l]+BL[m][l][n]
-            #print("temp",temp8x1[0])  
-            Kt[0][0]=   Kt[0][0]+Bv.transpose()*(
-                        #G[i][p]*C[p][k]
-                        #-G[i][l]*BL[l][k][n]*sigma[k]
-                        +G*sig*temp8x1.transpose()*
-                        wJ)
+            #*** ONLY FOR FORMULATION 2
+            # for l,m,n in range(4,4,8):
+                # temp8x1[l]=temp8x1[l]+BL[m][l][n]
+            
+            # #print("temp",temp8x1[0])  
+            # Kt[0][0]=   Kt[0][0]+Bv.transpose()*(
+                        # #G[i][p]*C[p][k]
+                        # #-G[i][l]*BL[l][k][n]*sigma[k]
+                        # +G*sig*temp8x1.transpose()*
+                        # wJ
+            #dRv/dUv
+            Kt[0][0]=   Kt[0][0]+Bv.transpose()*visc*Bv*wJ
             #for i in range(4):
             #Kt.clear()
             #F derivatives (2.49 to 2.52)
@@ -470,6 +506,7 @@ for e in range (4):
                 find=int(1)
 
             #K_t[find,0]   =K_t[find,0]+ (NF*BsigF)
+            #dRdUF  4.36
             Kt[find][find]= (Kt[find][find]+
                             (NsigF+temp4x16*tau).transpose()*
                             (temp4x16-LM*NsigF)*wJ)
