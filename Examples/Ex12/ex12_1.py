@@ -126,8 +126,7 @@ B5i=arange(50).reshape(5,5,2) #
 #print(BsigF[0])
 LM=matrix(numpy.matlib.zeros((4, 4)))
 #Only returns derivatives respectives to F and Fvp
-dEdU=[matrix(numpy.matlib.zeros((4, 4))),matrix(numpy.matlib.zeros((4, 5)))]
-
+dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 
 K=matrix(numpy.matlib.zeros((44, 44)))
 K=matrix(numpy.matlib.zeros((44, 44)))
@@ -328,6 +327,13 @@ for e in range (4):
                 sig=NsigF*Usig
             else:
                 Fvp=NFvp*UFvp
+            
+            #Tensor form
+            Fvpt[0,0]=Fvp[0]
+            Fvpt[0,1]=Fvp[1]
+            Fvpt[1,0]=Fvp[2]
+            Fvpt[1,1]=Fvp[3] 
+             
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
             #Calculate Velocity gradient Lij
@@ -444,7 +450,7 @@ for e in range (4):
             
             Fet=Ft*linalg.inv(Fvpt) #Remains thermal part
             
-            dEdU=deriv.calc_dEdU(Fet)
+            dEdU=deriv.calc_dEdU(Ft,Fet,Fvpt)
             
             # *****************************************************************
             #RESIDUALS ******************* 2.26 to 2.39 *****************************
