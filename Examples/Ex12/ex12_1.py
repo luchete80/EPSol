@@ -87,14 +87,17 @@ UFvp=matrix(numpy.matlib.zeros((20, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
 
 #Gauss variables
-F     = matrix(numpy.matlib.zeros((4,1)))#Tensor form
-Ft    = matrix(numpy.matlib.zeros((3,3)))#Tensor form
-Ft_inv= matrix(numpy.matlib.zeros((3,3)))#Tensor form
+#d vectors are [xx yx xy yy zz]
+F       = matrix(numpy.matlib.zeros((4,1)))#Tensor form
+Ft      = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Fd      = matrix(numpy.matlib.zeros((4,1)))#Vector form, FZZ IS 1!!
+Ft_inv  = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Fd_inv  = matrix(numpy.matlib.zeros((5,1)))#Tensor form
 
 #Formulation 2
-Fet  = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 Fvp  = matrix(numpy.matlib.zeros((4,1)))#Tensor form
 Fvpt = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Fvpd = matrix(numpy.matlib.zeros((5,1)))#Tensor form
 
 S=matrix(numpy.matlib.zeros((4, 1)))    #Nodal internal variable
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
@@ -328,11 +331,6 @@ for e in range (4):
             else:
                 Fvp=NFvp*UFvp
             
-            #Tensor form
-            Fvpt[0,0]=Fvp[0]
-            Fvpt[0,1]=Fvp[1]
-            Fvpt[1,0]=Fvp[2]
-            Fvpt[1,1]=Fvp[3] 
              
             #Galerkin strain integration
             #Calculate deformation gradient Fij, for that
@@ -437,20 +435,36 @@ for e in range (4):
             #ATENTION F~ is not in the same order of NODAL variable 
             if (it==0):
                 Ft=identity(3)
+                #NOT USE!!! Fd=[[1,0,0,1]]
                 Fvpt=identity(3)
                 print(Ft)
+                Fvpd[0]=1.
+                Fvpd[1]=0. #yx
+                Fvpd[2]=0. #xy
+                Fvpd[3]=1. 
+                Fvpd[4]=1.
             else:
                 Ft[0,0]=F[0]
                 Ft[0,1]=F[1]
                 Ft[1,0]=F[2]
                 Ft[1,1]=F[3]
                 Ft[2,2]=1.
+                #F is [xx xy yx yy zz]
+                Fd[0]=F[0]
+                Fd[1]=F[2] #yx
+                Fd[2]=F[1] #xy
+                Fd[3]=F[3]
+                #F is [xx xy yx yy zz]
+                Fvpd[0]=Fvp[0]
+                Fvpd[1]=Fvp[2] #yx
+                Fvpd[2]=Fvp[1] #xy
+                Fvpd[3]=Fvp[3]  
                 
             visc=1.
-            
-            Fet=Ft*linalg.inv(Fvpt) #Remains thermal part
-            
-            dEdU=deriv.calc_dEdU(Ft,Fet,Fvpt)
+          
+            print("Fd",Fd[0,0])
+            #Arguments passed are ~ vectors
+            dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF)
             
             # *****************************************************************
             #RESIDUALS ******************* 2.26 to 2.39 *****************************
