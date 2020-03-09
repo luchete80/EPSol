@@ -115,7 +115,7 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     for i,k in range(4):
         temp4[i,0]=temp4[i]+TF[i,k]*F4ed[k]
         
-    ddetFe_dF4ed=-1./(det_Fed*det_Fed)*temp4+1./(det_Fed)*TF
+    ddetFe_dF4ed=float(-1./(det_Fed*det_Fed))*temp4+1./(det_Fed)*TF
     #F derivative
     #Eqn E.2
     dEdU[0]=dEdFed_inv*dFeinv_dFe*dFedUF
