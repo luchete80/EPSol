@@ -2,7 +2,7 @@ from numpy import *
 import numpy.matlib #for zeros
 
 #This function only computes dEdUF and dEdUFvp, since the other are NULL
-def calc_dEdU(Fd,Fvpd,NsigF):
+def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #Fet_inv=linalg.inv(Fet)
     dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
     #Eqn 1, comes from 
@@ -19,18 +19,31 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     F4ed_inv=matrix(numpy.matlib.zeros((4, 1)))
     Fed_inv =matrix(numpy.matlib.zeros((5, 1)))
     
+    F4vpd    =matrix(numpy.matlib.zeros((4, 1)))
     Fvpt     =matrix(numpy.matlib.zeros((3, 3)))
     Fvpt_inv =matrix(numpy.matlib.zeros((3, 3)))
     Fvpd_inv =matrix(numpy.matlib.zeros((4, 1)))
     
     F4vpd_inv=matrix(numpy.matlib.zeros((4, 1)))
     
+    #Used for both F (E.7/E.8) 
     dFeinv_dFe=matrix(numpy.matlib.zeros((5, 5)))
+    dF4einv_dF4e=matrix(numpy.matlib.zeros((4, 4)))
+    
+    dF4vpinv_dF4vp=matrix(numpy.matlib.zeros((4, 4)))
+    
     dFedUF =matrix(numpy.matlib.zeros((5, 16)))
     dF4edUF=matrix(numpy.matlib.zeros((4, 16)))
-    
+
+    dFedUFvp =matrix(numpy.matlib.zeros((5, 20)))
+    dF4edUFvp=matrix(numpy.matlib.zeros((4, 20)))
+
     ddetFe_dF4ed=matrix(numpy.matlib.zeros((1, 4)))
+    ddetFvp_dF4vp=matrix(numpy.matlib.zeros((1, 4)))
+    
     temp4=matrix(numpy.matlib.zeros((4, 1)))
+    
+    dF4vp_dUFvp     =matrix(numpy.matlib.zeros((4, 20)))
     
     #Check with inv
     #F=[Fxx]
@@ -47,7 +60,10 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     # Ft[0,1]=Fd[2]
     # Ft[1,1]=Fd[3]
     # Ft[2,2]=1.
-     
+
+    for i in range(4):
+        F4vpd[i]=Fvpd[i]
+    
     Fvpt[0,0]=Fvpd[0]
     Fvpt[1,0]=Fvpd[1]
     Fvpt[0,1]=Fvpd[2]
@@ -62,6 +78,7 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     F4vpd_inv[3]=Fvpt_inv[1,1]
     #Fet=Ft*Fvpt_inv #Remains thermal part
     #print(Fet)
+    
     #E.10 
     #Fe in fact is Fe=F*Fvp-1
     F4ed=FM*Fvpd_inv         
@@ -70,7 +87,7 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     #E.9 
     for i in range (4):
         Fed[i]=F4ed[i]    
-    Fed[4]=Fvpt_inv[2,2]
+    Fed[4,0]=Fvpt_inv[2,2]
  
         
                 
@@ -99,29 +116,74 @@ def calc_dEdU(Fd,Fvpd,NsigF):
         dFMdUF[1,1,k]=dFMdUF[3,3,k]=NsigF[3,k] 
         
     #Third Term dFedUF
-    #E.12 & E.13
+    #E.12
     for i in range(4):
         for j in range(16):
             for k in range (4):
                 dF4edUF[i,j]=dFMdUF[i,k,j]*F4vpd_inv[k]
     
-    #E.8
+    #E.13
     for j in range(16):
         for i in range(4):
             dFedUF[i,j]=dF4edUF[i,j]
-            dFedUF[4,j]=0
+        dFedUF[4,j]=0.
+    
+    #Determinant Derivative, similar to C.22
+    ddetFe_dF4ed[0,0]= F4ed[3,0]
+    ddetFe_dF4ed[0,3]=-F4ed[2,0]
+    ddetFe_dF4ed[0,1]=-F4ed[1,0]
+    ddetFe_dF4ed[0,2]= F4ed[0,0]
     
     #E.7
     for i,k in range(4,4):
         temp4[i,0]=temp4[i,0]+TF[i,k]*F4ed[k,0]
         
-    ddetFe_dF4ed=float(-1./(det_Fed*det_Fed))*temp4+float(1./(det_Fed))*TF
+    dF4einv_dF4e=float(-1./(det_Fed*det_Fed))*temp4*ddetFe_dF4ed+float(1./(det_Fed))*TF
+    
+    #E.8
+    for i,k in zip(range(4),range(4)):
+        print("i,j",i,j)
+        dFeinv_dFe[i,k]=dF4einv_dF4e[i,k]
+    
+    dFeinv_dFe[4,4]=float(-1./(Fed[4,0]*Fed[4,0]))
+        
+    print ("dF4einv_dF4e",dF4einv_dF4e)
     #F derivative
     #Eqn E.2
     dEdU[0]=dEdFed_inv*dFeinv_dFe*dFedUF
     
     #-----------------------------------------------------------------------------
     #Viscoplastic Fvp derivative
-    #E.14
+    #-----------------------------------------------------------------------------
+    det_Fvp=Fvpd[0]*Fvpd[3]*-Fvpd[1]*Fvpd[2]
+    #E.17
+    for i in range(4):
+        temp4[i,0]=0.
+
+    for i, k in zip(range(4), range(4)):
+        temp4[i,0]=temp4[i,0]+TF[i,k]*F4vpd[k,0]
+
+    ddetFvp_dF4vp[0,0]= F4vpd[3,0]
+    ddetFvp_dF4vp[0,3]=-F4vpd[2,0]
+    ddetFvp_dF4vp[0,1]=-F4vpd[1,0]
+    ddetFvp_dF4vp[0,2]= F4vpd[0,0]
+    
+    dF4vpinv_dF4vp=float(-1./(det_Fvp*det_Fvp))*temp4*ddetFvp_dF4vp+float(1./(det_Fvp))*TF
+    
+    #First two terms are the same as before 
+    #E.19
+    for i, j in zip(range(4), range(20)):
+        dF4vp_dUFvp[i,j]=NFvp[i,j]
+    
+    dF4edUFvp=FM*dF4vpinv_dF4vp*dF4vp_dUFvp
+    
+    #E.15
+    for j in range(20):
+        for i in range(4):
+            dFedUFvp[i,j]=dF4edUFvp[i,j]
+        dFedUFvp[4,j]=-1./(Fvpd[4]*Fvpd[4])*NFvp[4,j]
+    
+    #Eqn E.2
+    dEdU[1]=dEdFed_inv*dFeinv_dFe*dFedUFvp
        
     return dEdU

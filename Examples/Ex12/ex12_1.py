@@ -464,7 +464,7 @@ for e in range (4):
           
             print("Fd",Fd[0,0])
             #Arguments passed are ~ vectors
-            dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF)
+            dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
             
             # *****************************************************************
             #RESIDUALS ******************* 2.26 to 2.39 *****************************
