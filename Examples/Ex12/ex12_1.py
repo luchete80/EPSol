@@ -530,7 +530,12 @@ for e in range (4):
             Kt[find][find]= (Kt[find][find]+
                             (NsigF+temp4x16*tau).transpose()*
                             (temp4x16-LM*NsigF)*wJ)
-                
+            
+            #---------------------------------------------------
+            ##Viscoplastic derivatives
+            #dFvp/dUV
+            #Kt[2][0]=
+            
             #S derivatives -- COMMON TO BOTH FORMULATIONS
             #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
             #dRs/dUv
@@ -539,7 +544,15 @@ for e in range (4):
             Kt[3][0]=(Kt[3][0]+
                       (Ns.transpose()*(Bs*Us).transpose()*Nv +
                       tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs))*
-                      wJ)     
+                      wJ) 
+            
+            #4.44
+            Kt[3][1]=Kt[3][1]+(
+                      (Ns+tau*v.transpose()*Bs).transpose()*
+                      (v.transpose()*Bs)*
+                      wJ) 
+            
+            #4.46            
             Kt[3][3]=Kt[3][3]+(
                       (Ns+tau*v.transpose()*Bs).transpose()*
                       (v.transpose()*Bs)*
