@@ -10,7 +10,7 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     TF=matrix([[0,0,0,1],[0,-1,0,0],[0,0,-1,0],[1,0,0,0]])
     dEdFed_inv=matrix(numpy.matlib.zeros((4, 5)))    #E.3
     
-    dFMdUF =arange(128).reshape(4,8,16)
+    dFMdUF =arange(256).reshape(4,4,16)
 
     Fet  = matrix(numpy.matlib.zeros((3,3)))#Tensor form    
     Fed=matrix(numpy.matlib.zeros((5, 1)))
@@ -35,10 +35,10 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     #Check with inv
     #F=[Fxx]
     print("Fd0",Fd[0,0])
-    FM=matrix([[Fd[0],Fd[2],0    ,0   ],
-               [Fd[1],Fd[3],0    ,0   ],
-               [0    ,    0,Fd[0],Fd[2]],
-               [0    ,    0,Fd[1],Fd[3]]])     
+    FM=matrix([[Fd[0,0],Fd[2,0],0    ,0   ],
+               [Fd[1,0],Fd[3,0],0    ,0   ],
+               [0    ,    0,Fd[0,0],Fd[2,0]],
+               [0    ,    0,Fd[1,0],Fd[3,0]]])     
     
     
     
@@ -64,9 +64,7 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     #print(Fet)
     #E.10 
     #Fe in fact is Fe=F*Fvp-1
-    print("F4vpd_inv[0]",F4vpd_inv[0])
-    F4ed=FM*Fvpd_inv
-                
+    F4ed=FM*Fvpd_inv         
     #Earr_e=
     #Earr_e=TLa*
     #E.9 
@@ -104,18 +102,20 @@ def calc_dEdU(Fd,Fvpd,NsigF):
     #E.12 & E.13
     for i in range(4):
         for j in range(16):
-            for k in range (8):
+            for k in range (4):
                 dF4edUF[i,j]=dFMdUF[i,k,j]*F4vpd_inv[k]
     
+    #E.8
     for j in range(16):
         for i in range(4):
             dFedUF[i,j]=dF4edUF[i,j]
             dFedUF[4,j]=0
     
-    for i,k in range(4):
-        temp4[i,0]=temp4[i]+TF[i,k]*F4ed[k]
+    #E.7
+    for i,k in range(4,4):
+        temp4[i,0]=temp4[i,0]+TF[i,k]*F4ed[k,0]
         
-    ddetFe_dF4ed=float(-1./(det_Fed*det_Fed))*temp4+1./(det_Fed)*TF
+    ddetFe_dF4ed=float(-1./(det_Fed*det_Fed))*temp4+float(1./(det_Fed))*TF
     #F derivative
     #Eqn E.2
     dEdU[0]=dEdFed_inv*dFeinv_dFe*dFedUF
