@@ -182,8 +182,9 @@ class bMatrix: #Block matrix
    
 #Matrix Double Entry
 #Example in formulation 1:
-# (8x8)  (8x16) (8x16) (8x4)
+# (8x8)  (8x16)  (8x20) (8x4)
 # (16x8) (16 x 16) ..  ..
+# (20x8) (20x16) (20x20) (20x4)
 Kt=[
      [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
       matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]
@@ -198,6 +199,10 @@ Kt=[
       matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[3])))
      ]    
     ]     
+dgdU=[  matrix(numpy.matlib.zeros((1,8))),
+        matrix(numpy.matlib.zeros((1,16))),
+        matrix(numpy.matlib.zeros((1,20))),
+        matrix(numpy.matlib.zeros((1,4)))]
 
 print("Kt_0",Kt[0][0])
 
@@ -517,6 +522,15 @@ for e in range (4):
                         # wJ
             #dRv/dUv
             Kt[0][0]=   Kt[0][0]+Bv.transpose()*visc*Bv*wJ
+            
+            #dRv/dUF
+            #(8x16)
+            Kt[0][1]=   Kt[0][1]+Bv.transpose()*c*dEdU[0]*wJ
+            #dRv/dUF (8x20)
+            Kt[0][2]=   Kt[0][2]+Bv.transpose()*c*dEdU[1]*wJ
+            #Kt(0,3) dRv/dUs=0
+            
+            #----------------------------------------------------
             #for i in range(4):
             #Kt.clear()
             #F derivatives (2.49 to 2.52)
@@ -524,38 +538,51 @@ for e in range (4):
                 find=int(2)
             else:
                 find=int(1)
-
-            #K_t[find,0]   =K_t[find,0]+ (NF*BsigF)
-            #dRdUF  4.36
-            Kt[find][find]= (Kt[find][find]+
+            
+            #dRFdUv 4.35
+            # #K_t[find,0]   =(K_t[find,0]+ 
+                            # (NF*BsigF)
+                            # (NF+tau*temp4x16)
+                            # )*wJ
+            #dRFdUF  4.36
+            Kt[find][find]= Kt[find][find]+(
                             (NsigF+temp4x16*tau).transpose()*
-                            (temp4x16-LM*NsigF)*wJ)
+                            (temp4x16-LM*NsigF)
+                            )*wJ
+                            
+            #dRFdUF=dRFdUF=0.  4.37 & 4.38
             
             #---------------------------------------------------
             ##Viscoplastic derivatives
             #dFvp/dUV
             #Kt[2][0]=
             
+            #---------------------------------------------------
             #S derivatives -- COMMON TO BOTH FORMULATIONS
             #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
             #dRs/dUv
             # print("test",tau*Bs.transpose()*Nv*(2.*v*Bs*Us * g_sigs) 
             print("test",float(2.0*(Bs*Us).transpose()*v))
-            Kt[3][0]=(Kt[3][0]+
-                      (Ns.transpose()*(Bs*Us).transpose()*Nv +
-                      tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs))*
-                      wJ) 
+            Kt[3][0]=Kt[3][0]+(
+                      Ns.transpose()*(Bs*Us).transpose()*Nv +
+                      tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs)
+                      )*wJ 
             
-            #4.44
-            Kt[3][1]=Kt[3][1]+(
-                      (Ns+tau*v.transpose()*Bs).transpose()*
-                      (v.transpose()*Bs)*
-                      wJ) 
+            #4.44 dRs/dF 4.44 (4x16)
+            # Kt[3][1]=Kt[3][1]+(
+                      # (Ns+tau*v.transpose()*Bs).transpose()*
+                      # (v.transpose()*Bs)*
+                      # wJ) 
             
-            #4.46            
+            #dRs/dFvp 4.45
+            #4x20
+            Kt[3][2]=Kt[3][2]+(
+                    (Ns.transpose()+tau*Bs.transpose()*v)*(-1.)*dgdU[2]
+                    )*wJ
+            #dRs/dS 4.46    
             Kt[3][3]=Kt[3][3]+(
                       (Ns+tau*v.transpose()*Bs).transpose()*
-                      (v.transpose()*Bs)*
+                      (v.transpose()*Bs-dgdU[3])*
                       wJ) 
 
               # (Ns[i]*Bs[k][j]*Us[j]*Nv[k][p] +
