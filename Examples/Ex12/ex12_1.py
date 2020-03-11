@@ -121,7 +121,11 @@ BsigF=arange(128).reshape(4,16,2) #
 BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
+temp4x8=matrix(numpy.matlib.zeros((4, 16))) #BL*NFUF
 temp5x16=matrix(numpy.matlib.zeros((5, 20)))
+
+temp4x2=matrix(numpy.matlib.zeros((4, 2)))
+temp20x2=matrix(numpy.matlib.zeros((20, 2))) #For 4.39
 
 B4i=arange(32).reshape(4,4,2) #
 B5i=arange(50).reshape(5,5,2) #
@@ -538,12 +542,21 @@ for e in range (4):
                 find=int(2)
             else:
                 find=int(1)
-            
-            #dRFdUv 4.35
-            # #K_t[find,0]   =(K_t[find,0]+ 
-                            # (NF*BsigF)
-                            # (NF+tau*temp4x16)
-                            # )*wJ
+                
+            for m in range(4):
+                for j in range(16):
+                    for k in range(2):
+                        temp4x2[m,k]=temp4x2[m,k]+BsigF[m,j,k]*UF[j,0]
+
+            for m,l,p in zip(range(4),range(4),range(8)):
+                temp4x8[m,p]=BL[m,l,p]+F[l,0]            
+            #dRF/dUv 4.35
+            print("BL*temp4x8",temp4x8)
+            Kt[find][0]   =Kt[find][0]+( 
+                            (NsigF.transpose()*temp4x2*Nv)
+                            #+tau*N
+                            -(NsigF+float(tau)*temp4x16).transpose()*temp4x8
+                            )*wJ
             #dRFdUF  4.36
             Kt[find][find]= Kt[find][find]+(
                             (NsigF+temp4x16*tau).transpose()*
@@ -554,8 +567,21 @@ for e in range (4):
             
             #---------------------------------------------------
             ##Viscoplastic derivatives
-            #dFvp/dUV
-            #Kt[2][0]=
+            #Kt(2,0)=dFvp/dUV 4.39
+            # for m,i,n in zin(range(5),range(20),range(2)):
+                # temp1=temp2=0. #increase with each m
+                # for j,k in zip(range(),range()):
+                    # temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
+                # for j,l in zip(range(),range()):
+                    # temp2=temp2+LM
+                # temp20x2[i,n]=  temp20x2[i,n]+
+                                # BFvp[m,i,n]*(temp1-temp2)
+                
+            # Kt[2][0]=Kt[2][0]+(
+                        # NFvp.transpose()*
+                        # +tau*N
+                        # -(NFvp+tau*temp5x16).transpose()*
+                        # )*wJ
             
             #---------------------------------------------------
             #S derivatives -- COMMON TO BOTH FORMULATIONS
