@@ -121,7 +121,8 @@ BsigF=arange(128).reshape(4,16,2) #
 BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
-temp4x8=matrix(numpy.matlib.zeros((4, 16))) #BL*NFUF
+temp4x1=matrix(numpy.matlib.zeros((4, 1)))
+temp4x8=matrix(numpy.matlib.zeros((4, 8))) #BL*NFUF
 temp5x16=matrix(numpy.matlib.zeros((5, 20)))
 
 temp4x2=matrix(numpy.matlib.zeros((4, 2)))
@@ -186,9 +187,23 @@ class bMatrix: #Block matrix
    
 #Matrix Double Entry
 #Example in formulation 1:
-# (8x8)  (8x16)  (8x20) (8x4)
-# (16x8) (16 x 16) ..  ..
-# (20x8) (20x16) (20x20) (20x4)
+# ( 8x 8)  (8x16)  (8x20) (8x4)
+# (16x 8) (16 x 16) ..  ..
+# (20x 8) (20x16) (20x20) (20x4)
+# ( 4x 8)
+
+dDdUv   =arange(200).reshape(5,5, 8) #TO MODIFY
+dDdUF   =arange(400).reshape(5,5,16) #TO MODIFY
+dDdUFvp =arange(500).reshape(5,5,20) #TO MODIFY
+dDdUs   =arange(100).reshape(5,5, 4) #TO MODIFY
+
+#From multiplying dDdU x NFvp*
+#4.39 to 4.42
+temp_dDFvp=[numpy.matlib.zeros((5, 8)),
+            numpy.matlib.zeros((5,16)),
+            numpy.matlib.zeros((5,20)),
+            numpy.matlib.zeros((5, 4))]
+
 Kt=[
      [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
       matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]
@@ -203,12 +218,12 @@ Kt=[
       matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[3])))
      ]    
     ]     
-dgdU=[  matrix(numpy.matlib.zeros((1,8))),
+dgdU=[  matrix(numpy.matlib.zeros((1, 8))),
         matrix(numpy.matlib.zeros((1,16))),
         matrix(numpy.matlib.zeros((1,20))),
-        matrix(numpy.matlib.zeros((1,4)))]
+        matrix(numpy.matlib.zeros((1, 4)))]
 
-print("Kt_0",Kt[0][0])
+print("Kt_0",len((Kt[1][0])),len((Kt[1][0]).transpose()))
 
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
@@ -253,6 +268,7 @@ for e in range (4):
     print ("Element Nodes")
     print (X2)
     
+    print ("Nv",Nv)
     for ig in range(2):
         for jg in range(2):
             rg=gauss[ig]
@@ -318,11 +334,11 @@ for e in range (4):
             #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
             for n in range (4):
                 d=elnodes.astype(int)[e][n]
-                print("d len Uglob i",d,len(Uglob),ndof*d+2)
+                #print("d len Uglob i",d,len(Uglob),ndof*d+2)
                 for i in range (var_dim[0]):    #Velocity is var 0
                     UV[i,0]=Uglob[ndof*d+i]
                 for j in range (var_dim[1]):
-                    print("J",j)
+                    #print("J",j)
                     if (form==1):
                         Usig[j,0]=Uglob[ndof*d+var_dim[0]+j]
                         UF  [j,0]=Uglob[ndof*d+6+j]
@@ -419,7 +435,7 @@ for e in range (4):
             #Direction of plastic Strain: 2.16
             N_d=sqrt(3./2.)*sig_d/sig_eq
             Dvp=sqrt(3./2.)*epsr_vp_eq*N_d
-            print ("Nd",N_d)
+            #print ("Nd",N_d)
             #With evp = f(sigma,s) (Sec. 2.4.2)
             #eps_vp=A sinh (psi (sigma/s))^(1/m) (2.57 p27)
             #Calculate Rate of Def Tensor D (2.13, 2.14)
@@ -471,7 +487,7 @@ for e in range (4):
                 
             visc=1.
           
-            print("Fd",Fd[0,0])
+            #print("Fd",Fd[0,0])
             #Arguments passed are ~ vectors
             dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
             
@@ -551,9 +567,10 @@ for e in range (4):
             for m,l,p in zip(range(4),range(4),range(8)):
                 temp4x8[m,p]=BL[m,l,p]+F[l,0]            
             #dRF/dUv 4.35
-            print("BL*temp4x8",temp4x8)
+            #(16x8)
+            #print("Nv",Nv)
             Kt[find][0]   =Kt[find][0]+( 
-                            (NsigF.transpose()*temp4x2*Nv)
+                             (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
                             #+tau*N
                             -(NsigF+float(tau)*temp4x16).transpose()*temp4x8
                             )*wJ
@@ -565,30 +582,40 @@ for e in range (4):
                             
             #dRFdUF=dRFdUF=0.  4.37 & 4.38
             
+            temp4x1=LM*NsigF*UF
             #---------------------------------------------------
             ##Viscoplastic derivatives
             #Kt(2,0)=dFvp/dUV 4.39
-            # for m,i,n in zin(range(5),range(20),range(2)):
-                # temp1=temp2=0. #increase with each m
-                # for j,k in zip(range(),range()):
-                    # temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
-                # for j,l in zip(range(),range()):
-                    # temp2=temp2+LM
-                # temp20x2[i,n]=  temp20x2[i,n]+
-                                # BFvp[m,i,n]*(temp1-temp2)
-                
-            # Kt[2][0]=Kt[2][0]+(
-                        # NFvp.transpose()*
-                        # +tau*N
-                        # -(NFvp+tau*temp5x16).transpose()*
-                        # )*wJ
+            for m,i,n in zip(range(5),range(20),range(2)):
+                temp1=temp2=0. #increase with each m
+                for j,k in zip(range(20),range(2)):
+                    temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
+                temp20x2[i,n]=  temp20x2[i,n]+BFvp[m,i,n]*(temp1-temp4x1[m,0])
             
+            #print("size",len((NFvp+float(tau)*temp5x16)))
+            Kt[2][0]=Kt[2][0]+(
+                        #NFvp.transpose()*
+                         tau*temp20x2*Nv
+                        -(NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[0]
+                        )*wJ
+            
+            #dRFvp/dUF 4.42
+            Kt[2][1]=Kt[2][1]-(
+                         (NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[1]
+                        )*wJ
+            
+            #dRFvp/dUFvp 4.41
+            Kt[2][2]=Kt[2][2]-(
+                         (NFvp+float(tau)*temp5x16).transpose()*(
+                         temp5x16-DM*NFvp-temp_dDFvp[2])
+                        )*wJ
+                        
             #---------------------------------------------------
             #S derivatives -- COMMON TO BOTH FORMULATIONS
             #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
             #dRs/dUv
             # print("test",tau*Bs.transpose()*Nv*(2.*v*Bs*Us * g_sigs) 
-            print("test",float(2.0*(Bs*Us).transpose()*v))
+            #print("test",float(2.0*(Bs*Us).transpose()*v))
             Kt[3][0]=Kt[3][0]+(
                       Ns.transpose()*(Bs*Us).transpose()*Nv +
                       tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs)
