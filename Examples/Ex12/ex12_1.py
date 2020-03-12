@@ -582,10 +582,11 @@ for e in range (4):
                             
             #dRFdUF=dRFdUF=0.  4.37 & 4.38
             
-            temp4x1=LM*NsigF*UF
             #---------------------------------------------------
             ##Viscoplastic derivatives
             #Kt(2,0)=dFvp/dUV 4.39
+            temp4x1=LM*NsigF*UF
+            
             for m,i,n in zip(range(5),range(20),range(2)):
                 temp1=temp2=0. #increase with each m
                 for j,k in zip(range(20),range(2)):
