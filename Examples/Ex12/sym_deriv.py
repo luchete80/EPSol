@@ -1,24 +1,46 @@
 from sympy import *
+from numpy import *
+import numpy.matlib #for zeros
 
-s,h0,A,s_,s_ast,m,n,psi,Uf,Ufvp,Dvp = symbols('s h0 A s_ s_ast m n psi Uf Ufvp Dvp')
+s,h0,A,s_,s_ast,m,n,psi,Uf,Ufvp,Dvp,a = symbols('s h0 A s_ s_ast m n psi Uf Ufvp Dvp a')
 
 #From evp=f(s,sig)
 
 z = symbols('z', cls=Function)
 Ee = symbols('Ee', cls=Function)
-sig=z(Uf,Ufvp,Ee)
+sig=z(Uf,Ufvp)
 f= A*Pow(psi*sinh(s/sig),1/m)
+param=1 - s/(s_*Pow(psi*sinh(s/sig),1/m))
 
-Dvp=sqrt(3.2)*f
+#Cannot anidate 2 pows and differenciate
+#(1-s/s)a*=(1-s/(s_*( A (sinh)  /A)n)
 #1-s/s* > 0
-g1 = h0*(1-s/(s_*Pow(f/A,n)))*f
+g = h0*(Pow(param,a))*Pow(f,1/m)
+
+#Eq 4.9
+
+Dvp=matrix(numpy.matlib.zeros((4,4)))
+#sqrt(3/2)*f
+
+
+#1-s/s* < 0
+g2 = h0*(1-s/(s_*Pow(f/A,n)))*f
+
+gt=Pow(1-s,a)
+print(simplify(diff(gt,s)))
 
 print("f's: ",diff(f,s))
-print("f's: ",diff(f,s))
+print("f'Uf: ",diff(f,Uf))
 print("-------------------------")
-print("g1's: ",diff(g1,s))
+print("**********************************************")
+print("(1-s/s*)>0")
+print("g1's NOT SIMPL : ",diff(g,s))
+print("******************************")
+print("g1's SIMPLIFIED: ",simplify(diff(g,s)))
 print("-------------------------")
-print("g1'Uf: ",diff(g1,Uf))
+print("g1'Uf NOT SIMP: ",diff(g,Uf))
+print("******************************")
+print("g1'Uf NOT SIMP: ",simplify(diff(g,Uf)))
 print("-------------------------")
 
 from sympy import *
