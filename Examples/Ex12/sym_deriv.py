@@ -17,6 +17,17 @@ param=1 - s/(s_*Pow(psi*sinh(s/sig),1/m))
 #1-s/s* > 0
 g = h0*(Pow(param,a))*Pow(f,1/m)
 
+
+#--------- DVP
+sig_t=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
+sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
+
+pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
+for i in range(3): #Only daigonal is modified
+    sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
+print ("sigd",sig_d[i][0])   
+for k in range(4):
+    sig_eq=sqrt(1.5*(sig_d[k,0]))
 #Eq 4.9
 
 Dvp=matrix(numpy.matlib.zeros((4,4)))
