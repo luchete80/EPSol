@@ -606,9 +606,15 @@ for e in range (4):
                         )*wJ
             
             #dRFvp/dUFvp 4.41
-            Kt[2][2]=Kt[2][2]-(
+            Kt[2][2]=Kt[2][2]+(
                          (NFvp+float(tau)*temp5x16).transpose()*(
                          temp5x16-DM*NFvp-temp_dDFvp[2])
+                        )*wJ
+
+            #dRFvp/dUs 4.42
+            Kt[2][3]=Kt[2][3]-(
+                         (NFvp+float(tau)*temp5x16).transpose()*(
+                         temp_dDFvp[3])
                         )*wJ
                         
             #---------------------------------------------------
@@ -623,10 +629,10 @@ for e in range (4):
                       )*wJ 
             
             #4.44 dRs/dF 4.44 (4x16)
-            # Kt[3][1]=Kt[3][1]+(
-                      # (Ns+tau*v.transpose()*Bs).transpose()*
-                      # (v.transpose()*Bs)*
-                      # wJ) 
+            Kt[3][1]=Kt[3][1]+(
+                      (Ns+tau*v.transpose()*Bs).transpose()*
+                      (-dgdU[1])*
+                      wJ) 
             
             #dRs/dFvp 4.45
             #4x20
