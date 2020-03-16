@@ -128,6 +128,9 @@ temp5x16=matrix(numpy.matlib.zeros((5, 20)))
 temp4x2=matrix(numpy.matlib.zeros((4, 2)))
 temp20x2=matrix(numpy.matlib.zeros((20, 2))) #For 4.39
 
+#(5,20,2) x (20)
+BUFvp=matrix(numpy.matlib.zeros((5, 2)))
+
 B4i=arange(32).reshape(4,4,2) #
 B5i=arange(50).reshape(5,5,2) #
 #(4,16,2)
@@ -139,7 +142,10 @@ dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 K=matrix(numpy.matlib.zeros((44, 44)))
 K=matrix(numpy.matlib.zeros((44, 44)))
 
-R   =matrix(numpy.matlib.zeros((44, 1)))
+R   =[  matrix(numpy.matlib.zeros(( 8, 1))),
+        matrix(numpy.matlib.zeros((16, 1))),
+        matrix(numpy.matlib.zeros((20, 1))),
+        matrix(numpy.matlib.zeros(( 4, 1)))]
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
 RFvp=matrix(numpy.matlib.zeros((20, 1)))
@@ -493,7 +499,7 @@ for e in range (4):
             
             # *****************************************************************
             #RESIDUALS ******************* 2.26 to 2.39 *****************************
-            Rv  =Bv.transpose()*P #Remains the summ of particular gauss points
+            R[0]  =Bv.transpose()*P #Remains the summ of particular gauss points
             #Rsig[16x1] (4 per node)
             #Construct vk Bsig mik
             for m in range(4):
@@ -513,9 +519,10 @@ for e in range (4):
             if (form==1):
                 Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
             else: #4.29
-                RFvp=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp-DM*NFvp*UFvp)*wJ
-            RF  =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
-            Rs  =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
+                R[2]=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp-DM*NFvp*UFvp)*wJ
+            
+            R[1]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
+            R[3]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
             
             
             #R Assembly            
@@ -593,14 +600,17 @@ for e in range (4):
                     temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
                 temp20x2[i,n]=  temp20x2[i,n]+BFvp[m,i,n]*(temp1-temp4x1[m,0])
             
+            for m,j,k in zip(range(5),range(20),range(2)):
+                BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
             #print("size",len((NFvp+float(tau)*temp5x16)))
+            
             Kt[2][0]=Kt[2][0]+(
-                        #NFvp.transpose()*
+                        NFvp.transpose()*BUFvp*Nv+
                          tau*temp20x2*Nv
                         -(NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[0]
                         )*wJ
             
-            #dRFvp/dUF 4.42
+            #dRFvp/dUF 4.40
             Kt[2][1]=Kt[2][1]-(
                          (NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[1]
                         )*wJ
