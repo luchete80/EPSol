@@ -667,23 +667,26 @@ for e in range (4):
         # var_edof[i]=4*var_dim[i]  
         
     #Assembly Matrix
-    for vrow,vcol in zip(range(4),range(4)): #Variables
-        imax=var_edof[vrow]
-        jmax=var_edof[vcol]
-        for i,j in zip(range(int(imax)),range(int(jmax))):
-            for n in range (4): #Nodes
-                d=elnodes.astype(int)[e][n]
-                vnrow[2*n  ]=48*d+var_edof[vrow]
-                vncol[2*n+1]=48*d+1
-            
-        print("vncol",vnrow.astype(int))
-        print("vnrow",vncol.astype(int))            
-        #ir=var_edof[]
-        #ic=0
-        for row,col in zip(range(int(imax)),range(int(jmax))):
-            Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
-                                                                    Kt[vrow][vcol][row,col])
-
+    vrowinc=vcolinc=0
+    for vrow in range(4): #Variables
+        for vcol in range(4): #Variables
+            imax=var_edof[vrow]
+            jmax=var_edof[vcol]
+            for i,j in zip(range(int(imax)),range(int(jmax))):
+                for n in range (4): #Nodes
+                    d=elnodes.astype(int)[e][n]
+                    vnrow[2*n  ]=48*d+var_edof[vrow]
+                    vncol[2*n+1]=48*d+vcolinc
+                
+            print("vncol",vnrow.astype(int))
+            print("vnrow",vncol.astype(int))            
+            #ir=var_edof[]
+            #ic=0
+            for row,col in zip(range(int(imax)),range(int(jmax))):
+                Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
+                                                                        Kt[vrow][vcol][row,col])
+            vcolinc+=var_edof[vcol]
+        vrowinc+=var_edof[vrow]
     #print (K)
 
 #Boundary conditions
