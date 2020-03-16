@@ -22,7 +22,10 @@ ney=2
 dx=lx/nex
 dy=ly/ney
 numel=nex*ney
-vn=zeros(8) #Dof connectivity
+
+vnrow=zeros(20) #Dof connectivity
+vncol=zeros(20) #Dof connectivity
+
 numnodes=(nex+1)*(ney+1)
 node=zeros((numnodes, 2))
 elnodes=zeros((numel, 4))#Connectivity
@@ -140,7 +143,6 @@ LM=matrix(numpy.matlib.zeros((4, 4)))
 dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 
 K=matrix(numpy.matlib.zeros((44, 44)))
-K=matrix(numpy.matlib.zeros((44, 44)))
 
 R   =[  matrix(numpy.matlib.zeros(( 8, 1))),
         matrix(numpy.matlib.zeros((16, 1))),
@@ -176,6 +178,7 @@ P=matrix(numpy.matlib.zeros((4, 1)))
 
 #Global matrices
 #Uglob=matrix(numpy.matlib.zeros((ndof*numnodes, ndof*numnodes)))
+Kglob=matrix(numpy.matlib.zeros((dof, dof))) 
 Uglob=zeros(dof)
 
 class bMatrix: #Block matrix
@@ -655,18 +658,32 @@ for e in range (4):
                       (v.transpose()*Bs-dgdU[3])*
                       wJ) 
 
-              # (Ns[i]*Bs[k][j]*Us[j]*Nv[k][p] +
-              # tau*Bs[k][i]*Nv[k][p]*(2.*Bs[m][j]*Us[j]*v[m] * g_sigs))*
-              # wJ) 
-                     
-            #Index Form
-                # for i in range(16):
-                    # for p in range(2):
-                        # dRdUn=Bv.transpose()*( G*c*dEdU -G*)
+    # #Element dimension and DOF PER VARIABLE! 
+    # var_dim =[2,4,4,1]
+    # var_edof=zeros(4)
+    # if form==2:
+        # var_dim =[2,4,5,1]
+    # for i in range(4):
+        # var_edof[i]=4*var_dim[i]  
+        
+    #Assembly Matrix
+    for vrow,vcol in zip(range(4),range(4)): #Variables
+        imax=var_edof[vrow]
+        jmax=var_edof[vcol]
+        for i,j in zip(range(int(imax)),range(int(jmax))):
+            for n in range (4): #Nodes
+                d=elnodes.astype(int)[e][n]
+                vnrow[2*n  ]=48*d+var_edof[vrow]
+                vncol[2*n+1]=48*d+1
             
-            #print (B)
-            #K+=(B.transpose()*c*B*w)
-            #print (K)
+        print("vncol",vnrow.astype(int))
+        print("vnrow",vncol.astype(int))            
+        #ir=var_edof[]
+        #ic=0
+        for row,col in zip(range(int(imax)),range(int(jmax))):
+            Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
+                                                                    Kt[vrow][vcol][row,col])
+
     #print (K)
 
 #Boundary conditions
