@@ -666,17 +666,33 @@ for e in range (4):
     # for i in range(4):
         # var_edof[i]=4*var_dim[i]  
         
-    #Assembly Matrix
+    #Assuming alternated variables
+    #From https://www.dealii.org/current/doxygen/deal.II/step_20.html
+    #However, then things become different. As mentioned in the introduction, we want to subdivide the matrix into blocks corresponding to the two different kinds of variables, velocity and pressure. To this end, we first have to make sure that the indices corresponding to velocities and pressures are not intermingled: 
+    #First all velocity degrees of freedom, then all pressure DoFs. This way, the global matrix separates nicely into a 2×2 system. To achieve this, we have to renumber degrees of freedom base on their vector component, an operation that conveniently is already implemented:
+    #Example 9 nodes 4 elements (bad node numbering)
+    # Var block numbering
+    # [12 13] [14 15] [16 17]
+    # [6 7, 30..33]  [8 9,34..37] [10 11, 38.41]
+    # [0 1, 18..21]  [2 3,22..25] [4 5, 26..29] 
+    
+    #Var 0
+    # Nodes 4 3 0 1
+    # vn=[8 9 6 7 0 1 2 3]
+    # vn=[34..37 30.33 18..21]
+    
     vrowinc=vcolinc=0
+    #Assembly Matrix
     for vrow in range(4): #Variables
         for vcol in range(4): #Variables
-            imax=var_edof[vrow]
-            jmax=var_edof[vcol]
-            for i,j in zip(range(int(imax)),range(int(jmax))):
-                for n in range (4): #Nodes
+            imax=int(var_dim[vrow])
+            jmax=int(var_dim[vcol])
+            #Store vn vectors
+            for n in range (4): #Nodes
+                for i,j in zip(range(int(imax)),range(int(jmax))):
                     d=elnodes.astype(int)[e][n]
-                    vnrow[2*n  ]=48*d+var_edof[vrow]
-                    vncol[2*n+1]=48*d+vcolinc
+                    vnrow[imax]=vrowinc+var_dim[vrow]*d+i
+                    vncol[jmax]=vcolinc+var_dim[vcol]*d+j
                 
             print("vncol",vnrow.astype(int))
             print("vnrow",vncol.astype(int))            
@@ -685,8 +701,8 @@ for e in range (4):
             for row,col in zip(range(int(imax)),range(int(jmax))):
                 Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                         Kt[vrow][vcol][row,col])
-            vcolinc+=var_edof[vcol]
-        vrowinc+=var_edof[vrow]
+            vcolinc+=numnodes*var_dim[vcol]
+        vrowinc+=numnodes*var_dim[vrow]
     #print (K)
 
 #Boundary conditions
