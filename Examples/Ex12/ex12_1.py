@@ -268,7 +268,8 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
 
 #ELEMENT LOOP  
 it=0
-for e in range (4):
+#for e in range (numel):
+for e in range (1):
     #Obtain Ve from global
     Kel=0.
     for n in range(4):
@@ -680,27 +681,40 @@ for e in range (4):
     # Nodes 4 3 0 1
     # vn=[8 9 6 7 0 1 2 3]
     # vn=[34..37 30.33 18..21]
-    
-    vrowinc=vcolinc=0
+        
+    vrowinc=0
     #Assembly Matrix
     for vrow in range(4): #Variables
+        ir=0
+        imax=int(var_dim[vrow])
+        for n in range (4): #Nodes
+            for i in range(imax): 
+                d=elnodes.astype(int)[e][n]
+                print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
+                vnrow[ir]=vrowinc+var_dim[vrow]*d+i
+                ir=ir+1
+        
+        vcolinc=0        
         for vcol in range(4): #Variables
-            imax=int(var_dim[vrow])
+            print("vcol",vcol)
             jmax=int(var_dim[vcol])
+            print("imax, jmax",imax,jmax)
             #Store vn vectors
-            for n in range (4): #Nodes
-                for i,j in zip(range(int(imax)),range(int(jmax))):
+            ic=0
+            for n in range (4): #Nodes 
+                for j in range(jmax):
                     d=elnodes.astype(int)[e][n]
-                    vnrow[imax]=vrowinc+var_dim[vrow]*d+i
-                    vncol[jmax]=vcolinc+var_dim[vcol]*d+j
-                
-            print("vncol",vnrow.astype(int))
-            print("vnrow",vncol.astype(int))            
-            #ir=var_edof[]
-            #ic=0
-            for row,col in zip(range(int(imax)),range(int(jmax))):
-                Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
-                                                                        Kt[vrow][vcol][row,col])
+                    print("vcolinc",vcolinc)
+                    vncol[ic]=vcolinc+var_dim[vcol]*d+j
+                    ic=ic+1
+                        
+                    
+            print("vnrow",vnrow.astype(int))            
+            print("vncol",vncol.astype(int))
+            for row in range(4*imax):
+                for col in range(4*jmax):
+                    Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
+                                                                          Kt[vrow][vcol][row,col])
             vcolinc+=numnodes*var_dim[vcol]
         vrowinc+=numnodes*var_dim[vrow]
     #print (K)
