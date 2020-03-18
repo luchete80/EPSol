@@ -1,12 +1,16 @@
 # https://docs.sympy.org/latest/tutorial/matrices.html
-#Plain strain/stress 1 element example
+# From maniatty rigid visco plastic
+# Stabilized finite element method for viscoplastic ow:
+# formulation with state variable evolution
+
+# Plain strain/stress 1 element example
 #import math
 from numpy import *
 import numpy.matlib #for zeros
 
 import array as arr
 
-import deriv
+#import deriv
 
 #----------------------------
 #Input Data------------------
@@ -71,43 +75,104 @@ c[0,0]=c[1,1]=c[2,2]=ck*(1.-nu)
 c[0,1]=c[1,0]=c[0,2]=c[2,0]=c[2,1]=c[1,2]=ck*nu
 c[3,3]=ck*(.5 - nu)
 
+X2=numpy.matlib.zeros((4, 2))
+p=1.0/1.732050807568877
+gauss=[-p,p]
+
+#DOFS
+var_dim =[2,1,1]
+var_edof=[8,4,4]
+var_edof = array(var_edof, dtype=int)
+
+#Shape functions
+Nps=matrix(numpy.matlib.zeros((1, 4)))
+Nv=matrix(numpy.matlib.zeros((2, 8)))
+
 #Matrices
 Bv=matrix(numpy.matlib.zeros((4, nodxel*dim)))
-Nv=matrix(numpy.matlib.zeros((dim, nodxel*dim)))
+Bps=matrix(numpy.matlib.zeros((2, 8)))
 
-for e in range (4):
-    #Obtain Ve from global
-    Kel=0.
-    for n in range(4):
-        X2[n]=node[elnodes.astype(int)[e][n]]
-    print ("Element ", e)
-    print ("Element Nodes")
-    print (X2)
+UV  =matrix(numpy.matlib.zeros((8, 1)))
+Up  =matrix(numpy.matlib.zeros((4, 1)))
+Us  =matrix(numpy.matlib.zeros((4, 1)))
+
+Kt=[
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[2])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[2])))]
     
-    print ("Nv",Nv)
-    for ig in range(2):
-        for jg in range(2):
-            rg=gauss[ig]
-            sg=gauss[jg]
+    ]     
 
-            #Numerated as in Bathe
-            Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
-            dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
-            #Numerated as in deal.ii
-            #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
-            dHrs/=4.
-            J=dHrs*X2
-            dHxy=linalg.inv(J)*dHrs
-            detJ=linalg.det(J)
-            #Calculate shape functions
-            #Bs=J-1 dHrs(B.13)
-            Bs=dHxy
-            for k in range(nodxel):
-                #shape functions
-                Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
+#Kt
+# Elemental matrix
+# 16x16
+# (8x8) (8x4) (8x4) 
+# (4x8) (4x4) (4x4)
+# (4x8) (4x4) (4x4) 
+
+
+end=0
+
+while (end==0):
+    end=1
+    for e in range (4):
+        #Obtain Ve from global
+        Kel=0.
+        for n in range(4):
+            X2[n]=node[elnodes.astype(int)[e][n]]
+        print ("Element ", e)
+        print ("Element Nodes")
+        print (X2)
+        
+        print ("Nv",Nv)
+        for ig in range(2):
+            for jg in range(2):
+                rg=gauss[ig]
+                sg=gauss[jg]
+
+                #Numerated as in Bathe
+                Nps  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
+                dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
+                #Numerated as in deal.ii
+                #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
+                dHrs/=4.
+                J=dHrs*X2
+                dHxy=linalg.inv(J)*dHrs
+                detJ=linalg.det(J)
+                #Calculate shape functions
+                #Bs=J-1 dHrs(B.13)
+                Bps=dHxy
+                for k in range(nodxel):
+                    #shape functions
+                    Nv[0,2*k  ]=Nv[1,2*k+1]=Nps[0,k]
+                    
+                dp=Nps*Up
+                ds=Nps*Us
+                tau=1.
+                he=1.
                 
- 
-            #From Zienkiewicz page 285 11.11
-            Ka=Bv.transpose()*Dd*B*wJ
-            Kc=
-            Kp=Np.transpose()*float(1.0/k_pen)*Np*wJ
+                #p+=dp
+                #s+=ds
+                w=1.
+                wJ=w*detJ                
+                #
+                #Kt u p (8x4) div * N p 
+                #b(dp,v*)=-dp x div(v*)
+                Kt[0][1]=Kt[0][1]-Nv.transpose()*Nps
+                print ("Kt 0 1 ",Kt[0][1])
+                #h(v,s)(ds,v*)=2/(3e) df/ds ds D:D
+                Kt[0][2]=2./3.*Nps
+                print ("Kt 0 2 ",Kt[0][2])                
+                Kt[1][0]=Kt[1][0]
+                #c+cstab+m+kstab
+                #mstab=tau[grad(dp).grad(p*)] 
+                print("Kt11",Kt[1][1])
+                #K11 is (4x4)
+                Kt[1][1]=   Kt[1][1]#+(
+                            #Bps
+                            #)*wJ
