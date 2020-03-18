@@ -64,6 +64,8 @@ private:
 	FluxSol::FEValues<2> fev;
 //Matrices
 //Gauss
+
+	std::vector<int> var_dim(4);
 // ELEMENTAL MATRICES AND VECTORS
     GaussFullMatrices B,J,dHdrs;
     //Shape
@@ -111,7 +113,7 @@ private:
 
 void Eulerian_ViscoPlastic::setup()
 {
-
+	var_dim={2,4,4,1}; //Fails
 	ofstream logfile;
 	logfile.open("Logfile.txt");
 	
@@ -250,15 +252,28 @@ void Eulerian_ViscoPlastic::assemble()
 
 		for (int n=0;n<4;n++){
 			int d=elnodes[e][n];
-			for (int i=0;i<8;i++)
+			for (int i=0;i<var_dim[0];i++)
 				UV[i][0]=Uglob[ndof*d+i];
-			for (int j=0;j<16;j++)
+			for (int j=0;j<var_dim[1];j++)
 				Usig[i,0]=Uglob[ndof*d+2+j];
 				if (form==1)
-					Usig[j][0]=Uglob[ndof*d+2+j];
+					Usig[j][0]=Uglob[ndof*d+var_dim[0]+j];
 					UF  [j][0]=Uglob[ndof*d+6+j];
 				else
-					UF  [j][0]=Uglob[ndof*d+2+j];}
+					UF  [j][0]=Uglob[ndof*d+2+j];
+			for (int j=0;j<var_dim[2];j++)
+				UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j];			
+				}
+				
+		v=Nv*UV;
+		s=Ns*Us;
+		F=NsigF*UF;
+
+		if (form==1):
+			sig=NsigF*Usig;
+		else:
+			Fvp=NFvp*UFvp;	
+		
 		//C = E / (1 - nu*nu)*[1 nu 0; nu 1 0; 0 0 (1 - nu) / 2];
 		cout << "Num Integration Points"<<intsch.NumPoints()<<endl;
 
@@ -298,11 +313,12 @@ void Eulerian_ViscoPlastic::assemble()
 							if (l==m)
 								B4i[l,m,n]=Bs[n,i];
 							else
-								B4i[l,m,n]=0.;        
-				for (int l=0;l<4;l++)
-					for (int m=0;m<4;m++) 
-						for (int n=0;n<4;n++)
-							BsigF[4*i+l][m][n]=B4i[l][m][n];}}//For i 
+								B4i[l,m,n]=0.;  
+							
+			for (int l=0;l<4;l++)
+				for (int m=0;m<4;m++) 
+					for (int n=0;n<4;n++)
+						BsigF[4*i+l][m][n]=B4i[l][m][n];}}//For i 
 			
 				
 			//FluxSol::Matrix<double> Kg = B.Mat(g).Tr()*c*B.Mat(g);
