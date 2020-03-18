@@ -66,6 +66,7 @@ private:
 //Gauss
 
 	std::vector<int> var_dim(4);
+	std::vector<int> vnrow(20),vncol(20);
 // ELEMENTAL MATRICES AND VECTORS
     GaussFullMatrices B,J,dHdrs;
     //Shape
@@ -330,6 +331,49 @@ void Eulerian_ViscoPlastic::assemble()
 					Kel[r][c] += Kg[r][c] * intsch[g].w()*J.Mat(g).det();
 					cout << "weight" << intsch[g].w()<<endl;
 					cout << "Kel: "<< Kel[r][c]<<endl;	}
+					
+					
+			int ir,ic,imax,jmax;
+			int vrowinc,vcolinc;
+			int vrowinc=0;
+			int d;
+			//#Assembly Matrix
+			for (int vrow=0;vrow<4;vrow++){
+				ir=0;
+				imax=var_dim[vrow];
+				for (int n=0;n<4;n++)//Nodes
+						for (int i=0;i<imax;i++){
+						d=elnodes[e][n];
+						//print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
+						vnrow[ir]=vrowinc+var_dim[vrow]*d+i;
+						ir=ir+1;}
+        
+				vcolinc=0;        
+				for (int vcol=0;vcol<4;vcol++){
+					//print("vcol",vcol)
+					jmax=var_dim[vcol];
+					//print("imax, jmax",imax,jmax)
+					//Store vn vectors
+					ic=0;
+					for (int n=0;n<4;n++)//Nodes
+						for (int j=0;j<jmax;j++){
+							d=elnodes[e][n]
+							//print("vcolinc",vcolinc)
+							vncol[ic]=vcolinc+var_dim[vcol]*d+j;
+							ic=ic+1;}
+							
+						
+					//print("vnrow",vnrow.astype(int))            
+					//print("vncol",vncol.astype(int))
+					for (int row=0;row<(4*imax);row++) 
+						for (int col=0;col<(4*jmax);col++)
+							Kglob[vnrow[row],vncol[col]]=  
+									Kglob[vnrow[row]][vncol[col]]+
+									Kt[vrow][vcol][row][col];
+									
+					vcolinc+=numnodes*var_dim[vcol];}//vcol
+					
+				vrowinc+=numnodes*var_dim[vrow];}//vrow
 		}//gauss points
 	}
 
