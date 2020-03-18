@@ -94,6 +94,9 @@ private:
 	
 	Vector <double> dVxy;
 	
+	Matrix <double> Kglob;
+	Vector <double> Uglob;
+		
 	//Dimensions
 	int dof[4];
 	//enum field;

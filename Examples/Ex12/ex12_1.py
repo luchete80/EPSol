@@ -575,8 +575,10 @@ for e in range (1):
                     for k in range(2):
                         temp4x2[m,k]=temp4x2[m,k]+BsigF[m,j,k]*UF[j,0]
 
-            for m,l,p in zip(range(4),range(4),range(8)):
-                temp4x8[m,p]=BL[m,l,p]+F[l,0]            
+            for m in range(4):
+                for l in range (4):
+                    for p in range(8):
+                        temp4x8[m,p]=BL[m,l,p]+F[l,0]            
             #dRF/dUv 4.35
             #(16x8)
             #print("Nv",Nv)
@@ -598,14 +600,20 @@ for e in range (1):
             #Kt(2,0)=dFvp/dUV 4.39
             temp4x1=LM*NsigF*UF
             
-            for m,i,n in zip(range(5),range(20),range(2)):
-                temp1=temp2=0. #increase with each m
-                for j,k in zip(range(20),range(2)):
-                    temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
-                temp20x2[i,n]=  temp20x2[i,n]+BFvp[m,i,n]*(temp1-temp4x1[m,0])
+            for m in range(5):
+                for i in range(20):
+                    for n in range(2):
+                        temp1=temp2=0. #increase with each m
+                        
+                        for j in range(20):
+                            for k in range(2):
+                                temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
+                        temp20x2[i,n]=  temp20x2[i,n]+BFvp[m,i,n]*(temp1-temp4x1[m,0])
             
-            for m,j,k in zip(range(5),range(20),range(2)):
-                BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
+            for m in range(5):
+                for j in range (20):
+                    for k in range (2):
+                        BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
             #print("size",len((NFvp+float(tau)*temp5x16)))
             
             Kt[2][0]=Kt[2][0]+(
