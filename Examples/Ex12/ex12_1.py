@@ -754,13 +754,18 @@ for i in range(ney+1):
         Kglob[iu,j]=Kglob[j,iu]=0.
         Kglob[iu  ,iu  ]=1.
         Kglob[iu+1,iu+1]=1.
-        iu+=(nex+1)*var_dim[0] #Increase nx nodes
         for k in range(4):
             Kglob[iu,j]=Kglob[j,iu]=0.
             Kglob[iF+k,iF+k]=1.        
-        iF+=(nex+1)*var_dim[fbc] #Increase nx nodes
-    R[i  ]=0.1*cos(0)
-    R[i+1]=0.1
+    
+    iu+=(nex+1)*var_dim[0] #Increase nx nodes
+    iF+=(nex+1)*var_dim[fbc] #Increase nx nodes
+    R[iu  ]=0.1*cos(0)
+    R[iu+1]=0.1
+
+    #F=I
+    R[iF  ]=R[iF+3]=1.  #xx,yy
+    R[iF+1]=R[iF+2]=0.
     # K[4,i] = K[i,4] = 0.0
     # K[5,i] = K[i,5] = 0.0
     # K[7,i] = K[i,7] = 0.0
