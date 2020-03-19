@@ -12,7 +12,7 @@ import deriv
 #Input Data------------------
 form=2
 lx=1.
-ly=1.
+ly=20.*3.1415926/180.
 nex=2
 ney=2
 #-------------
@@ -43,7 +43,17 @@ for nx in range (ney+1):
         x=x+dx
         n=n+1
     y=y+dy
-    
+ 
+#Radial flow example: convert from cilindrical to cartesian
+r0=1.
+r1=2.
+for n in range(numnodes):
+   r=node[n,0]+r0
+   t=node[n,1]-ly/2.
+   node[n,0]=r*cos(t)
+   node[n,1]=r*sin(t)
+   print("Coord ",n,":",node[n,0],node[n,1])
+ 
 print(node)
 #Connectivity
 e=0
@@ -266,7 +276,9 @@ print(c)
 G=matrix([[1,0,0,0],[0,0,0,1],[0,0,0,1],[0,1,0,0]]) 
 H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]]) 
 
-#ELEMENT LOOP  
+
+
+#ELEMENT LOOP  ----------------
 it=0
 #for e in range (numel):
 for e in range (1):
