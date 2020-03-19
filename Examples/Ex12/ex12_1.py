@@ -741,12 +741,24 @@ for e in range (1):
 
 #Boundary conditions
 #Velocity DOFs 
+iu=int(0)
+if (form==2):
+    iF=int(var_dim[0]*numnodes)
+    fbc=1
+else
+    iF=int((var_dim[0]+*numnodes)
+    fbc=2
+    
 for i in range(ney+1):
     for j in range(dof):
-        Kglob[i,j]=Kglob[j,i]=0.
-        Kglob[i  ,i  ]=1.
-        Kglob[i+1,i+1]=1.
-        i+=(nex+1)*var_dim[0] #Increase nx nodes
+        Kglob[iu,j]=Kglob[j,iu]=0.
+        Kglob[iu  ,iu  ]=1.
+        Kglob[iu+1,iu+1]=1.
+        iu+=(nex+1)*var_dim[0] #Increase nx nodes
+        for k in range(4):
+            Kglob[iu,j]=Kglob[j,iu]=0.
+            Kglob[iF+k,iF+k]=1.        
+        iF+=(nex+1)*var_dim[fbc] #Increase nx nodes
     R[i  ]=0.1*cos(0)
     R[i+1]=0.1
     # K[4,i] = K[i,4] = 0.0
