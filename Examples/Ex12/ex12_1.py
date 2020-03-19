@@ -740,8 +740,15 @@ for e in range (1):
     #print (K)
 
 #Boundary conditions
-#Numerated as in Bathe
-# for i in range(8):
+#Velocity DOFs 
+for i in range(ney+1):
+    for j in range(dof):
+        Kglob[i,j]=Kglob[j,i]=0.
+        Kglob[i  ,i  ]=1.
+        Kglob[i+1,i+1]=1.
+        i+=(nex+1)*var_dim[0] #Increase nx nodes
+    R[i  ]=0.1*cos(0)
+    R[i+1]=0.1
     # K[4,i] = K[i,4] = 0.0
     # K[5,i] = K[i,5] = 0.0
     # K[7,i] = K[i,7] = 0.0
