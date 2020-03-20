@@ -80,7 +80,7 @@ if form==2:
 for i in range(4):
     var_edof[i]=4*var_dim[i]  
     
-print ("var_edof",var_edof)
+#print ("var_edof",var_edof)
 
 edof=ndof*4
 dof=ndof*numnodes
@@ -474,7 +474,7 @@ while (end==0):
                 pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
                 for i in range(3): #Only daigonal is modified
                     sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
-                print ("sigd",sig_d[i][0])   
+                #print ("sigd",sig_d[i][0])   
                 for k in range(4):
                     sig_eq=sqrt(1.5*(sig_d[k,0]))
                 #*** STRAINS
@@ -521,7 +521,7 @@ while (end==0):
                     Ft=identity(3)
                     #NOT USE!!! Fd=[[1,0,0,1]]
                     Fvpt=identity(3)
-                    print(Ft)
+                    #print(Ft)
                     Fvpd[0]=1.
                     Fvpd[1]=0. #yx
                     Fvpd[2]=0. #xy
@@ -649,7 +649,7 @@ while (end==0):
                 #Kt(2,0)=dFvp/dUV 4.39
                 temp5x1=LM5*NFvp*UFvp
                 temp1=0
-                print ("temp4x1,temp1",temp5x1,temp1)
+                #print ("temp4x1,temp1",temp5x1,temp1)
                 
                 for m in range(5):
                     for i in range(20):
@@ -745,7 +745,7 @@ while (end==0):
         # vn=[8 9 6 7 0 1 2 3]
         # vn=[34..37 30.33 18..21]
             
-        vrowinc=0
+        #vrowinc=0
         #Assembly Matrix
         for vrow in range(4): #Variables
             ir=0
@@ -753,15 +753,15 @@ while (end==0):
             for n in range (4): #Nodes
                 for i in range(imax): 
                     d=elnodes.astype(int)[e][n]
-                    print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
+                    #print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
                     vnrow[ir]=vrowinc+var_dim[vrow]*d+i
                     ir=ir+1
             
             vcolinc=0        
             for vcol in range(4): #Variables
-                print("vcol",vcol)
+                #print("vcol",vcol)
                 jmax=int(var_dim[vcol])
-                print("imax, jmax",imax,jmax)
+                #print("imax, jmax",imax,jmax)
                 #Store vn vectors
                 ic=0
                 for n in range (4): #Nodes 
@@ -772,8 +772,8 @@ while (end==0):
                         ic=ic+1
                             
                         
-                print("vnrow",vnrow.astype(int))            
-                print("vncol",vncol.astype(int))
+                #print("vnrow",vnrow.astype(int))            
+                #print("vncol",vncol.astype(int))
                 for row in range(4*imax):
                     for col in range(4*jmax):
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
