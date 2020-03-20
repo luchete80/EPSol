@@ -141,6 +141,7 @@ temp5x16=matrix(numpy.matlib.zeros((5, 20)))
 
 temp4x2=matrix(numpy.matlib.zeros((4, 2)))
 temp20x2=matrix(numpy.matlib.zeros((20, 2))) #For 4.39
+temp16x2=matrix(numpy.matlib.zeros((16, 2))) #For 4.39
 
 #(5,20,2) x (20)
 BUFvp=matrix(numpy.matlib.zeros((5, 2)))
@@ -632,9 +633,24 @@ while (end==0):
                 #dRF/dUv 4.35
                 #(16x8)
                 #print("Nv",Nv)
+                
+                for m in range(4):
+                    for i in range(16):
+                        for n in range(2):
+                            temp1=temp2=0. #increase with each m
+                            
+                            for j in range(16):
+                                for k in range(2):
+                                    temp1=temp1+2*BsigF[m,j,k]*v[k]*UF[j,0]
+                            
+                            temp16x2[i,n]=  temp20x2[i,n]+(
+                                            BFvp[m,i,n]*
+                                            (temp1-temp4x1[m,0])
+                                            )
+                                            
                 Kt[find][0]   =Kt[find][0]+( 
                                  (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
-                                #+tau*Nv
+                                +tau*temp16x2*Nv #temp_in  * N_np
                                 -(NsigF+float(tau)*temp4x16).transpose()*temp4x8
                                 )*wJ
                 #dRFdUF  4.36
