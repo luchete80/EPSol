@@ -745,7 +745,7 @@ while (end==0):
         # vn=[8 9 6 7 0 1 2 3]
         # vn=[34..37 30.33 18..21]
             
-        #vrowinc=0
+        vrowinc=0
         #Assembly Matrix
         for vrow in range(4): #Variables
             ir=0

@@ -47,7 +47,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     
     #Check with inv
     #F=[Fxx]
-    print("Fd0",Fd[0,0])
+    #print("Fd0",Fd[0,0])
     FM=matrix([[Fd[0,0],Fd[2,0],0    ,0   ],
                [Fd[1,0],Fd[3,0],0    ,0   ],
                [0    ,    0,Fd[0,0],Fd[2,0]],
