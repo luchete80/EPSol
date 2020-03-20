@@ -135,6 +135,7 @@ BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 temp4x1=matrix(numpy.matlib.zeros((4, 1)))
+temp5x1=matrix(numpy.matlib.zeros((5, 1)))
 temp4x8=matrix(numpy.matlib.zeros((4, 8))) #BL*NFUF
 temp5x16=matrix(numpy.matlib.zeros((5, 20)))
 
@@ -148,7 +149,8 @@ B4i=arange(32).reshape(4,4,2) #
 B5i=arange(50).reshape(5,5,2) #
 #(4,16,2)
 #print(BsigF[0])
-LM=matrix(numpy.matlib.zeros((4, 4)))
+LM =matrix(numpy.matlib.zeros((4, 4)))
+LM5=matrix(numpy.matlib.zeros((5, 5)))
 #Only returns derivatives respectives to F and Fvp
 dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 
@@ -190,6 +192,7 @@ P=matrix(numpy.matlib.zeros((4, 1)))
 #Uglob=matrix(numpy.matlib.zeros((ndof*numnodes, ndof*numnodes)))
 Kglob=matrix(numpy.matlib.zeros((dof, dof))) 
 Uglob=zeros(dof)
+Rglob=zeros(dof)
 
 class bMatrix: #Block matrix
     
@@ -439,8 +442,11 @@ while (end==0):
                 LM[0,1]=LM[2,3]=dVxy[1]
                 LM[1,0]=LM[3,2]=dVxy[2]
                 LM[1,1]=LM[3,3]=dVxy[3]
-               
                 
+                for i in range(4):
+                    for j in range(4):               
+                        LM5[i,j]=LM[i,j]
+                        
                 #BL interpolators BLijk (4,4,8) (B.17 p165)
                 for k in range(8):
                     BL[0,0,k]=BL[2,2,k]=Bv[0,k]
@@ -627,7 +633,7 @@ while (end==0):
                 #print("Nv",Nv)
                 Kt[find][0]   =Kt[find][0]+( 
                                  (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
-                                #+tau*N
+                                #+tau*Nv
                                 -(NsigF+float(tau)*temp4x16).transpose()*temp4x8
                                 )*wJ
                 #dRFdUF  4.36
@@ -641,7 +647,9 @@ while (end==0):
                 #---------------------------------------------------
                 ##Viscoplastic derivatives
                 #Kt(2,0)=dFvp/dUV 4.39
-                temp4x1=LM*NsigF*UF
+                temp5x1=LM5*NFvp*UFvp
+                temp1=0
+                print ("temp4x1,temp1",temp5x1,temp1)
                 
                 for m in range(5):
                     for i in range(20):
@@ -651,17 +659,21 @@ while (end==0):
                             for j in range(20):
                                 for k in range(2):
                                     temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
-                            temp20x2[i,n]=  temp20x2[i,n]+BFvp[m,i,n]*(temp1-temp4x1[m,0])
+                            
+                            temp20x2[i,n]=  temp20x2[i,n]+(
+                                            BFvp[m,i,n]*
+                                            (temp1-temp5x1[m,0])
+                                            )
                 
                 for m in range(5):
                     for j in range (20):
                         for k in range (2):
                             BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
                 #print("size",len((NFvp+float(tau)*temp5x16)))
-                
+                #dRFvp/DUv
                 Kt[2][0]=Kt[2][0]+(
                             NFvp.transpose()*BUFvp*Nv+
-                             tau*temp20x2*Nv
+                             tau*temp20x2*Nv #temp_in  * N_np
                             -(NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[0]
                             )*wJ
                 
@@ -755,7 +767,7 @@ while (end==0):
                 for n in range (4): #Nodes 
                     for j in range(jmax):
                         d=elnodes.astype(int)[e][n]
-                        print("vcolinc",vcolinc)
+                        #print("vcolinc",vcolinc)
                         vncol[ic]=vcolinc+var_dim[vcol]*d+j
                         ic=ic+1
                             
@@ -791,12 +803,12 @@ while (end==0):
         
         iu+=(nex+1)*var_dim[0] #Increase nx nodes
         iF+=(nex+1)*var_dim[fbc] #Increase nx nodes
-        R[iu  ]=0.1*cos(0)
-        R[iu+1]=0.1
+        Rglob[iu  ]=0.1*cos(0)
+        Rglob[iu+1]=0.1
 
         #F=I
-        R[iF  ]=R[iF+3]=1.  #xx,yy
-        R[iF+1]=R[iF+2]=0.
+        Rglob[iF  ]=Rglob[iF+3]=1.  #xx,yy
+        Rglob[iF+1]=Rglob[iF+2]=0.
         # K[4,i] = K[i,4] = 0.0
         # K[5,i] = K[i,5] = 0.0
         # K[7,i] = K[i,7] = 0.0
