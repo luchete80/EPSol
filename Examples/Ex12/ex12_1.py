@@ -191,6 +191,7 @@ P=matrix(numpy.matlib.zeros((4, 1)))
 #Global matrices
 #Uglob=matrix(numpy.matlib.zeros((ndof*numnodes, ndof*numnodes)))
 Kglob=matrix(numpy.matlib.zeros((dof, dof))) 
+dUglob=zeros(dof)
 Uglob=zeros(dof)
 Rglob=zeros(dof)
 
@@ -779,6 +780,9 @@ while (end==0):
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
+            
+            Rglob[vnrow.astype(int)[row]]=R[vrow][row]
+            
             vrowinc+=numnodes*var_dim[vrow]
         #print (K)
 
@@ -826,8 +830,12 @@ while (end==0):
 # R=[0,0,0,0,1000.0,0,0,0]
 
 #print (K)
-
-#U=linalg.solve(K, R)
+    for i in range (dof):
+        Uglob[i]=Uglob[i]+dUglob[i]
+        
+    dUglob=linalg.solve(Kglob, Rglob)
+    
+    
 print ("Results")
 #print(U)
 
