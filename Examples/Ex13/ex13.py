@@ -155,24 +155,31 @@ while (end==0):
                 ds=Nps*Us
                 tau=1.
                 he=1.
+                alpha=1.
                 
                 #p+=dp
                 #s+=ds
                 w=1.
                 wJ=w*detJ                
                 #
+                #Kt[0][0]=Kt[0][0]+(
+                #            4./9.*Bv
+                #            )*wJ
+                
                 #Kt u p (8x4) div * N p 
                 #b(dp,v*)=-dp x div(v*)
-                Kt[0][1]=Kt[0][1]-Nv.transpose()*Nps
+                #Kt[0][1]=Kt[0][1]-Nv.transpose()*Nps
                 print ("Kt 0 1 ",Kt[0][1])
                 #h(v,s)(ds,v*)=2/(3e) df/ds ds D:D
                 Kt[0][2]=2./3.*Nps
                 print ("Kt 0 2 ",Kt[0][2])                
-                Kt[1][0]=Kt[1][0]
+                Kt[1][0]=Kt[1][0]+(
+                            *Nps.transpose() #Div dv 
+                            )*wJ
                 #c+cstab+m+kstab
                 #mstab=tau[grad(dp).grad(p*)] 
                 print("Kt11",Kt[1][1])
                 #K11 is (4x4)
-                Kt[1][1]=   Kt[1][1]#+(
-                            #Bps
-                            #)*wJ
+                Kt[1][1]=   Kt[1][1]+(
+                            float(alpha*he**2.)*Bps.transpose()*Bps
+                            )*wJ
