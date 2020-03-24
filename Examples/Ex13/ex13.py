@@ -89,6 +89,8 @@ Nps=matrix(numpy.matlib.zeros((1, 4)))
 Nv=matrix(numpy.matlib.zeros((2, 8)))
 
 #Matrices
+BvtBv=matrix(numpy.matlib.zeros((nodxel*dim, nodxel*dim)))
+temp8x8=matrix(numpy.matlib.zeros((nodxel*dim, nodxel*dim)))
 Bv=matrix(numpy.matlib.zeros((4, nodxel*dim)))
 Bps=matrix(numpy.matlib.zeros((2, 8)))
 
@@ -96,16 +98,11 @@ UV  =matrix(numpy.matlib.zeros((8, 1)))
 Up  =matrix(numpy.matlib.zeros((4, 1)))
 Us  =matrix(numpy.matlib.zeros((4, 1)))
 
-Kt=[
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2])))]
+Kt=[ [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))  
+     ]
      ,
      [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[2])))]
-     ,
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[2])))]
-    
+     ]
     ]     
 
 #Kt
@@ -162,21 +159,24 @@ while (end==0):
                 w=1.
                 wJ=w*detJ                
                 #
-                #Kt[0][0]=Kt[0][0]+(
-                #            4./9.*Bv
-                #            )*wJ
+
+                BvtBv=Bv.transpose*Bv
+                for i in range(8):
+                    temp8x8[i,i]=BbtBv
+                Kt[0][0]=Kt[0][0]+(
+                            temp8x8+BvtBv
+                            )*wJ
                 
                 #Kt u p (8x4) div * N p 
                 #b(dp,v*)=-dp x div(v*)
-                #Kt[0][1]=Kt[0][1]-Nv.transpose()*Nps
+                Kt[0][1]=Kt[0][1]-Bv.transpose()*Nps
                 print ("Kt 0 1 ",Kt[0][1])
-                #h(v,s)(ds,v*)=2/(3e) df/ds ds D:D
-                Kt[0][2]=2./3.*Nps
+     
                 print ("Kt 0 2 ",Kt[0][2])                
                 Kt[1][0]=Kt[1][0]+(
                             *Nps.transpose() #Div dv 
                             )*wJ
-                #c+cstab+m+kstab
+                
                 #mstab=tau[grad(dp).grad(p*)] 
                 print("Kt11",Kt[1][1])
                 #K11 is (4x4)
