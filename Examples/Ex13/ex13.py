@@ -169,7 +169,9 @@ while (end==0):
                 
                 #Kt u p (8x4) div * N p 
                 #b(dp,v*)=-dp x div(v*)
-                Kt[0][1]=Kt[0][1]-Bv.transpose()*Nps
+                Kt[0][1]=Kt[0][1]-(
+                         Bv.transpose()*Nps
+                         )*wJ
                 print ("Kt 0 1 ",Kt[0][1])
      
                 print ("Kt 0 2 ",Kt[0][2])                
@@ -179,7 +181,12 @@ while (end==0):
                 
                 #mstab=tau[grad(dp).grad(p*)] 
                 print("Kt11",Kt[1][1])
+                #Calculate div
+                div_v=
                 #K11 is (4x4)
                 Kt[1][1]=   Kt[1][1]+(
-                            float(alpha*he**2.)*Bps.transpose()*Bps
+                            float(1./Kp*detF)*
+                            Nps.transpose()*(
+                            div_v+
+                            v*Bps
                             )*wJ
