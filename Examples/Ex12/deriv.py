@@ -137,6 +137,9 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #E.7
     for i,k in range(4,4):
         temp4[i,0]=temp4[i,0]+TF[i,k]*F4ed[k,0]
+
+    print ("Fed",Fed)        
+    print ("det_Fed",det_Fed)
         
     dF4einv_dF4e=float(-1./(det_Fed*det_Fed))*temp4*ddetFe_dF4ed+float(1./(det_Fed))*TF
     
