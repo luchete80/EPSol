@@ -404,7 +404,10 @@ while (end==0):
                             UF  [j,0]=Uglob[ndof*d+var_dim[0]+j]
                     for j in range (var_dim[2]):
                             UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
-                            
+                
+
+                print("UF",UF)
+
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
@@ -535,7 +538,7 @@ while (end==0):
                     Ft[1,0]=F[2]
                     Ft[1,1]=F[3]
                     Ft[2,2]=1.
-                    #F is [xx xy yx yy zz]
+                    #F is [xx xy yx yy zz] , (4.21) in form 2
                     Fd[0]=F[0]
                     Fd[1]=F[2] #yx
                     Fd[2]=F[1] #xy
