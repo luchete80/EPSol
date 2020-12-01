@@ -326,7 +326,6 @@ while (end==0):
         print ("Element Nodes")
         print (X2)
         
-        print ("Nv",Nv)
         for ig in range(2):
             for jg in range(2):
                 rg=gauss[ig]
@@ -467,7 +466,7 @@ while (end==0):
                 #Calculate sigma
                 #2.31 Comes first from 2.2 (Then 2.31)
                 #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
-                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) + 
+                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) +
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
                 
@@ -741,7 +740,8 @@ while (end==0):
                           (Ns+tau*v.transpose()*Bs).transpose()*
                           (v.transpose()*Bs-dgdU[3])*
                           wJ) 
-
+		
+        print ("Nv",Nv)
         # #Element dimension and DOF PER VARIABLE! 
         # var_dim =[2,4,4,1]
         # var_edof=zeros(4)
