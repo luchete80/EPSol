@@ -1,0 +1,4 @@
+If in the future you want to enter spaces instead of tab when you press tab key:
+Go to Settings->Preferences... ->Language (since version 7.1) or Settings->Preferences... ...
+Check Replace by space.
+(Optional) You can set the number of spaces to use in place of a Tab by changing the Tab size field.
