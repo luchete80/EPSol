@@ -79,20 +79,22 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     F4vpd_inv[3]=Fvpt_inv[1,1]
     #Fet=Ft*Fvpt_inv #Remains thermal part
     #print(Fet)
-    
+   
     #E.10 
+    #TODO FOR FUTURE AND 3D FORMULATIONS:
     #Fe in fact is Fe=F*Fvp-1
-    F4ed=FM*Fvpd_inv         
+    F4ed=FM*F4vpd_inv  
+    print ("Fvpd_inv",Fvpd_inv) 
     #Earr_e=
     #Earr_e=TLa*
     #E.9 
     for i in range (4):
         Fed[i]=F4ed[i]    
-    Fed[4,0]=Fvpt_inv[2,2]
- 
-        
-                
-    det_Fed=Fed[0]*Fed[3]*-Fed[1]*Fed[2] #E.6
+    Fed[4,0]=Fvpt_inv[2,2]       
+
+    print ("Fed(3)",Fed[3]) 
+    
+    det_Fed=Fed[0]*Fed[3]-Fed[1]*Fed[2] #E.6
     
     #e.5
     F4ed_inv=float(-1./det_Fed)*TF*F4ed
@@ -189,5 +191,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     
     #Eqn E.2
     dEdU[1]=dEdFed_inv*dFeinv_dFe*dFedUFvp
+    
+    print("dEdU[0]",dEdU[0])
        
     return dEdU

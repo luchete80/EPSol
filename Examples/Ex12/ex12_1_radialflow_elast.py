@@ -567,7 +567,8 @@ while (end==0):
                     Fvpd[3]=Fvp[3]  
                     
                 visc=1.
-              
+                
+                print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
                 #Arguments passed are ~ vectors
                 dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
