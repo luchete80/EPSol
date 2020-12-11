@@ -161,7 +161,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #-----------------------------------------------------------------------------
     #Viscoplastic Fvp derivative
     #-----------------------------------------------------------------------------
-    det_Fvp=Fvpd[0]*Fvpd[3]*-Fvpd[1]*Fvpd[2]
+    det_Fvp=Fvpd[0]*Fvpd[3]-Fvpd[1]*Fvpd[2]
     #E.17
     for i in range(4):
         temp4[i,0]=0.
