@@ -78,17 +78,12 @@ for ey in range (ney):
 print(elnodes)
 #-------------------------- MESH
 #Formulation type and DOFs
-if form==1:
-    ndof =11
-else:
-    ndof =12
+ndof =5
 
 #Element dimension and DOF PER VARIABLE! 
-var_dim =[2,4,4,1]
-var_edof=zeros(4)
-if form==2:
-    var_dim =[2,4,5,1]
-for i in range(4):
+var_edof=zeros(2)
+var_dim =[4,1]
+for i in range(2):
     var_edof[i]=4*var_dim[i]  
     
 #print ("var_edof",var_edof)
@@ -168,9 +163,7 @@ dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 
 K=matrix(numpy.matlib.zeros((44, 44)))
 
-R   =[  matrix(numpy.matlib.zeros(( 8, 1))),
-        matrix(numpy.matlib.zeros((16, 1))),
-        matrix(numpy.matlib.zeros((20, 1))),
+R   =[  matrix(numpy.matlib.zeros((16, 1))),
         matrix(numpy.matlib.zeros(( 4, 1)))]
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
@@ -240,18 +233,9 @@ temp_dDFvp=[numpy.matlib.zeros((5, 8)),
             numpy.matlib.zeros((5, 4))]
 
 Kt=[
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1])))]
      ,
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[3])))
-     ],
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[3])))]
-     ,
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[1]))),
-      matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[3])))
-     ]    
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))]
     ]     
 dgdU=[  matrix(numpy.matlib.zeros((1, 8))),
         matrix(numpy.matlib.zeros((1,16))),
@@ -304,17 +288,10 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
 
 for n in range(numnodes):
     #Velocities 
-    iu=ndof*n
-    Uglob[iu  ]=vnxy[n,0]
-    Uglob[iu+1]=vnxy[n,1]
+    iF=ndof*n
     #Initial deformation gradients as identity??
-    for j in range (2):
-        iF=iu+var_dim[0]+j*var_dim[1]
-        #ONLY IN FORM 2
-        Uglob[iF  ]=Uglob[iF+3]=1
-        Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
-        if j==1:
-            Uglob[iF+4]=1
+    Uglob[iF  ]=Uglob[iF+3]=1
+    Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
 	
 print ("Initial Uglob", Uglob)
 
