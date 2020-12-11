@@ -536,6 +536,17 @@ while (end==0):
                 
                 wJ=w*detJ
                 
+                Ft[0,0]=F[0]
+                Ft[0,1]=F[1]
+                Ft[1,0]=F[2]
+                Ft[1,1]=F[3]
+                Ft[2,2]=1.
+                #F is [xx xy yx yy zz] , (4.21) in form 2
+                Fd[0]=F[0]
+                Fd[1]=F[2] #yx
+                Fd[2]=F[1] #xy
+                Fd[3]=F[3]
+                
                 #Elastic part of F 4.6
                 #ATENTION F~ is not in the same order of NODAL variable 
                 if (it==0):
@@ -549,16 +560,6 @@ while (end==0):
                     Fvpd[3]=1. 
                     Fvpd[4]=1.
                 else:
-                    Ft[0,0]=F[0]
-                    Ft[0,1]=F[1]
-                    Ft[1,0]=F[2]
-                    Ft[1,1]=F[3]
-                    Ft[2,2]=1.
-                    #F is [xx xy yx yy zz] , (4.21) in form 2
-                    Fd[0]=F[0]
-                    Fd[1]=F[2] #yx
-                    Fd[2]=F[1] #xy
-                    Fd[3]=F[3]
                     #F is [xx xy yx yy zz]
                     Fvpd[0]=Fvp[0]
                     Fvpd[1]=Fvp[2] #yx
