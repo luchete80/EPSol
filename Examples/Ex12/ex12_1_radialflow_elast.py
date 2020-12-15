@@ -460,7 +460,7 @@ while (end==0):
                 #Calculate sigma
                 #2.31 Comes first from 2.2 (Then 2.31)
                 #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
-                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) +
+                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk-Gij LM (jk) sig(k)+
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
                 
@@ -751,7 +751,7 @@ while (end==0):
         #However, then things become different. As mentioned in the introduction, we want to subdivide the matrix into blocks corresponding 
         #to the two different kinds of variables, velocity and pressure. To this end, we first have to make sure that the indices corresponding 
         #to velocities and pressures are not intermingled: 
-        #First all velocity degrees of freedom, then all pressure DoFs. This way, the global matrix separates nicely into a 2×2 system. 
+        #First all velocity degrees of freedom, then all pressure DoFs. This way, the global matrix separates nicely into a 2x2 system. 
         #To achieve this, we have to renumber degrees of freedom base on their vector component, an operation that conveniently is already implemented:
         #Example 9 nodes 4 elements (bad node numbering)
         # Var block numbering
