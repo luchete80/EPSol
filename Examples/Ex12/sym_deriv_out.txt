@@ -1,0 +1,16 @@
+
+D:\Luciano\Numerico\epsol\src\Examples\Ex12>python sym_deriv.py
+-a*(1 - s)**(a - 1)
+f's:  A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m)*cosh(s/z(Uf, Ufvp))/(m*z(Uf, Ufvp)*sinh(s/z(Uf, Ufvp)))
+f'Uf:  -A*s*(psi*sinh(s/z(Uf, Ufvp)))**(1/m)*cosh(s/z(Uf, Ufvp))*Derivative(z(Uf, Ufvp), Uf)/(m*z(Uf, Ufvp)**2*sinh(s/z(Uf, Ufvp)))
+-------------------------
+**********************************************
+(1-s/s*)>0
+g1's NOT SIMPL :  a*h0*(A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))**(1/m)*(-(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)*cosh(s/z(Uf, Ufvp))/(m*s_*z(Uf, Ufvp)*sinh(s/z(Uf, Ufvp))))*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)**a/(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1) + h0*(A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))**(1/m)*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)**a*cosh(s/z(Uf, Ufvp))/(m**2*z(Uf, Ufvp)*sinh(s/z(Uf, Ufvp)))
+******************************
+g1's SIMPLIFIED:  h0*(A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))**(1/m)*(a*m*(m*z(Uf, Ufvp)*sinh(s/z(Uf, Ufvp)) - s*cosh(s/z(Uf, Ufvp))) + (s - s_*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))*cosh(s/z(Uf, Ufvp)))*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)**a/(m**2*(s - s_*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))*z(Uf, Ufvp)*sinh(s/z(Uf, Ufvp)))
+-------------------------
+g1'Uf NOT SIMP:  -a*h0*s**2*(A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))**(1/m)*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)**a*cosh(s/z(Uf, Ufvp))*Derivative(z(Uf, Ufvp), Uf)/(m*s_*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)*z(Uf, Ufvp)**2*sinh(s/z(Uf, Ufvp))) - h0*s*(A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))**(1/m)*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)**a*cosh(s/z(Uf, Ufvp))*Derivative(z(Uf, Ufvp), Uf)/(m**2*z(Uf, Ufvp)**2*sinh(s/z(Uf, Ufvp)))
+******************************
+g1'Uf NOT SIMP:  h0*s*(A*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))**(1/m)*(-s*(psi*sinh(s/z(Uf, Ufvp)))**(-1/m)/s_ + 1)**a*(a*m*s - s + s_*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))*Derivative(z(Uf, Ufvp), Uf)/(m**2*(s - s_*(psi*sinh(s/z(Uf, Ufvp)))**(1/m))*z(Uf, Ufvp)**2*tanh(s/z(Uf, Ufvp)))
+-------------------------

@@ -1,6 +1,8 @@
 from sympy import *
-from numpy import *
+#from numpy import *
 import numpy.matlib #for zeros
+import numpy as np
+
 
 s,h0,A,s_,s_ast,m,n,psi,Uf,Ufvp,Dvp,a = symbols('s h0 A s_ s_ast m n psi Uf Ufvp Dvp a')
 
@@ -19,18 +21,18 @@ g = h0*(Pow(param,a))*Pow(f,1/m)
 
 
 #--------- DVP
-sig_t=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
-sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
+sig_t=np.matrix(np.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
+sig_d=np.matrix(np.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
 
-pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
-for i in range(3): #Only daigonal is modified
-    sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
-print ("sigd",sig_d[i][0])   
-for k in range(4):
-    sig_eq=sqrt(1.5*(sig_d[k,0]))
+#pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
+#for i in range(3): #Only daigonal is modified
+#    sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
+#print ("sigd",sig_d[i][0])   
+#for k in range(4):
+#    sig_eq=sqrt(1.5*(sig_d[k,0]))
 #Eq 4.9
 
-Dvp=matrix(numpy.matlib.zeros((4,4)))
+#Dvp=matrix(numpy.matlib.zeros((4,4)))
 #sqrt(3/2)*f
 
 
