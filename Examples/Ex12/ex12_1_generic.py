@@ -16,7 +16,7 @@ ly=20.*3.1415926/180.
 nex=2
 ney=2
 #-------------
-numvars=2 #1: Only F tensor, 2: F and internal variable s
+
 
 #***** MESH**********
 dx=lx/nex
@@ -77,15 +77,18 @@ for ey in range (ney):
         e=e+1
 print(elnodes)
 #-------------------------- MESH
-#Element dimension and DOF PER VARIABLE! 
-var_edof=zeros(2)
-var_dim =[4,1]
-ndof=0
 #Formulation type and DOFs
-for i in range(numvars):
-    ndof += var_dim[i]
-print ("dofs: ", ndof)
-for i in range(numvars):
+if form==1:
+    ndof =11
+else:
+    ndof =12
+
+#Element dimension and DOF PER VARIABLE! 
+var_dim =[2,4,4,1]
+var_edof=zeros(4)
+if form==2:
+    var_dim =[2,4,5,1]
+for i in range(4):
     var_edof[i]=4*var_dim[i]  
     
 #print ("var_edof",var_edof)
@@ -160,11 +163,14 @@ B5i=arange(50).reshape(5,5,2) #
 #print(BsigF[0])
 LM =matrix(numpy.matlib.zeros((4, 4)))
 LM5=matrix(numpy.matlib.zeros((5, 5)))
-
+#Only returns derivatives respectives to F and Fvp
+dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 
 K=matrix(numpy.matlib.zeros((44, 44)))
 
-R   =[  matrix(numpy.matlib.zeros((16, 1))),
+R   =[  matrix(numpy.matlib.zeros(( 8, 1))),
+        matrix(numpy.matlib.zeros((16, 1))),
+        matrix(numpy.matlib.zeros((20, 1))),
         matrix(numpy.matlib.zeros(( 4, 1)))]
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
@@ -205,7 +211,15 @@ class bMatrix: #Block matrix
     
     def __init__(self,i,j):
         m=matrix(numpy.matlib.zeros((i, j)))
- 
+
+    # def show_all(self):
+        # print(self.left, self.right)
+#Matrix Tangent 
+#U derivatives
+#
+# Kt_U=[[matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1])))],
+      # [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]]
+   
 #Matrix Double Entry
 #Example in formulation 1:
 # ( 8x 8)  (8x16)  (8x20) (8x4)
@@ -226,12 +240,19 @@ temp_dDFvp=[numpy.matlib.zeros((5, 8)),
             numpy.matlib.zeros((5, 4))]
 
 Kt=[
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1])))]
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]
      ,
-     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))]
-    ] 
-print ("Kt", Kt)
-    
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[3])))
+     ],
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[2], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[2], var_edof.astype(int)[3])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[1]))),
+      matrix(numpy.matlib.zeros(( var_edof.astype(int)[3], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[3], var_edof.astype(int)[3])))
+     ]    
+    ]     
 dgdU=[  matrix(numpy.matlib.zeros((1, 8))),
         matrix(numpy.matlib.zeros((1,16))),
         matrix(numpy.matlib.zeros((1,20))),
@@ -283,10 +304,17 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
 
 for n in range(numnodes):
     #Velocities 
-    iF=ndof*n
+    iu=ndof*n
+    Uglob[iu  ]=vnxy[n,0]
+    Uglob[iu+1]=vnxy[n,1]
     #Initial deformation gradients as identity??
-    Uglob[iF  ]=Uglob[iF+3]=1
-    Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
+    for j in range (2):
+        iF=iu+var_dim[0]+j*var_dim[1]
+        #ONLY IN FORM 2
+        Uglob[iF  ]=Uglob[iF+3]=1
+        Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
+        if j==1:
+            Uglob[iF+4]=1
 	
 print ("Initial Uglob", Uglob)
 
@@ -373,13 +401,24 @@ while (end==0):
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
                 #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
                 juf=0
+                uvf=0
                 for n in range (4):
                     d=elnodes.astype(int)[e][n]
                     #print("d len Uglob i",d,len(Uglob),ndof*d+2)
-                    for j in range (var_dim[0]):
-                        UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                        print("UF(j,coord)",j,ndof*d+6+j)
-                    juf+=var_dim[0]
+                    for i in range (var_dim[0]):    #Velocity is var 0
+                        UV[i,0]=Uglob[ndof*d+i]
+                    uvf+=var_dim[0]
+                    for j in range (var_dim[1]):
+                        #print("J",j)
+                        if (form==1):
+                            Usig[j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+                            UF  [j+juf,0]=Uglob[ndof*d+6+j]
+                        else: #Fig 4.1, Z is not translated to Fvpt
+                            UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+                            print("UF(j,coord)",j,ndof*d+6+j)
+                    juf+=var_dim[1]
+                    for j in range (var_dim[2]):
+                            UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
                 
 
                 print("UF",UF)
@@ -444,7 +483,7 @@ while (end==0):
                 #Calculate sigma
                 #2.31 Comes first from 2.2 (Then 2.31)
                 #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
-                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk-Gij LM (jk) sig(k)+
+                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) +
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
                 
@@ -531,10 +570,13 @@ while (end==0):
                 
                 print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
-
+                #Arguments passed are ~ vectors
+                dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
                 
                 # *****************************************************************
                 #RESIDUALS ******************* 2.26 to 2.39 *****************************
+                R[0]  =Bv.transpose()*P #Remains the summ of particular gauss points
+                #Rsig[16x1] (4 per node)
                 #Construct vk Bsig mik
                 for m in range(4):
                     for i in range(16):
@@ -543,20 +585,62 @@ while (end==0):
                     for i in range(16):
                         for k in range(2):
                             temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
-               
                 
-                R[0]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
-                R[1]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
+                if form==2:
+                    for m in range(5):
+                        for i in range(20):
+                            for k in range(2):
+                                temp5x16[m,i]=temp5x16[m,i]+BFvp[m,i,k]*v[k,0]
+                            
+                if (form==1):
+                    Rsig=(NsigF+temp4x16*tau).transpose()*(temp4x16*Usig-c*Ee)*wJ
+                else: #4.29
+                    R[2]=(NFvp+temp5x16*tau).transpose()*(temp5x16*UFvp-DM*NFvp*UFvp)*wJ
+                
+                R[1]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
+                R[3]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
                 
                 
                 #R Assembly            
                 #TANGENT MATRIX   
                 #PAGES 25 y 94
+                #dRdUn=Bv.transpose()*( G*c*dEdU -G*)
+                # for j,n in range(8,8):
+                    # for i in range(8,8):
+                    # Kt[0][0]=   Kt[0][0]+B[i][j]*(
+                                # #*G[i][p]*C[p][k]
+                                # -G[i][l]*BL[l][k][n]*sigma[k]
+                                # +G[i][k]*sigma[k]*H[m][l]*BL[m][l][n]*
+                                # wJ)   
+                #temp8x1=0
+                #*** ONLY FOR FORMULATION 2
+                # for l,m,n in range(4,4,8):
+                    # temp8x1[l]=temp8x1[l]+BL[m][l][n]
+                
+                # #print("temp",temp8x1[0])  
+                # Kt[0][0]=   Kt[0][0]+Bv.transpose()*(
+                            # #G[i][p]*C[p][k]
+                            # #-G[i][l]*BL[l][k][n]*sigma[k]
+                            # +G*sig*temp8x1.transpose()*
+                            # wJ
+                #dRv/dUv
+                Kt[0][0]=   Kt[0][0]+Bv.transpose()*visc*Bv*wJ
+                
+                #dRv/dUF
+                #(8x16)
+                Kt[0][1]=   Kt[0][1]+Bv.transpose()*c*dEdU[0]*wJ
+                #dRv/dUF (8x20)
+                Kt[0][2]=   Kt[0][2]+Bv.transpose()*c*dEdU[1]*wJ
+                #Kt(0,3) dRv/dUs=0
                 
                 #----------------------------------------------------
                 #for i in range(4):
                 #Kt.clear()
                 #F derivatives (2.49 to 2.52)
+                if (form==1):
+                    find=int(2)
+                else:
+                    find=int(1)
                     
                 for m in range(4):
                     for j in range(16):
@@ -584,31 +668,94 @@ while (end==0):
                                             BFvp[m,i,n]*
                                             (temp1-temp4x1[m,0])
                                             )
-                
-                print ("test", (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
+                                            
+                Kt[find][0]   =Kt[find][0]+( 
+                                 (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
                                 +tau*temp16x2*Nv #temp_in  * N_np
-                                -(NsigF+float(tau)*temp4x16).transpose()*temp4x8)                
+                                -(NsigF+float(tau)*temp4x16).transpose()*temp4x8
+                                )*wJ
                 #dRFdUF  4.36
-                Kt[0][0]= Kt[0][0]+(
+                Kt[find][find]= Kt[find][find]+(
                                 (NsigF+temp4x16*tau).transpose()*
                                 (temp4x16-LM*NsigF)
                                 )*wJ
+                                
+                #dRFdUF=dRFdUF=0.  4.37 & 4.38
                 
-                #dRFdUF=dRFdUF=0.  4.37 & 4.38                
+                #---------------------------------------------------
+                ##Viscoplastic derivatives
+                #Kt(2,0)=dFvp/dUV 4.39
+                temp5x1=LM5*NFvp*UFvp
+                temp1=0
+                #print ("temp4x1,temp1",temp5x1,temp1)
+                
+                for m in range(5):
+                    for i in range(20):
+                        for n in range(2):
+                            temp1=temp2=0. #increase with each m
+                            
+                            for j in range(20):
+                                for k in range(2):
+                                    temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
+                            
+                            temp20x2[i,n]=  temp20x2[i,n]+(
+                                            BFvp[m,i,n]*
+                                            (temp1-temp5x1[m,0])
+                                            )
+                
+                for m in range(5):
+                    for j in range (20):
+                        for k in range (2):
+                            BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
+                #print("size",len((NFvp+float(tau)*temp5x16)))
+                #dRFvp/DUv
+                Kt[2][0]=Kt[2][0]+(
+                            NFvp.transpose()*BUFvp*Nv+
+                             tau*temp20x2*Nv #temp_in  * N_np
+                            -(NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[0]
+                            )*wJ
+                
+                #dRFvp/dUF 4.40
+                Kt[2][1]=Kt[2][1]-(
+                             (NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[1]
+                            )*wJ
+                
+                #dRFvp/dUFvp 4.41
+                Kt[2][2]=Kt[2][2]+(
+                             (NFvp+float(tau)*temp5x16).transpose()*(
+                             temp5x16-DM*NFvp-temp_dDFvp[2])
+                            )*wJ
+
+                #dRFvp/dUs 4.42
+                Kt[2][3]=Kt[2][3]-(
+                             (NFvp+float(tau)*temp5x16).transpose()*(
+                             temp_dDFvp[3])
+                            )*wJ
                             
                 #---------------------------------------------------
                 #S derivatives -- COMMON TO BOTH FORMULATIONS
                 #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
-                #FORMER 3,1 and 3,3
-
+                #dRs/dUv
+                # print("test",tau*Bs.transpose()*Nv*(2.*v*Bs*Us * g_sigs) 
+                #print("test",float(2.0*(Bs*Us).transpose()*v))
+                Kt[3][0]=Kt[3][0]+(
+                          Ns.transpose()*(Bs*Us).transpose()*Nv +
+                          tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs)
+                          )*wJ 
+                
                 #4.44 dRs/dF 4.44 (4x16)
-                Kt[1][0]=Kt[1][0]+(
+                Kt[3][1]=Kt[3][1]+(
                           (Ns+tau*v.transpose()*Bs).transpose()*
                           (-dgdU[1])*
                           wJ) 
                 
+                #dRs/dFvp 4.45
+                #4x20
+                Kt[3][2]=Kt[3][2]+(
+                        (Ns.transpose()+tau*Bs.transpose()*v)*(-1.)*dgdU[2]
+                        )*wJ
                 #dRs/dS 4.46    
-                Kt[1][1]=Kt[1][1]+(
+                Kt[3][3]=Kt[3][3]+(
                           (Ns+tau*v.transpose()*Bs).transpose()*
                           (v.transpose()*Bs-dgdU[3])*
                           wJ) 
@@ -627,7 +774,7 @@ while (end==0):
         #However, then things become different. As mentioned in the introduction, we want to subdivide the matrix into blocks corresponding 
         #to the two different kinds of variables, velocity and pressure. To this end, we first have to make sure that the indices corresponding 
         #to velocities and pressures are not intermingled: 
-        #First all velocity degrees of freedom, then all pressure DoFs. This way, the global matrix separates nicely into a 2x2 system. 
+        #First all velocity degrees of freedom, then all pressure DoFs. This way, the global matrix separates nicely into a 2×2 system. 
         #To achieve this, we have to renumber degrees of freedom base on their vector component, an operation that conveniently is already implemented:
         #Example 9 nodes 4 elements (bad node numbering)
         # Var block numbering
@@ -642,7 +789,7 @@ while (end==0):
             
         vrowinc=0
         #Assembly Matrix
-        for vrow in range(numvars): #Variables
+        for vrow in range(4): #Variables
             ir=0
             imax=int(var_dim[vrow])
             for n in range (4): #Nodes
@@ -653,7 +800,7 @@ while (end==0):
                     ir=ir+1
             
             vcolinc=0        
-            for vcol in range(numvars): #Variables
+            for vcol in range(4): #Variables
                 #print("vcol",vcol)
                 jmax=int(var_dim[vcol])
                 #print("imax, jmax",imax,jmax)
@@ -666,6 +813,9 @@ while (end==0):
                         vncol[ic]=vcolinc+var_dim[vcol]*d+j
                         ic=ic+1
                             
+                        
+                #print("vnrow",vnrow.astype(int))            
+                #print("vncol",vncol.astype(int))
                 for row in range(4*imax):
                     for col in range(4*jmax):
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
@@ -690,6 +840,26 @@ while (end==0):
         iF=int((var_dim[0]+var_dim[1])*numnodes)
         fbc=2
         
+        
+    # BEFORE -------------------------------------------
+    # for i in range(ney+1):
+        # for j in range(dof):
+            # Kglob[iu  ,j   ]=Kglob[j,iu]=0.
+            # Kglob[iu  ,iu  ]=1.
+            # Kglob[iu+1,iu+1]=1.
+            # for k in range(4):
+                # Kglob[iu,j]=Kglob[j,iu]=0.
+                # Kglob[iF+k,iF+k]=1.        
+        
+        # iu+=(nex+1)*var_dim[0] #Increase nx nodes
+        # iF+=(nex+1)*var_dim[fbc] #Increase nx nodes
+        # Rglob[iu  ]=0
+        # Rglob[iu+1]=0
+        
+        # #Fvp=I
+        # Rglob[iF  ]=Rglob[iF+3]=1.  #xx,yy
+        # Rglob[iF+1]=Rglob[iF+2]=0.
+        #-----------------------------
     for n in range(numnodes):   
         iu=ndof*n
         Rglob[iu  ]=0

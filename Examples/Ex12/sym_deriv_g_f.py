@@ -3,6 +3,14 @@ from sympy import *
 import numpy.matlib #for zeros
 import numpy as np
 
+#From 4.2 
+#sig= C Ee + 2 mu D
+#From 4.3 and 4.4 
+#Ee = 1/2 (deltaij -Fe(-1)Fe(-1) ) 4.3 
+#Dij= 1/2 (Lji + Lij )
+#From 4.6 
+#Fe=F Ftem-1 Fvp-1
+
 
 s,h0,A,s_,s_ast,m,n,psi,Uf,Ufvp,Dvp,a = symbols('s h0 A s_ s_ast m n psi Uf Ufvp Dvp a')
 
