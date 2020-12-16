@@ -5,7 +5,6 @@ from numpy import *
 import numpy.matlib #for zeros
 
 import array as arr
-
 import deriv
 
 #----------------------------
@@ -377,7 +376,7 @@ while (end==0):
                     d=elnodes.astype(int)[e][n]
                     #print("d len Uglob i",d,len(Uglob),ndof*d+2)
                     for j in range (var_dim[0]):
-                        UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+                        UF  [j+juf,0]=Uglob[ndof*d+j]
                         print("UF(j,coord)",j,ndof*d+6+j)
                     juf+=var_dim[0]
                 
@@ -515,17 +514,9 @@ while (end==0):
                     #NOT USE!!! Fd=[[1,0,0,1]]
                     Fvpt=identity(3)
                     #print(Ft)
-                    Fvpd[0]=1.
-                    Fvpd[1]=0. #yx
-                    Fvpd[2]=0. #xy
-                    Fvpd[3]=1. 
-                    Fvpd[4]=1.
                 else:
                     #F is [xx xy yx yy zz]
-                    Fvpd[0]=Fvp[0]
-                    Fvpd[1]=Fvp[2] #yx
-                    Fvpd[2]=Fvp[1] #xy
-                    Fvpd[3]=Fvp[3]  
+
                     
                 visc=1.
                 
@@ -584,10 +575,7 @@ while (end==0):
                                             BFvp[m,i,n]*
                                             (temp1-temp4x1[m,0])
                                             )
-                
-                print ("test", (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
-                                +tau*temp16x2*Nv #temp_in  * N_np
-                                -(NsigF+float(tau)*temp4x16).transpose()*temp4x8)                
+                            
                 #dRFdUF  4.36
                 Kt[0][0]= Kt[0][0]+(
                                 (NsigF+temp4x16*tau).transpose()*
