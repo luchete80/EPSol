@@ -81,7 +81,7 @@ var_edof=zeros(2)
 var_dim =[4,1]
 ndof=0
 #Formulation type and DOFs
-for i in range(numvars):
+for i in range(numvars): 
     ndof += var_dim[i]
 print ("dofs: ", ndof)
 for i in range(numvars):
@@ -286,7 +286,8 @@ for n in range(numnodes):
     #Initial deformation gradients as identity??
     Uglob[iF  ]=Uglob[iF+3]=1
     Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
-	
+
+                        
 print ("Initial Uglob", Uglob)
 
 #-------------------------------------------
@@ -354,6 +355,7 @@ while (end==0):
                 
                 ###################
                 ## Ec. D.20 p177 
+                
                 if form==2:
                     for i in range(4):
                         for l in range(5):
@@ -374,6 +376,8 @@ while (end==0):
                 juf=0
                 for n in range (4):
                     d=elnodes.astype(int)[e][n]
+                    for i in range (2):    #Velocity is var 0
+                        UV[i,0]=vnxy[d,i]
                     #print("d len Uglob i",d,len(Uglob),ndof*d+2)
                     for j in range (var_dim[0]):
                         UF  [j+juf,0]=Uglob[ndof*d+j]
@@ -484,15 +488,15 @@ while (end==0):
                 #D(vp)ij=sqrt(3/2) e. vp Nij  2.14
                 #Nij Direction of plastic flow
                 #Assemble DM matrix 4.24 p92
-                if form==2:
-                    #for i in range(2):
-                    #    for j in range(2):
-                    #Dvp comes from N, which comes from 
-                    #Dvp is [x y z yz]
-                    DM[0,0]=DM[2,2]=Dvp[0]
-                    DM[1,1]=DM[3,3]=Dvp[1]
-                    DM[1,0]=DM[3,2]=DM[0,1]=DM[2,3]=Dvp[3]
-                    DM[3,3]=Dvp[2]
+
+                #for i in range(2):
+                #    for j in range(2):
+                #Dvp comes from N, which comes from 
+                #Dvp is [x y z yz]
+                DM[0,0]=DM[2,2]=Dvp[0]
+                DM[1,1]=DM[3,3]=Dvp[1]
+                DM[1,0]=DM[3,2]=DM[0,1]=DM[2,3]=Dvp[3]
+                DM[3,3]=Dvp[2]
                 
                 wJ=w*detJ
                 
@@ -514,16 +518,11 @@ while (end==0):
                     #NOT USE!!! Fd=[[1,0,0,1]]
                     Fvpt=identity(3)
                     #print(Ft)
-                else:
+                
                     #F is [xx xy yx yy zz]
-
                     
                 visc=1.
-                
-                print ("Fvpd",Fvpd)
-                #print("Fd",Fd[0,0])
-
-                
+       
                 # *****************************************************************
                 #RESIDUALS ******************* 2.26 to 2.39 *****************************
                 #Construct vk Bsig mik
@@ -538,50 +537,21 @@ while (end==0):
                 
                 R[0]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
                 R[1]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
-                
-                
+              
                 #R Assembly            
                 #TANGENT MATRIX   
                 #PAGES 25 y 94
                 
-                #----------------------------------------------------
-                #for i in range(4):
-                #Kt.clear()
-                #F derivatives (2.49 to 2.52)
-                    
-                for m in range(4):
-                    for j in range(16):
-                        for k in range(2):
-                            temp4x2[m,k]=temp4x2[m,k]+BsigF[m,j,k]*UF[j,0]
-
-                for m in range(4):
-                    for l in range (4):
-                        for p in range(8):
-                            temp4x8[m,p]=BL[m,l,p]+F[l,0]            
-                #dRF/dUv 4.35
-                #(16x8)
-                #print("Nv",Nv)
-                
-                for m in range(4):
-                    for i in range(16):
-                        for n in range(2):
-                            temp1=temp2=0. #increase with each m
-                            
-                            for j in range(16):
-                                for k in range(2):
-                                    temp1=temp1+2*BsigF[m,j,k]*v[k]*UF[j,0]
-                            
-                            temp16x2[i,n]=  temp20x2[i,n]+(
-                                            BFvp[m,i,n]*
-                                            (temp1-temp4x1[m,0])
-                                            )
-                            
+                #----------------------------------------------------                   
+                               
                 #dRFdUF  4.36
+
                 Kt[0][0]= Kt[0][0]+(
                                 (NsigF+temp4x16*tau).transpose()*
                                 (temp4x16-LM*NsigF)
                                 )*wJ
-                
+                #print("temp4x16-LM*NsigF",temp4x16-LM*NsigF)         
+                print("temp4x16",temp4x16)                          
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38                
                             
                 #---------------------------------------------------
@@ -590,6 +560,7 @@ while (end==0):
                 #FORMER 3,1 and 3,3
 
                 #4.44 dRs/dF 4.44 (4x16)
+                print("Kt(1,0)",Kt[1][0])
                 Kt[1][0]=Kt[1][0]+(
                           (Ns+tau*v.transpose()*Bs).transpose()*
                           (-dgdU[1])*
@@ -602,31 +573,6 @@ while (end==0):
                           wJ) 
         
         print ("Nv",Nv)
-        # #Element dimension and DOF PER VARIABLE! 
-        # var_dim =[2,4,4,1]
-        # var_edof=zeros(4)
-        # if form==2:
-            # var_dim =[2,4,5,1]
-        # for i in range(4):
-            # var_edof[i]=4*var_dim[i]  
-            
-        #Assuming alternated variables
-        #From https://www.dealii.org/current/doxygen/deal.II/step_20.html
-        #However, then things become different. As mentioned in the introduction, we want to subdivide the matrix into blocks corresponding 
-        #to the two different kinds of variables, velocity and pressure. To this end, we first have to make sure that the indices corresponding 
-        #to velocities and pressures are not intermingled: 
-        #First all velocity degrees of freedom, then all pressure DoFs. This way, the global matrix separates nicely into a 2x2 system. 
-        #To achieve this, we have to renumber degrees of freedom base on their vector component, an operation that conveniently is already implemented:
-        #Example 9 nodes 4 elements (bad node numbering)
-        # Var block numbering
-        # [12 13] [14 15] [16 17]
-        # [6 7, 30..33]  [8 9,34..37] [10 11, 38.41]
-        # [0 1, 18..21]  [2 3,22..25] [4 5, 26..29] 
-        
-        #Var 0
-        # Nodes 4 3 0 1
-        # vn=[8 9 6 7 0 1 2 3]
-        # vn=[34..37 30.33 18..21]
             
         vrowinc=0
         #Assembly Matrix
@@ -636,21 +582,22 @@ while (end==0):
             for n in range (4): #Nodes
                 for i in range(imax): 
                     d=elnodes.astype(int)[e][n]
-                    #print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
+                    print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
                     vnrow[ir]=vrowinc+var_dim[vrow]*d+i
                     ir=ir+1
             
+            print ("vrow vnrow",vrow,vnrow)
             vcolinc=0        
             for vcol in range(numvars): #Variables
-                #print("vcol",vcol)
+                print("vcol",vcol)
                 jmax=int(var_dim[vcol])
-                #print("imax, jmax",imax,jmax)
+                print("imax, jmax",imax,jmax)
                 #Store vn vectors
                 ic=0
                 for n in range (4): #Nodes 
                     for j in range(jmax):
                         d=elnodes.astype(int)[e][n]
-                        #print("vcolinc",vcolinc)
+                        print("vcolinc",vcolinc)
                         vncol[ic]=vcolinc+var_dim[vcol]*d+j
                         ic=ic+1
                             
@@ -663,7 +610,7 @@ while (end==0):
             Rglob[vnrow.astype(int)[row]]=R[vrow][row]
             
             vrowinc+=numnodes*var_dim[vrow]
-        #print (K)
+        
 
     ##---------------------------------------------------------------
     ##Boundary conditions
@@ -671,34 +618,16 @@ while (end==0):
     #Velocity DOFs 
     #In this example velocities are known
     iu=int(0)
-    if (form==2):
-        iF=int(var_dim[0]*numnodes)
-        fbc=1
-    else:
-        iF=int((var_dim[0]+var_dim[1])*numnodes)
-        fbc=2
-        
+    iF=int(var_dim[0]*numnodes)     
     for n in range(numnodes):   
         iu=ndof*n
         Rglob[iu  ]=0
         Rglob[iu+1]=0
         Kglob[iu,iu]=Kglob[iu+1,iu]=Kglob[iu,iu+1]=Kglob[iu+1,iu+1]=1
-        # K[4,i] = K[i,4] = 0.0
-        # K[5,i] = K[i,5] = 0.0
-        # K[7,i] = K[i,7] = 0.0
-    
-    print("Rglob",Rglob)
-# K[4,4] = K[5,5] = K[7,7] = 1.;
-# R=[0,0,1000.0,0,0,0,0,0]
 
-# #Numerated as in deal.ii
-# for i in range(8):
-    # K[0,i] = K[i,0] = 0.0
-    # K[1,i] = K[i,1] = 0.0
-    # K[3,i] = K[i,3] = 0.0
-    
-# K[0,0] = K[1,1] = K[3,3] = 1.;
-# R=[0,0,0,0,1000.0,0,0,0]
+    print("Kglob",Rglob)    
+    print("Rglob",Rglob)
+
 
 #print (K)
     for i in range (dof):

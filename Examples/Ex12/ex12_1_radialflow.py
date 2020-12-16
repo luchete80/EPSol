@@ -23,7 +23,7 @@ dx=lx/nex
 dy=ly/ney
 numel=nex*ney
 
-vnrow=zeros(20) #Dof connectivity
+vnrow=zeros(20) #Nodes per elem x vardim, (max is 5 x 4) Dof connectivity
 vncol=zeros(20) #Dof connectivity
 
 numnodes=(nex+1)*(ney+1)
@@ -668,7 +668,8 @@ while (end==0):
                                             BFvp[m,i,n]*
                                             (temp1-temp4x1[m,0])
                                             )
-                                            
+                
+                
                 Kt[find][0]   =Kt[find][0]+( 
                                  (NsigF.transpose()*temp4x2*Nv) #16x4*4x2*2x8
                                 +tau*temp16x2*Nv #temp_in  * N_np
@@ -679,7 +680,8 @@ while (end==0):
                                 (NsigF+temp4x16*tau).transpose()*
                                 (temp4x16-LM*NsigF)
                                 )*wJ
-                                
+                print("dRFdUF",Kt[find][find])   
+                print("temp4x16-LM*NsigF",temp4x16-LM*NsigF)                     
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38
                 
                 #---------------------------------------------------
@@ -798,7 +800,7 @@ while (end==0):
                     #print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
                     vnrow[ir]=vrowinc+var_dim[vrow]*d+i
                     ir=ir+1
-            
+            print ("vrow, vnrow",vrow,vnrow)    
             vcolinc=0        
             for vcol in range(4): #Variables
                 #print("vcol",vcol)
@@ -825,7 +827,7 @@ while (end==0):
             Rglob[vnrow.astype(int)[row]]=R[vrow][row]
             
             vrowinc+=numnodes*var_dim[vrow]
-        #print (K)
+        print ("Kglob",Kglob)
 
     ##---------------------------------------------------------------
     ##Boundary conditions
