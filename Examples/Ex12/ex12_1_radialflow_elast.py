@@ -91,6 +91,7 @@ for i in range(numvars):
 
 edof=ndof*4
 dof=ndof*numnodes
+print ("GLOBAL DOF: ",dof)
 #X is combines per row to calculate J
 p=1.0/1.732050807568877
 gauss=[-p,p]
@@ -617,6 +618,8 @@ while (end==0):
     ##---------------------------------------------------------------
     #Velocity DOFs 
     #In this example velocities are known
+    #AT INLET:
+    # F=I , sigma = 0
     iu=int(0)
     iF=int(var_dim[0]*numnodes)     
     for n in range(numnodes):   
@@ -625,7 +628,7 @@ while (end==0):
         Rglob[iu+1]=0
         Kglob[iu,iu]=Kglob[iu+1,iu]=Kglob[iu,iu+1]=Kglob[iu+1,iu+1]=1
 
-    print("Kglob",Rglob)    
+    print("Kglob",Kglob)    
     print("Rglob",Rglob)
 
 
