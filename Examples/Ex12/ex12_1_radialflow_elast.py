@@ -15,7 +15,7 @@ ly=20.*3.1415926/180.
 nex=2
 ney=2
 #-------------
-numvars=2 #1: Only F tensor, 2: F and internal variable s
+numvars=1 #1: Only F tensor, 2: F and internal variable s
 
 #***** MESH**********
 dx=lx/nex
@@ -537,6 +537,7 @@ while (end==0):
                
                 
                 R[0]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
+                #if (numvars == 2)
                 R[1]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
               
                 #R Assembly            
@@ -561,17 +562,18 @@ while (end==0):
                 #FORMER 3,1 and 3,3
 
                 #4.44 dRs/dF 4.44 (4x16)
-                print("Kt(1,0)",Kt[1][0])
-                Kt[1][0]=Kt[1][0]+(
-                          (Ns+tau*v.transpose()*Bs).transpose()*
-                          (-dgdU[1])*
-                          wJ) 
-                
-                #dRs/dS 4.46    
-                Kt[1][1]=Kt[1][1]+(
-                          (Ns+tau*v.transpose()*Bs).transpose()*
-                          (v.transpose()*Bs-dgdU[3])*
-                          wJ) 
+                if numvars == 2 :
+                    print("Kt(1,0)",Kt[1][0])
+                    Kt[1][0]=Kt[1][0]+(
+                              (Ns+tau*v.transpose()*Bs).transpose()*
+                              (-dgdU[1])*
+                              wJ) 
+                    
+                    #dRs/dS 4.46    
+                    Kt[1][1]=Kt[1][1]+(
+                              (Ns+tau*v.transpose()*Bs).transpose()*
+                              (v.transpose()*Bs-dgdU[3])*
+                              wJ) 
         
         print ("Nv",Nv)
             
