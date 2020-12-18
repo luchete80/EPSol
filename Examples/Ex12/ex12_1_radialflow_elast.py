@@ -298,10 +298,12 @@ end=0
 ## Newton Rhapson Loop
 ## ------------------------------------------
 while (end==0):
+    #end=1
     if it > 10:
         end=1
-    #for e in range (numel):
+    
 #ELEMENT LOOP  ----------------
+    #for e in range (1):
     for e in range (numel): # TO MODIFY 
         #Obtain Ve from global
         Kel=0.
@@ -632,6 +634,7 @@ while (end==0):
         #Deformation gradient F
         for i in range ( var_dim [ 0 ] ):
             idof = var_dim[0] * inode + i
+            print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
                 Rglob[ j ] -= Kglob[j,idof] * 0 #1 is R(idof)
@@ -659,13 +662,28 @@ while (end==0):
 #print (K)
     for i in range (dof):
         Uglob[i]=Uglob[i]+dUglob[i]
-          
+    
     dUglob=linalg.solve(Kglob, Rglob)
     print("dUglob",dUglob)  
+    print("Uglob", Uglob)
     
-    for n in range(numnodes):   
-        Uglob[ndof*n  ]=vnxy[n,0]
-        Uglob[ndof*n+1]=vnxy[n,1]
+    
+    #TOTAL BOUNDARY CONDITIONS FOR UF and s calculations
+    dnode=(nex+1)    
+    for dy in range(ney+1): 
+        print ("inode",inode)
+        inode=dy*dnode
+        #Deformation gradient F
+        idof = var_dim[0] * inode 
+        Uglob[ idof     ] = Uglob[ idof + 3 ] = 1
+        Uglob[ idof + 1 ] = Uglob[ idof + 2 ] = 0
+
+        
+        #Sigma is zero, Internal variable s ,      
+        if numvars == 2:
+            idofs = idof + var_dim[0]
+            Uglob[ idofs ] = mat_s0
+ 
     
     it+=1
     

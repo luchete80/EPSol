@@ -1,0 +1,21 @@
+- Verificar con ejemplo hiperelastico step-44 https://www.dealii.org/current/doxygen/deal.II/step_44.html
+- Ver Riks method, linear search.
+
+here are a number of obvious extensions for this work:
+
+- Firstly, an additional constraint could be added to the free-energy function in order to enforce a high degree of incompressibility in materials. 
+An additional Lagrange multiplier would be introduced, but this could most easily be dealt with using the principle of augmented Lagrange multipliers. 
+This is demonstrated in Simo and Taylor (1991) .
+- The constitutive relationship used in this model is relatively basic. It may be beneficial to split the material class into two separate classes, 
+one dealing with the volumetric response and the other the isochoric response, and produce a generic materials class (i.e. having abstract virtual 
+functions that derived classes have to implement) that would allow for the addition of more complex material models. Such models could include 
+other hyperelastic materials, plasticity and viscoelastic materials and others.
+- The program has been developed for solving problems on single-node multicore machines. With a little effort, the program could be extended to a 
+large-scale computing environment through the use of Petsc or Trilinos, using a similar technique to that demonstrated in step-40. This would mostly 
+involve changes to the setup, assembly, PointHistory and linear solver routines.
+As this program assumes quasi-static equilibrium, extensions to include dynamic effects would be necessary to study problems where inertial effects 
+are important, e.g. problems involving impact.
+Load and solution limiting procedures may be necessary for highly nonlinear problems. It is possible to add a linesearch algorithm to limit the step size within a Newton increment to ensure optimum convergence. It may also be necessary to use a load limiting method, such as the Riks method, to solve unstable problems involving geometric instability such as buckling and snap-through.
+Many physical problems involve contact. It is possible to include the effect of frictional or frictionless contact between objects into this program. This would involve the addition of an extra term in the free-energy functional and therefore an addition to the assembly routine. One would also need to manage the contact problem (detection and stress calculations) itself. An alternative to additional penalty terms in the free-energy functional would be to use active set methods such as the one used in step-41.
+The complete condensation procedure using LinearOperators has been coded into the linear solver routine. This could also have been achieved through the application of the schur_complement() operator to condense out one or more of the fields in a more automated manner.
+Finally, adaptive mesh refinement, as demonstrated in step-6 and step-18, could provide additional solution accuracy.
