@@ -537,8 +537,8 @@ while (end==0):
                
                 
                 R[0]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
-                #if (numvars == 2)
-                R[1]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
+                if numvars == 2:
+                    R[1]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
               
                 #R Assembly            
                 #TANGENT MATRIX   
