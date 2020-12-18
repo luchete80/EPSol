@@ -298,10 +298,11 @@ end=0
 ## Newton Rhapson Loop
 ## ------------------------------------------
 while (end==0):
-    end=1
+    if it > 10:
+        end=1
     #for e in range (numel):
 #ELEMENT LOOP  ----------------
-    for e in range (1): # TO MODIFY 
+    for e in range (numel): # TO MODIFY 
         #Obtain Ve from global
         Kel=0.
         for n in range(4):
@@ -627,30 +628,29 @@ while (end==0):
     dnode=(nex+1)    
     for dy in range(ney+1): 
         inode=dy*dnode
-        idof=var_dim[0]*inode
         print("node",inode)   
         #Deformation gradient F
-        for i in range(dof):
-            Kglob[ idof , i ] = 0
-            Rglob[ i ] -= Kglob[i,idof] * 1 #1 is R(idof)
-            Kglob[ i ,idof ] = 0
-            Kglob[ idof + 3, i ] = 0
-            Rglob[ i ] -= Kglob[ i, idof + 3] * 1 #1 is R(idof)
-            Kglob[ i ,idof + 3 ] = 0
-        
-        Kglob[idof,idof] = Kglob[idof+3, idof+3] = 1
-        Rglob[idof  ] = Rglob[idof+3] = 1
+        for i in range ( var_dim [ 0 ] ):
+            idof = var_dim[0] * inode + i
+            for j in range(dof):
+                Kglob[ idof , j ] = 0
+                Rglob[ j ] -= Kglob[j,idof] * 0 #1 is R(idof)
+                Kglob[ j ,idof ] = 0
+            
+
+            Kglob[idof,idof] = 1
+            Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!
         
         #Sigma is zero, Internal variable s ,      
         if numvars == 2:
             idofs = idof + var_dim[0]
             for i in range(dof):                    
                 Kglob[ idofs , i ] = 0
-                Rglob[ i ] -= Kglob[ i, idofs ] * mat_s0 #1 is R(idof)  
+                Rglob[ i ] -= Kglob[ i, idofs ] * 0 #1 is R(idof)  
                 Kglob[ i , idofs ] = 0                
         
-            Kglob[idofs,idofs] = 1
-            Rglob[idofs  ] = 1                
+            Kglob[idofs,idofs] = 0
+            Rglob[idofs  ] = 0                
 
     print("Kglob",Kglob)    
     print("Rglob",Rglob)
@@ -666,6 +666,8 @@ while (end==0):
     for n in range(numnodes):   
         Uglob[ndof*n  ]=vnxy[n,0]
         Uglob[ndof*n+1]=vnxy[n,1]
+    
+    it+=1
     
 print ("Results")
 #print(U)
