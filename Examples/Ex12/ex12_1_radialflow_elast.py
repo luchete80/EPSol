@@ -649,8 +649,8 @@ while (end==0):
                 Rglob[ i ] -= Kglob[ i, idofs ] * mat_s0 #1 is R(idof)  
                 Kglob[ i , idofs ] = 0                
         
-        Kglob[idofs,idofs] = 1
-        Rglob[idofs  ] = 1                
+            Kglob[idofs,idofs] = 1
+            Rglob[idofs  ] = 1                
 
     print("Kglob",Kglob)    
     print("Rglob",Rglob)
