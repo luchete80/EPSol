@@ -819,7 +819,7 @@ while (end==0):
                 #print("vnrow",vnrow.astype(int))            
                 #print("vncol",vncol.astype(int))
                 for row in range(4*imax):
-                    for col in range(4*jmax):
+                    for col in range(4*jmax):           
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]

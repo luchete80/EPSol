@@ -585,14 +585,14 @@ while (end==0):
             for n in range (4): #Nodes
                 for i in range(imax): 
                     d=elnodes.astype(int)[e][n]
-                    print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
+                    #print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
                     vnrow[ir]=vrowinc+var_dim[vrow]*d+i
                     ir=ir+1
             
             print ("vrow vnrow",vrow,vnrow)
             vcolinc=0        
             for vcol in range(numvars): #Variables
-                print("vcol",vcol)
+                
                 jmax=int(var_dim[vcol])
                 print("imax, jmax",imax,jmax)
                 #Store vn vectors
@@ -600,12 +600,14 @@ while (end==0):
                 for n in range (4): #Nodes 
                     for j in range(jmax):
                         d=elnodes.astype(int)[e][n]
-                        print("vcolinc",vcolinc)
+                        #print("vcolinc",vcolinc)
                         vncol[ic]=vcolinc+var_dim[vcol]*d+j
                         ic=ic+1
-                            
+                
+                #print("vcol vncol",vcol,vncol)
                 for row in range(4*imax):
                     for col in range(4*jmax):
+                        #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
@@ -620,15 +622,35 @@ while (end==0):
     ##---------------------------------------------------------------
     #Velocity DOFs 
     #In this example velocities are known
-    #AT INLET:
+    #AT INLET(left nodes):
     # F=I , sigma = 0
-    iu=int(0)
-    iF=int(var_dim[0]*numnodes)     
-    for n in range(numnodes):   
-        iu=ndof*n
-        Rglob[iu  ]=0
-        Rglob[iu+1]=0
-        Kglob[iu,iu]=Kglob[iu+1,iu]=Kglob[iu,iu+1]=Kglob[iu+1,iu+1]=1
+    dnode=(nex+1)    
+    for dy in range(ney+1): 
+        inode=dy*dnode
+        idof=var_dim[0]*inode
+        print("node",inode)   
+        #Deformation gradient F
+        for i in range(dof):
+            Kglob[ idof , i ] = 0
+            Rglob[ i ] -= Kglob[i,idof] * 1 #1 is R(idof)
+            Kglob[ i ,idof ] = 0
+            Kglob[ idof + 3, i ] = 0
+            Rglob[ i ] -= Kglob[ i, idof + 3] * 1 #1 is R(idof)
+            Kglob[ i ,idof + 3 ] = 0
+        
+        Kglob[idof,idof] = Kglob[idof+3, idof+3] = 1
+        Rglob[idof  ] = Rglob[idof+3] = 1
+        
+        #Sigma is zero, Internal variable s ,      
+        if numvars == 2:
+            idofs = idof + var_dim[0]
+            for i in range(dof):                    
+                Kglob[ idofs , i ] = 0
+                Rglob[ i ] -= Kglob[ i, idofs ] * mat_s0 #1 is R(idof)  
+                Kglob[ i , idofs ] = 0                
+        
+        Kglob[idofs,idofs] = 1
+        Rglob[idofs  ] = 1                
 
     print("Kglob",Kglob)    
     print("Rglob",Rglob)
@@ -637,9 +659,9 @@ while (end==0):
 #print (K)
     for i in range (dof):
         Uglob[i]=Uglob[i]+dUglob[i]
-        
+          
     dUglob=linalg.solve(Kglob, Rglob)
-    
+    print("dUglob",dUglob)  
     
     for n in range(numnodes):   
         Uglob[ndof*n  ]=vnxy[n,0]
