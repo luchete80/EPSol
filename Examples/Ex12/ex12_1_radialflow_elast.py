@@ -12,8 +12,8 @@ import deriv
 form=2
 lx=1.
 ly=20.*3.1415926/180.
-nex=2
-ney=2
+nex=4
+ney=4
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -299,7 +299,7 @@ end=0
 ## ------------------------------------------
 while (end==0):
     #end=1
-    if it > 10:
+    if it > 20:
         end=1
     
 #ELEMENT LOOP  ----------------
@@ -687,7 +687,50 @@ while (end==0):
     
     it+=1
     
+
+
+    
 print ("Results")
 #print(U)
 
-
+file= open("output.vtu","w+")
+file.write("<?xml version=\"1.0\"?>\n")
+file.write("<VTKFile type=\"UnstructuredGrid\">\n")
+file.write("<UnstructuredGrid>\n")
+file.write("<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n" %(numnodes,numel) )
+file.write("<Points>\n")
+file.write("<DataArray NumberOfComponents=\"3\" type=\"Float32\" format=\"ascii\" >\n")
+for i in range (numnodes):
+    file.write("%f\n %f 0.\n" %(node[i,0],node[i,1]))
+file.write("</DataArray>\n")
+file.write("</Points>\n")
+file.write("<Cells>\n")
+file.write("<DataArray Name=\"connectivity\" type=\"Int32\" format=\"ascii\" >\n")
+for e in range (numel):
+    for n in range (4):
+        file.write("%d " %(elnodes.astype(int)[e][n]))
+    file.write("\n")
+file.write("</DataArray>\n")
+file.write("<DataArray Name=\"offsets\" type=\"Int32\" format=\"ascii\" >\n")
+offset=4
+for e in range (numel):
+    file.write("%d " %(offset))
+    offset+=4
+file.write("\n</DataArray>\n")
+file.write("<DataArray Name=\"types\" type=\"UInt8\" format=\"ascii\" >\n")
+for e in range (numel):
+    file.write("10 ")
+file.write("\n</DataArray>\n");
+file.write("</Cells>\n")
+file.write("<PointData Scalars=\"scalars\" format=\"ascii\">\n")
+file.write("<DataArray Name=\"Var\" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(ndof))
+i=0
+for n in range (dof):
+    file.write("%f " %(Uglob[n]))
+    #i+=var_dim[0]
+file.write("\n</DataArray>\n")
+file.write("</PointData>\n")
+file.write("</Piece>\n")
+file.write("</UnstructuredGrid>\n")
+file.write("</VTKFile>\n")
+file.close
