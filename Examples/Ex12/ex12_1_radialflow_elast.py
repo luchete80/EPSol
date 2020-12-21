@@ -12,8 +12,8 @@ import deriv
 form=2
 lx=1.
 ly=20.*3.1415926/180.
-nex=4
-ney=4
+nex=10
+ney=10
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -299,7 +299,7 @@ end=0
 ## ------------------------------------------
 while (end==0):
     #end=1
-    if it > 20:
+    if it > 50:
         end=1
     
 #ELEMENT LOOP  ----------------
@@ -309,9 +309,9 @@ while (end==0):
         Kel=0.
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
-        print ("Element ", e)
-        print ("Element Nodes")
-        print (X2)
+        #print ("Element ", e)
+        #print ("Element Nodes")
+        #print (X2)
         
         for ig in range(2):
             for jg in range(2):
@@ -385,16 +385,16 @@ while (end==0):
                     #print("d len Uglob i",d,len(Uglob),ndof*d+2)
                     for j in range (var_dim[0]):
                         UF  [j+juf,0]=Uglob[ndof*d+j]
-                        print("UF(j,coord)",j,ndof*d+6+j)
+                        #print("UF(j,coord)",j,ndof*d+6+j)
                     juf+=var_dim[0]
                 
 
-                print("UF",UF)
+                #print("UF",UF)
 
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-                print("F",F)
+                #print("F",F)
                 #Ft=
                 if (form==1):
                     sig=NsigF*Usig
@@ -556,7 +556,7 @@ while (end==0):
                                 (temp4x16-LM*NsigF)
                                 )*wJ
                 #print("temp4x16-LM*NsigF",temp4x16-LM*NsigF)         
-                print("temp4x16",temp4x16)                          
+                #print("temp4x16",temp4x16)                          
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38                
                             
                 #---------------------------------------------------
@@ -566,7 +566,7 @@ while (end==0):
 
                 #4.44 dRs/dF 4.44 (4x16)
                 if numvars == 2 :
-                    print("Kt(1,0)",Kt[1][0])
+                    #print("Kt(1,0)",Kt[1][0])
                     Kt[1][0]=Kt[1][0]+(
                               (Ns+tau*v.transpose()*Bs).transpose()*
                               (-dgdU[1])*
@@ -578,7 +578,7 @@ while (end==0):
                               (v.transpose()*Bs-dgdU[3])*
                               wJ) 
         
-        print ("Nv",Nv)
+        #print ("Nv",Nv)
             
         vrowinc=0
         #Assembly Matrix
@@ -592,12 +592,12 @@ while (end==0):
                     vnrow[ir]=vrowinc+var_dim[vrow]*d+i
                     ir=ir+1
             
-            print ("vrow vnrow",vrow,vnrow)
+            #print ("vrow vnrow",vrow,vnrow)
             vcolinc=0        
             for vcol in range(numvars): #Variables
                 
                 jmax=int(var_dim[vcol])
-                print("imax, jmax",imax,jmax)
+                #print("imax, jmax",imax,jmax)
                 #Store vn vectors
                 ic=0
                 for n in range (4): #Nodes 
@@ -630,11 +630,11 @@ while (end==0):
     dnode=(nex+1)    
     for dy in range(ney+1): 
         inode=dy*dnode
-        print("node",inode)   
+        #print("node",inode)   
         #Deformation gradient F
         for i in range ( var_dim [ 0 ] ):
             idof = var_dim[0] * inode + i
-            print ("idof",idof)
+            #print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
                 Rglob[ j ] -= Kglob[j,idof] * 0 #1 is R(idof)
@@ -655,8 +655,8 @@ while (end==0):
             Kglob[idofs,idofs] = 0
             Rglob[idofs  ] = 0                
 
-    print("Kglob",Kglob)    
-    print("Rglob",Rglob)
+    #print("Kglob",Kglob)    
+    #print("Rglob",Rglob)
 
 
 #print (K)
