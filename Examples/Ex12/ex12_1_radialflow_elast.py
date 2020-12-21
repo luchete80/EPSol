@@ -14,7 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=20
+numit=1
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -511,27 +511,7 @@ while (end==0):
                 
                 wJ=w*detJ
                 
-                Ft[0,0]=F[0]
-                Ft[0,1]=F[1]
-                Ft[1,0]=F[2]
-                Ft[1,1]=F[3]
-                Ft[2,2]=1.
-                #F is [xx xy yx yy zz] , (4.21) in form 2
-                Fd[0]=F[0]
-                Fd[1]=F[2] #yx
-                Fd[2]=F[1] #xy
-                Fd[3]=F[3]
-                
-                #Elastic part of F 4.6
-                #ATENTION F~ is not in the same order of NODAL variable 
-                if (it==0):
-                    Ft=identity(3)
-                    #NOT USE!!! Fd=[[1,0,0,1]]
-                    Fvpt=identity(3)
-                    #print(Ft)
-                
-                    #F is [xx xy yx yy zz]
-                    
+             
                 visc=1.
        
                 # *****************************************************************
@@ -662,7 +642,7 @@ while (end==0):
             Kglob[idofs,idofs] = 0
             Rglob[idofs  ] = 0                
 
-    #print("Kglob",Kglob)    
+    print("Kglob",Kglob)    
     #print("Rglob",Rglob)
 
 
@@ -671,7 +651,7 @@ while (end==0):
         Uglob[i]=Uglob[i]+dUglob[i]
     
     dUglob=linalg.solve(Kglob, Rglob)
-    print("dUglob",dUglob)  
+    print("it %d, dUglob",it, dUglob)  
     print("Uglob", Uglob)
     
     
