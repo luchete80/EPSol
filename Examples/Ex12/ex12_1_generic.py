@@ -822,7 +822,7 @@ while (end==0):
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
             
-            Rglob[vnrow.astype(int)[row]]=R[vrow][row]
+            Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
             
             vrowinc+=numnodes*var_dim[vrow]
         #print (K)
