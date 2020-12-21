@@ -14,7 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=1
+numit=10
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -145,14 +145,6 @@ BsigF=arange(128).reshape(4,16,2) #
 BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
-temp4x1=matrix(numpy.matlib.zeros((4, 1)))
-temp5x1=matrix(numpy.matlib.zeros((5, 1)))
-temp4x8=matrix(numpy.matlib.zeros((4, 8))) #BL*NFUF
-temp5x16=matrix(numpy.matlib.zeros((5, 20)))
-
-temp4x2=matrix(numpy.matlib.zeros((4, 2)))
-temp20x2=matrix(numpy.matlib.zeros((20, 2))) #For 4.39
-temp16x2=matrix(numpy.matlib.zeros((16, 2))) #For 4.39
 
 #(5,20,2) x (20)
 BUFvp=matrix(numpy.matlib.zeros((5, 2)))
@@ -624,7 +616,7 @@ while (end==0):
             print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
-                Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
+                #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
                 Kglob[ j ,idof ] = 0
             
 
@@ -636,10 +628,10 @@ while (end==0):
             idofs = idof + var_dim[0]
             for i in range(dof):                    
                 Kglob[ idofs , i ] = 0
-                Rglob[ i ] -= Kglob[ i, idofs ] * 0 #1 is R(idof)  
+                #Rglob[ i ] -= Kglob[ i, idofs ] * 0 #1 is R(idof)  
                 Kglob[ i , idofs ] = 0                
         
-            Kglob[idofs,idofs] = 0
+            Kglob[idofs,idofs] = 1
             Rglob[idofs  ] = 0                
 
     print("Kglob",Kglob)    
