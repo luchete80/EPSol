@@ -14,7 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=10
+numit=20
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -288,14 +288,11 @@ print ("Initial Uglob", Uglob)
 
 #-------------------------------------------
 it=0
-end=0
+
 ## ------------------------------------------
 ## Newton Rhapson Loop
 ## ------------------------------------------
-while (end==0):
-    #end=1
-    if it > numit:
-        end=1
+while (it < numit):
     
 #ELEMENT LOOP  ----------------
     #for e in range (1):
@@ -534,6 +531,7 @@ while (end==0):
                                 (NsigF+temp4x16*tau).transpose()*
                                 (temp4x16-LM*NsigF)
                                 )*wJ
+                print("Kt[0][0]",Kt[0][0])                
                 #print("temp4x16-LM*NsigF",temp4x16-LM*NsigF)         
                 #print("temp4x16",temp4x16)                          
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38                
@@ -594,7 +592,7 @@ while (end==0):
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
             
-            Rglob[vnrow.astype(int)[row]]=R[vrow][row]
+            Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
             
             vrowinc+=numnodes*var_dim[vrow]
         
@@ -634,7 +632,12 @@ while (end==0):
             Kglob[idofs,idofs] = 1
             Rglob[idofs  ] = 0                
 
-    print("Kglob",Kglob)    
+    print("KGLOB\n")
+    for i in range (dof):
+        for j in range (dof):
+            print(Kglob[i,j], end = " ")
+            
+        print("\n")
     #print("Rglob",Rglob)
 
 
