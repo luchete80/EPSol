@@ -381,19 +381,19 @@ while (end==0):
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
                 #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
                 juf=0
+                iv=0
                 for n in range (4): #Element nodes
-                    d=elnodes.astype(int)[e][n]
-                    iv=0
+                    gn=elnodes.astype(int)[e][n]#globnod
+                    
                     for i in range (2):    #Velocity is var 0
-                        print("UV,i+iv,dof",i+iv,d)
-                        UV[iv,0]=vnxy[d,i]
-                        iv=iv+2
+                        print("UV,i+iv,node",i+iv,gn)
+                        UV[i+iv,0]=vnxy[gn,i]
                         
                     for j in range (var_dim[0]):
-                        UF  [j+juf,0]=Uglob[ndof*d+j]
-                        #print("UF(j+juf,dof)",j+juf,ndof*d+j)
+                        UF  [j+juf,0]=Uglob[ndof*gn+j]
+                        #print("UF(j+juf,dof)",j+juf,ndof*gn+j)
                     juf+=var_dim[0]
-                
+                    iv=iv+2
 
                 print("UV",UV)
                 print("UF",UF)
