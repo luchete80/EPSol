@@ -14,6 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=10
 ney=10
+numit=50
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -299,7 +300,7 @@ end=0
 ## ------------------------------------------
 while (end==0):
     #end=1
-    if it > 50:
+    if it > numit:
         end=1
     
 #ELEMENT LOOP  ----------------
@@ -634,10 +635,10 @@ while (end==0):
         #Deformation gradient F
         for i in range ( var_dim [ 0 ] ):
             idof = var_dim[0] * inode + i
-            #print ("idof",idof)
+            print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
-                Rglob[ j ] -= Kglob[j,idof] * 0 #1 is R(idof)
+                Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
                 Kglob[ j ,idof ] = 0
             
 
@@ -669,20 +670,20 @@ while (end==0):
     
     
     #TOTAL BOUNDARY CONDITIONS FOR UF and s calculations
-    dnode=(nex+1)    
-    for dy in range(ney+1): 
-        print ("inode",inode)
-        inode=dy*dnode
-        #Deformation gradient F
-        idof = var_dim[0] * inode 
-        Uglob[ idof     ] = Uglob[ idof + 3 ] = 1
-        Uglob[ idof + 1 ] = Uglob[ idof + 2 ] = 0
+    # dnode=(nex+1)    
+    # for dy in range(ney+1): 
+        # inode=dy*dnode
+        # #Deformation gradient F
+        # idof = var_dim[0] * inode 
+        # print ("inode, idof",inode, idof)
+        # Uglob[ idof     ] = Uglob[ idof + 3 ] = 1
+        # Uglob[ idof + 1 ] = Uglob[ idof + 2 ] = 0
 
         
-        #Sigma is zero, Internal variable s ,      
-        if numvars == 2:
-            idofs = idof + var_dim[0]
-            Uglob[ idofs ] = mat_s0
+        # #Sigma is zero, Internal variable s ,      
+        # if numvars == 2:
+            # idofs = idof + var_dim[0]
+            # Uglob[ idofs ] = mat_s0
  
     
     it+=1
@@ -691,7 +692,7 @@ while (end==0):
 
     
 print ("Results")
-#print(U)
+print("Uglob", Uglob)
 
 file= open("output.vtu","w+")
 file.write("<?xml version=\"1.0\"?>\n")
@@ -724,9 +725,13 @@ file.write("\n</DataArray>\n");
 file.write("</Cells>\n")
 file.write("<PointData Scalars=\"scalars\" format=\"ascii\">\n")
 file.write("<DataArray Name=\"Var\" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(ndof))
-i=0
-for n in range (dof):
-    file.write("%f " %(Uglob[n]))
+v=0
+for n in range (numnodes):
+    for d in range (ndof):
+        print("v,Uglob[v]",v,Uglob[v])
+        file.write("%f " %(Uglob[v]))
+        v=v+1
+    file.write("\n")
     #i+=var_dim[0]
 file.write("\n</DataArray>\n")
 file.write("</PointData>\n")
