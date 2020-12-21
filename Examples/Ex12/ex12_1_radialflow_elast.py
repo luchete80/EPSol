@@ -12,9 +12,9 @@ import deriv
 form=2
 lx=1.
 ly=20.*3.1415926/180.
-nex=10
-ney=10
-numit=50
+nex=2
+ney=2
+numit=1
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -57,13 +57,15 @@ for n in range(numnodes):
    
 
 #Only for this example   
+print("************VELOCITIES***************")
 for n in range(numnodes):
     r=node[n,0]+r0
     t=node[n,1]-ly/2.
     vr=0.1*r0/r
     vnxy[n,0]=vr*cos(t)
     vnxy[n,1]=vr*sin(t)
-print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
+    print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
+
  
 print(node)
 #Connectivity
@@ -379,19 +381,23 @@ while (end==0):
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
                 #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
                 juf=0
-                for n in range (4):
+                for n in range (4): #Element nodes
                     d=elnodes.astype(int)[e][n]
+                    iv=0
                     for i in range (2):    #Velocity is var 0
-                        UV[i,0]=vnxy[d,i]
-                    #print("d len Uglob i",d,len(Uglob),ndof*d+2)
+                        print("UV,i+iv,dof",i+iv,d)
+                        UV[iv,0]=vnxy[d,i]
+                        iv=iv+2
+                        
                     for j in range (var_dim[0]):
                         UF  [j+juf,0]=Uglob[ndof*d+j]
-                        #print("UF(j,coord)",j,ndof*d+6+j)
+                        #print("UF(j+juf,dof)",j+juf,ndof*d+j)
                     juf+=var_dim[0]
                 
 
-                #print("UF",UF)
-
+                print("UV",UV)
+                print("UF",UF)
+                
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]

@@ -1,0 +1,35 @@
+Nodes only with F tensor stored
+--------------------------
+|           |            |
+|           |            |
+|           |            |
+|           |            |
+|           |            |
+|           |            |20 21 22 23
+3-----------4-------------
+| 12..15    | 16..19     |
+|           |            |
+|           |            |
+|    0      |            |
+|           |            |
+| 0..3      | 4..7       |8 9 10 11
+0-----------1------------2
+
+Element 0: Nodes 4 3 0 1 
+
+UF(j+juf,dof) 0 16
+UF(j+juf,dof) 1 17
+UF(j+juf,dof) 2 18
+UF(j+juf,dof) 3 19
+UF(j+juf,dof) 4 12
+UF(j+juf,dof) 5 13
+UF(j+juf,dof) 6 14
+UF(j+juf,dof) 7 15
+UF(j+juf,dof) 8 0
+UF(j+juf,dof) 9 1
+UF(j+juf,dof) 10 2
+UF(j+juf,dof) 11 3
+UF(j+juf,dof) 12 4
+UF(j+juf,dof) 13 5
+UF(j+juf,dof) 14 6
+UF(j+juf,dof) 15 7
