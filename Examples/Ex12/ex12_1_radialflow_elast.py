@@ -14,7 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=20
+numit=1
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -113,15 +113,6 @@ Us  =matrix(numpy.matlib.zeros((4, 1)))
 #Gauss variables
 #d vectors are [xx yx xy yy zz]
 F       = matrix(numpy.matlib.zeros((4,1)))#Tensor form
-Ft      = matrix(numpy.matlib.zeros((3,3)))#Tensor form
-Fd      = matrix(numpy.matlib.zeros((4,1)))#Vector form, FZZ IS 1!!
-Ft_inv  = matrix(numpy.matlib.zeros((3,3)))#Tensor form
-Fd_inv  = matrix(numpy.matlib.zeros((5,1)))#Tensor form
-
-#Formulation 2
-Fvp  = matrix(numpy.matlib.zeros((4,1)))#Tensor form
-Fvpt = matrix(numpy.matlib.zeros((3,3)))#Tensor form
-Fvpd = matrix(numpy.matlib.zeros((5,1)))#Tensor form
 
 S=matrix(numpy.matlib.zeros((4, 1)))    #Nodal internal variable
 v=matrix(numpy.matlib.zeros((2, 1)))    #Gauss Point velocity
@@ -313,6 +304,7 @@ while (it < numit):
                 #Numerated as in Bathe
                 Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
                 dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
+                print ("Ns",Ns)
                 #Numerated as in deal.ii
                 #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
                 dHrs/=4.
@@ -334,6 +326,7 @@ while (it < numit):
                     Bv[2,2*k+1]=dHxy[0,k]
                     Bv[3,2*k+1]=dHxy[1,k]
                 
+                print("NsigF",NsigF)
                 ################            
                 ## 
                 for i in range(4):
@@ -348,23 +341,7 @@ while (it < numit):
                         for m in range(4):  
                             for n in range(2):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
-                
-                ###################
-                ## Ec. D.20 p177 
-                
-                if form==2:
-                    for i in range(4):
-                        for l in range(5):
-                            for m in range(5):  
-                                for n in range(2):
-                                    if (l==m):
-                                        B5i[l,m,n]=Bs[n,i]
-                                    else:
-                                        B5i[l,m,n]=0.              
-                        for l in range(5):
-                            for m in range(5):  
-                                for n in range(2):
-                                    BFvp[l,4*i+m,n]=B5i[l,m,n]            
+      
                                 
                 #Interpolate velocity
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
@@ -390,12 +367,6 @@ while (it < numit):
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-                #print("F",F)
-                #Ft=
-                if (form==1):
-                    sig=NsigF*Usig
-                else:
-                    Fvp=NFvp*UFvp
                 
                  
                 #Galerkin strain integration
