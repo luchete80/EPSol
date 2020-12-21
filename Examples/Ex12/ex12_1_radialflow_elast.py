@@ -14,7 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=1
+numit=20
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 
@@ -386,7 +386,7 @@ while (end==0):
                     gn=elnodes.astype(int)[e][n]#globnod
                     
                     for i in range (2):    #Velocity is var 0
-                        print("UV,i+iv,node",i+iv,gn)
+                        #print("UV,i+iv,node",i+iv,gn)
                         UV[i+iv,0]=vnxy[gn,i]
                         
                     for j in range (var_dim[0]):
