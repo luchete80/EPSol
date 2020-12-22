@@ -14,7 +14,7 @@ lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=50
+numit=1
 
 #RADIAL FLOW EXAMPLE 
 r0=1.
@@ -303,7 +303,7 @@ while (it < numit):
                 #Numerated as in Bathe
                 Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
                 dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
-                print ("Ns",Ns)
+                #print ("Ns",Ns)
                 #Numerated as in deal.ii
                 #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
                 dHrs/=4.
@@ -526,7 +526,7 @@ while (it < numit):
                               wJ) 
         
         #print ("Nv",Nv)
-        print("Kt[0][0]",Kt[0][0]) 
+        #print("Kt[0][0]",Kt[0][0]) 
         
         vrowinc=0
         #Assembly Matrix
@@ -583,7 +583,7 @@ while (it < numit):
         #Deformation gradient F
         for i in range ( var_dim [ 0 ] ):
             idof = var_dim[0] * inode + i
-            print ("idof",idof)
+            #print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
                 #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
@@ -618,8 +618,8 @@ while (it < numit):
         Uglob[i]=Uglob[i]+dUglob[i]
     
     dUglob=linalg.solve(Kglob, Rglob)
-    print("it %d, dUglob",it, dUglob)  
-    print("Uglob", Uglob)
+    #print("it %d, dUglob",it, dUglob)  
+    #print("Uglob", Uglob)
     
     
     #TOTAL BOUNDARY CONDITIONS FOR UF and s calculations
@@ -640,6 +640,7 @@ while (it < numit):
  
     
     it+=1
+    print ("Iteration: ",it, "from ", numit)
     
 
 

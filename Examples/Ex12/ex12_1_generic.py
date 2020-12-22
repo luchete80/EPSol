@@ -817,12 +817,12 @@ while (end==0):
                 #print("vnrow",vnrow.astype(int))            
                 #print("vncol",vncol.astype(int))
                 for row in range(4*imax):
+                    Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
             
-            Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
             
             vrowinc+=numnodes*var_dim[vrow]
         #print (K)
