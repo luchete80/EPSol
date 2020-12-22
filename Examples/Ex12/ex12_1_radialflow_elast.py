@@ -326,7 +326,7 @@ while (it < numit):
                     Bv[2,2*k+1]=dHxy[0,k]
                     Bv[3,2*k+1]=dHxy[1,k]
                 
-                print("NsigF",NsigF)
+                #print("NsigF",NsigF)
                 ################            
                 ## 
                 for i in range(4):
@@ -361,8 +361,8 @@ while (it < numit):
                     juf+=var_dim[0]
                     iv=iv+2
 
-                print("UV",UV)
-                print("UF",UF)
+                #print("UV",UV)
+                #print("UF",UF)
                 
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
@@ -502,7 +502,7 @@ while (it < numit):
                                 (NsigF+temp4x16*tau).transpose()*
                                 (temp4x16-LM*NsigF)
                                 )*wJ
-                print("Kt[0][0]",Kt[0][0])                
+                               
                 #print("temp4x16-LM*NsigF",temp4x16-LM*NsigF)         
                 #print("temp4x16",temp4x16)                          
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38                
@@ -527,7 +527,8 @@ while (it < numit):
                               wJ) 
         
         #print ("Nv",Nv)
-            
+        print("Kt[0][0]",Kt[0][0]) 
+        
         vrowinc=0
         #Assembly Matrix
         for vrow in range(numvars): #Variables
@@ -557,13 +558,14 @@ while (it < numit):
                 
                 #print("vcol vncol",vcol,vncol)
                 for row in range(4*imax):
+                    Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
-                        Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
+                        Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
             
-            Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
+            
             
             vrowinc+=numnodes*var_dim[vrow]
         
@@ -603,12 +605,12 @@ while (it < numit):
             Kglob[idofs,idofs] = 1
             Rglob[idofs  ] = 0                
 
-    print("KGLOB\n")
-    for i in range (dof):
-        for j in range (dof):
-            print(Kglob[i,j], end = " ")
+    #print("KGLOB\n")
+    # for i in range (dof):
+        # for j in range (dof):
+            # print(Kglob[i,j], end = " ")
             
-        print("\n")
+        # print("\n")
     #print("Rglob",Rglob)
 
 
