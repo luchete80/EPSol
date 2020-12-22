@@ -1,0 +1,5 @@
+Scale in x direction
+vnxy[0,0]=0.;vnxy[0,1]=0.
+vnxy[1,0]=1.;vnxy[1,1]=1.
+vnxy[2,0]=0.;vnxy[2,1]=0.
+vnxy[3,0]=1.;vnxy[3,1]=1.
