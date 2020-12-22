@@ -9,7 +9,6 @@ import deriv
 
 #----------------------------
 #Input Data------------------
-form=2
 lx=1.
 ly=20.*3.1415926/180.
 nex=2
@@ -17,6 +16,24 @@ ney=2
 numit=1
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
+
+#---------------------------------------------------
+#Material properties (Table 2.1 p28)
+#HSLA-65 steel with strain rate between e-3 and e-4
+#---------------------------------------------------
+
+mat_A0 =6.34e11
+mat_psi=3.25
+mat_m  =0.1956
+mat_n  =0.06869
+mat_s0 =80.0e6
+mat_Q  =312.35e3
+mat_R  =8.314
+mat_a  =1.5
+mat_h0 =3093.1e6
+mat_s0 =125.1e6
+
+##********************** INPUT END 
 
 #***** MESH**********
 dx=lx/nex
@@ -224,22 +241,6 @@ dgdU=[  matrix(numpy.matlib.zeros((1, 8))),
         matrix(numpy.matlib.zeros((1, 4)))]
 
 print("Kt_0",len((Kt[1][0])),len((Kt[1][0]).transpose()))
-
-#---------------------------------------------------
-#Material properties (Table 2.1 p28)
-#HSLA-65 steel with strain rate between e-3 and e-4
-#---------------------------------------------------
-
-mat_A0 =6.34e11
-mat_psi=3.25
-mat_m  =0.1956
-mat_n  =0.06869
-mat_s0 =80.0e6
-mat_Q  =312.35e3
-mat_R  =8.314
-mat_a  =1.5
-mat_h0 =3093.1e6
-mat_s0 =125.1e6
 
 # print (K)
 # print (X2[0,0])
@@ -678,7 +679,7 @@ for e in range (numel):
 file.write("\n</DataArray>\n");
 file.write("</Cells>\n")
 file.write("<PointData Scalars=\"scalars\" format=\"ascii\">\n")
-file.write("<DataArray Name=\"Var\" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(ndof))
+file.write("<DataArray Name=\"DefGrad_F\" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(ndof))
 v=0
 for n in range (numnodes):
     for d in range (ndof):

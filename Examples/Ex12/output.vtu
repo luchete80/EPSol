@@ -39,7 +39,7 @@
 </DataArray>
 </Cells>
 <PointData Scalars="scalars" format="ascii">
-<DataArray Name="Var" NumberOfComponents="4" type="Float32" format="ascii" >
+<DataArray Name="DefGrad_F" NumberOfComponents="4" type="Float32" format="ascii" >
 1.000000 0.000000 0.000000 1.000000 
 1.000000 0.000000 0.000000 1.000000 
 1.000000 0.000000 0.000000 1.000000 
