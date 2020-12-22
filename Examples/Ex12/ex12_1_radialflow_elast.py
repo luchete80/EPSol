@@ -7,16 +7,21 @@ import numpy.matlib #for zeros
 import array as arr
 import deriv
 
+#******************************************************
 #----------------------------
 #Input Data------------------
 lx=1.
 ly=20.*3.1415926/180.
 nex=2
 ney=2
-numit=1
+numit=50
+
+#RADIAL FLOW EXAMPLE 
+r0=1.
+r1=2.
+
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
-
 #---------------------------------------------------
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
@@ -33,6 +38,8 @@ mat_a  =1.5
 mat_h0 =3093.1e6
 mat_s0 =125.1e6
 
+ey=1.e9
+nu=0.499
 ##********************** INPUT END 
 
 #***** MESH**********
@@ -61,18 +68,8 @@ for nx in range (ney+1):
         x=x+dx
         n=n+1
     y=y+dy
- 
-#Radial flow example: convert from cilindrical to cartesian
-r0=1.
-r1=2.
-for n in range(numnodes):
-   r=node[n,0]+r0
-   t=node[n,1]-ly/2.
-   node[n,0]=r*cos(t)
-   node[n,1]=r*sin(t)
-   print("Coord ",n,":",node[n,0],node[n,1])
-   
 
+#BEFORE CONVERT TO CARTESIAN!
 #Only for this example   
 print("************VELOCITIES***************")
 for n in range(numnodes):
@@ -83,6 +80,15 @@ for n in range(numnodes):
     vnxy[n,1]=vr*sin(t)
     print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
 
+
+#Radial flow example: convert from cilindrical to cartesian
+for n in range(numnodes):
+   r=node[n,0]+r0
+   t=node[n,1]-ly/2.
+   node[n,0]=r*cos(t)
+   node[n,1]=r*sin(t)
+   print("Coord ",n,":",node[n,0],node[n,1])
+   
  
 print(node)
 #Connectivity
@@ -241,14 +247,6 @@ dgdU=[  matrix(numpy.matlib.zeros((1, 8))),
         matrix(numpy.matlib.zeros((1, 4)))]
 
 print("Kt_0",len((Kt[1][0])),len((Kt[1][0]).transpose()))
-
-# print (K)
-# print (X2[0,0])
-# print (X2[2,1])
-
-#--------- EXAMPLE RADIAL FLUX ----------------
-ey=1.e9
-nu=0.499
 
 ck = ey/ ((1. + nu)*(1. - 2. * nu))
 c=matrix(numpy.matlib.zeros((4, 4)))
