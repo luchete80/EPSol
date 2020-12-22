@@ -686,6 +686,13 @@ for n in range (numnodes):
         file.write("%f " %(Uglob[v]))
         v=v+1
     file.write("\n")
+file.write("\n</DataArray>\n")
+file.write("<DataArray Name=\"Vel\" NumberOfComponents=\"2\" type=\"Float32\" format=\"ascii\" >\n")
+v=0
+for n in range (numnodes):
+    for d in range (2):
+        file.write("%f " %(vnxy[n,d]))
+    file.write("\n")
     #i+=var_dim[0]
 file.write("\n</DataArray>\n")
 file.write("</PointData>\n")
