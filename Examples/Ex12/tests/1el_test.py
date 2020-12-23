@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=20
+numit=1
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -444,8 +444,8 @@ while (it < numit):
         Uglob[i]=Uglob[i]+dUglob[i]
     
     dUglob=linalg.solve(Kglob, Rglob)
-    #print("it %d, dUglob",it, dUglob)  
-    #print("Uglob", Uglob)
+    print("it %d, dUglob",it, dUglob)  
+    print("Uglob", Uglob)
     
     
     #TOTAL BOUNDARY CONDITIONS FOR UF and s calculations
