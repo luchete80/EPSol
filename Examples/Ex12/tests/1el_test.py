@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=2 
+numit=20
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -50,10 +50,29 @@ for nx in range (ney+1):
 #BEFORE CONVERT TO CARTESIAN!
 #Only for this example   
 print("************VELOCITIES***************")
-vnxy[0,0]=0.;vnxy[0,1]=1.
-vnxy[1,0]=0.1;vnxy[1,1]=1.
-vnxy[2,0]=0.;vnxy[2,1]=1.
-vnxy[3,0]=0.1;vnxy[3,1]=1.
+#TEST 1, x dX/dx
+vnxy[0,0]=0.0;  vnxy[0,1]=1.
+vnxy[1,0]=0.1;  vnxy[1,1]=1.
+vnxy[2,0]=0.0;  vnxy[2,1]=1.
+vnxy[3,0]=0.1;  vnxy[3,1]=1.
+
+#TEST 2, x dX/dy!=0
+# vnxy[0,0]=0.;vnxy[0,1]=1.
+# vnxy[1,0]=0.;vnxy[1,1]=1.
+# vnxy[2,0]=0.1;vnxy[2,1]=1.
+# vnxy[3,0]=0.1;vnxy[3,1]=1.
+
+# #TEST 3, x dY/dx!=0
+# vnxy[0,0]=1.;vnxy[0,1]=0.
+# vnxy[1,0]=1.;vnxy[1,1]=0.1
+# vnxy[2,0]=1.;vnxy[2,1]=0.
+# vnxy[3,0]=1.;vnxy[3,1]=0.1
+
+# #TEST 3, x dY/dy!=0
+# vnxy[0,0]=1.;vnxy[0,1]=0.
+# vnxy[1,0]=1.;vnxy[1,1]=0.
+# vnxy[2,0]=1.;vnxy[2,1]=0.1
+# vnxy[3,0]=1.;vnxy[3,1]=0.1
 
 for n in range (numnodes):
     print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
@@ -132,6 +151,8 @@ LM =matrix(numpy.matlib.zeros((4, 4)))
 
 R   =[  matrix(numpy.matlib.zeros((16, 1))),
         matrix(numpy.matlib.zeros(( 4, 1)))]
+Rzero =[  matrix(numpy.matlib.zeros((16, 1))),
+         matrix(numpy.matlib.zeros(( 4, 1)))]
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
 Rs  =matrix(numpy.matlib.zeros((4, 1)))
@@ -163,6 +184,11 @@ Kt=[
      ,
      [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))]
     ] 
+Kzero=[
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))]
+    ] 
 #---------------------------------------------------
 #Before start, assign Uglob values
 #---------------------------------------------------
@@ -185,12 +211,25 @@ it=0
 ## Newton Rhapson Loop
 ## ------------------------------------------
 while (it < numit):
-    
+
+    #Clean Global Matrices for assembly
+    print ("Kglob",Kglob)
+    for idof in range(dof):
+        Rglob [idof] = 0.
+        for jdof in range(dof):
+            Kglob[idof,jdof] = 0.
+                
 #ELEMENT LOOP  ----------------
     #for e in range (1):
+    
+    #Clean element matrices
     for e in range (numel): # TO MODIFY 
         #Obtain Ve from global
-        Kel=0.
+        Kt=Kzero
+        R=Rzero
+        print("Kt[0][0]",Kt[0][0])         
+
+        
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
         #print ("Element ", e)
@@ -267,25 +306,9 @@ while (it < numit):
                 
                 v  =Nv*UV #[2x8 x (8x1)]
                 print ("v",v)
-                s  =float(Ns*Us)
-                F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-                
+                F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]                
                 print ("F",F)
                  
-                #Galerkin strain integration
-                #Calculate deformation gradient Fij, for that
-                #Calculate Velocity gradient Lij
-                #Lij=dvi/dxj(2.4) 
-                #According to B.11 d(phi)/dxj=J-1(ij) dphi/drj = Bvjk Vk
-                
-                #Formulation 1
-                #Calculate La (ij) 2.9 
-                #Laij=F(-1)ki F(-1)kl Le lj
-                
-                #Calculate Leij = Lij - D(th)ij - D(vp) ij (2.10-2.12)
-                #Calculate Almansi deformation gradient E (A.5)
-                #Calculate 
-                #Ea ij= 1/2(Lki F(-1)lk F(-1)LJ +F(-1)ki F(-1)KL Llj )
                 dVxy=Bv*UV #(4x8)*(8x1)=(4x1) (vx,x vx,y vy,x vy,y)T 
                 
                 print ("dVxy",dVxy)
@@ -306,17 +329,8 @@ while (it < numit):
                 
                     
                 w=1. #TO MODIFY
-                #Calculate sigma
-                #2.31 Comes first from 2.2 (Then 2.31)
-                #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
-                #Calculate Piola Kirchoff Pi (2.31) Gij Cjk-Gij LM (jk) sig(k)+
-                #Attention double contraction
-                #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
-
                 wJ=w*detJ
-                
-             
-                visc=1.
+
        
                 # *****************************************************************
                 #RESIDUALS ******************* 2.26 to 2.39 *****************************
@@ -330,7 +344,7 @@ while (it < numit):
                             temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
                
                 
-                R[0]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
+                R[0]   = R[0] + (NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
               
                 #R Assembly            
                 #TANGENT MATRIX   
@@ -345,6 +359,7 @@ while (it < numit):
                                 (temp4x16-LM*NsigF)
                                 )*wJ
                                
+        #END OF GAUSS INTEGRATION
         
         #print ("Nv",Nv)
         print("Kt[0][0]",Kt[0][0]) 

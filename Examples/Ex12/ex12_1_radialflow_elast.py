@@ -12,9 +12,9 @@ import deriv
 #Input Data------------------
 lx=1.
 ly=20.*3.1415926/180.
-nex=1
-ney=1
-numit=1
+nex=2
+ney=2
+numit=10
 
 #RADIAL FLOW EXAMPLE 
 r0=1.
@@ -175,6 +175,8 @@ K=matrix(numpy.matlib.zeros((44, 44)))
 
 R   =[  matrix(numpy.matlib.zeros((16, 1))),
         matrix(numpy.matlib.zeros(( 4, 1)))]
+Rzero =[  matrix(numpy.matlib.zeros((16, 1))),
+         matrix(numpy.matlib.zeros(( 4, 1)))]
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
 RFvp=matrix(numpy.matlib.zeros((20, 1)))
@@ -239,6 +241,11 @@ Kt=[
      ,
      [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))]
     ] 
+Kzero=[
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1])))]
+     ,
+     [matrix(numpy.matlib.zeros(( var_edof.astype(int)[1], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[1], var_edof.astype(int)[1])))]
+    ] 
 print ("Kt", Kt)
     
 dgdU=[  matrix(numpy.matlib.zeros((1, 8))),
@@ -283,10 +290,20 @@ it=0
 ## Newton Rhapson Loop
 ## ------------------------------------------
 while (it < numit):
-    
+
+    #Clean Global Matrices for assembly
+    print ("Kglob",Kglob)
+    for idof in range(dof):
+        Rglob [idof] = 0.
+        for jdof in range(dof):
+            Kglob[idof,jdof] = 0.    
 #ELEMENT LOOP  ----------------
     #for e in range (1):
     for e in range (numel): # TO MODIFY 
+        #Obtain Ve from global
+        Kt=Kzero
+        R=Rzero
+        print("Kt[0][0]",Kt[0][0])    
         #Obtain Ve from global
         Kel=0.
         for n in range(4):
@@ -474,9 +491,9 @@ while (it < numit):
                             temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
                
                 
-                R[0]   =(NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
+                R[0]   = R[0] + (NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
                 if numvars == 2:
-                    R[1]    =(Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
+                    R[1]    = R[1] + (Ns+tau*v.transpose()*Bs).transpose()*(v.transpose()*Bs*Us-g_sigs)*wJ
               
                 #R Assembly            
                 #TANGENT MATRIX   
