@@ -140,7 +140,6 @@ Rv  =matrix(numpy.matlib.zeros((8, 1)))
 
 #These are the same but reorganized
 dVxy=zeros(4)
-L   =matrix(numpy.matlib.zeros((2, 2)))
 BL      = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
 temp8x1 = matrix(numpy.matlib.zeros((8, 1))) 
 
@@ -290,10 +289,6 @@ while (it < numit):
                 dVxy=Bv*UV #(4x8)*(8x1)=(4x1) (vx,x vx,y vy,x vy,y)T 
                 
                 print ("dVxy",dVxy)
-                L[0,0]=dVxy[0]
-                L[0,1]=dVxy[1]
-                L[1,0]=dVxy[2]
-                L[1,0]=dVxy[3]
                 
                 #Stabilization factor tau 2.26
                 beta=1.
@@ -302,22 +297,12 @@ while (it < numit):
                 #tau=1.
                 print("tau",tau)
                 #See beta estability paramter
-                #LM (2.33 p23)
+                #LM (2.33 & 4.23 p23 & p91)
                 #Attention: SE DIFFERENCES WITH L_ in 2.28
                 LM[0,0]=LM[2,2]=dVxy[0]
                 LM[0,1]=LM[2,3]=dVxy[1]
                 LM[1,0]=LM[3,2]=dVxy[2]
                 LM[1,1]=LM[3,3]=dVxy[3]
-
-                #BL interpolators BLijk (4,4,8) (B.17 p165)
-                for k in range(8):
-                    BL[0,0,k]=BL[2,2,k]=Bv[0,k]
-                    BL[0,1,k]=BL[2,3,k]=Bv[2,k]
-                    BL[1,0,k]=BL[3,2,k]=Bv[1,k]
-                    BL[1,1,k]=BL[3,3,k]=Bv[3,k]
-                    BL[0,2,k]=BL[0,3,k]=BL[1,2,k]=BL[1,3,k]=BL[2,0,k]=BL[2,1,k]=BL[3,0,k]=BL[3,1,k]=0.
-                #Set tractions tP (2.34)
-                
                 
                     
                 w=1. #TO MODIFY

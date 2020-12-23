@@ -391,7 +391,7 @@ while (it < numit):
                 #Stabilization factor tau 2.26
                 #tau=beta*he/(2|v|)
                 #See beta estability paramter
-                #LM (2.33 p23)
+                #LM (2.33 & 4.23 p23 & p91)
                 #Attention: SE DIFFERENCES WITH L_ in 2.28
                 LM[0,0]=LM[2,2]=dVxy[0]
                 LM[0,1]=LM[2,3]=dVxy[1]
@@ -401,17 +401,6 @@ while (it < numit):
                 for i in range(4):
                     for j in range(4):               
                         LM5[i,j]=LM[i,j]
-                        
-                #BL interpolators BLijk (4,4,8) (B.17 p165)
-                for k in range(8):
-                    BL[0,0,k]=BL[2,2,k]=Bv[0,k]
-                    BL[0,1,k]=BL[2,3,k]=Bv[2,k]
-                    BL[1,0,k]=BL[3,2,k]=Bv[1,k]
-                    BL[1,1,k]=BL[3,3,k]=Bv[3,k]
-                    BL[0,2,k]=BL[0,3,k]=BL[1,2,k]=BL[1,3,k]=BL[2,0,k]=BL[2,1,k]=BL[3,0,k]=BL[3,1,k]=0.
-                #Set tractions tP (2.34)
-                
-                
                     
                 w=1. #TO MODIFY
                 #Calculate sigma
