@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=200 
+numit=2 
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -296,7 +296,11 @@ while (it < numit):
                 L[1,0]=dVxy[3]
                 
                 #Stabilization factor tau 2.26
-                #tau=beta*he/(2|v|)
+                beta=1.
+                he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
+                tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*[1])))
+                #tau=1.
+                print("tau",tau)
                 #See beta estability paramter
                 #LM (2.33 p23)
                 #Attention: SE DIFFERENCES WITH L_ in 2.28
@@ -323,9 +327,6 @@ while (it < numit):
                 #Calculate Piola Kirchoff Pi (2.31) Gij Cjk-Gij LM (jk) sig(k)+
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
-                
-                #Calculate stabilization parameter
-                tau=1.
 
                 wJ=w*detJ
                 
