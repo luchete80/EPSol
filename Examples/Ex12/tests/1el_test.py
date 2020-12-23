@@ -345,7 +345,7 @@ while (it < numit):
                
                 
                 R[0]   = R[0] + (NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
-              
+                print ("R",R)
                 #R Assembly            
                 #TANGENT MATRIX   
                 #PAGES 25 y 94
