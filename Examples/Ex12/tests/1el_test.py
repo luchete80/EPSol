@@ -52,9 +52,9 @@ for nx in range (ney+1):
 print("************VELOCITIES***************")
 #TEST 1, x dX/dx
 vnxy[0,0]=0.0;  vnxy[0,1]=1.
-vnxy[1,0]=0.1;  vnxy[1,1]=1.
+vnxy[1,0]=0.01;  vnxy[1,1]=1.
 vnxy[2,0]=0.0;  vnxy[2,1]=1.
-vnxy[3,0]=0.1;  vnxy[3,1]=1.
+vnxy[3,0]=0.01;  vnxy[3,1]=1.
 
 #TEST 2, x dX/dy!=0
 # vnxy[0,0]=0.;vnxy[0,1]=1.
@@ -76,7 +76,8 @@ vnxy[3,0]=0.1;  vnxy[3,1]=1.
 
 for n in range (numnodes):
     print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
- 
+
+print("Nodes & Conn")
 print(node)
 #Connectivity
 e=0
@@ -136,7 +137,7 @@ temp2x2=matrix(numpy.matlib.zeros((2, 2)))
 
 #Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
-Bs=matrix(numpy.matlib.zeros((2, 8)))
+Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
 BsigF=arange(128).reshape(4,16,2) #
@@ -213,11 +214,11 @@ it=0
 while (it < numit):
 
     #Clean Global Matrices for assembly
-    print ("Kglob",Kglob)
-    for idof in range(dof):
-        Rglob [idof] = 0.
-        for jdof in range(dof):
-            Kglob[idof,jdof] = 0.
+    #print ("Kglob",Kglob)
+    # for idof in range(dof):
+        # Rglob [idof] = 0.
+        # for jdof in range(dof):
+            # Kglob[idof,jdof] = 0.
                 
 #ELEMENT LOOP  ----------------
     #for e in range (1):
@@ -227,7 +228,7 @@ while (it < numit):
         #Obtain Ve from global
         Kt=Kzero
         R=Rzero
-        print("Kt[0][0]",Kt[0][0])         
+        #print("Kt[0][0]",Kt[0][0])         
 
         
         for n in range(4):
@@ -240,6 +241,8 @@ while (it < numit):
             for jg in range(2):
                 rg=gauss[ig]
                 sg=gauss[jg]
+                
+                print ("rg,sg",rg,sg)
 
                 #Numerated as in Bathe
                 Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
@@ -270,17 +273,22 @@ while (it < numit):
                 ################            
                 ## 
                 for i in range(4):
+                    print("i",i)
                     for l in range(4):
                         for m in range(4):  
                             for n in range(2):
                                 if (l==m):
                                     B4i[l,m,n]=Bs[n,i]
                                 else:
-                                    B4i[l,m,n]=0.              
+                                    B4i[l,m,n]=0. 
+                    print ("B4i",B4i)
                     for l in range(4):
                         for m in range(4):  
                             for n in range(2):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
+                
+                
+                print ("BsigF",BsigF)
       
                                 
                 #Interpolate velocity
@@ -359,10 +367,10 @@ while (it < numit):
                                 (temp4x16-LM*NsigF)
                                 )*wJ
                                
-        #END OF GAUSS INTEGRATION
+        #END OF GAUSS INTEGRATION ***************************************************************
         
         #print ("Nv",Nv)
-        print("Kt[0][0]",Kt[0][0]) 
+        #print("Kt[0][0]",Kt[0][0]) 
         
         vrowinc=0
         #Assembly Matrix
@@ -395,6 +403,7 @@ while (it < numit):
                 for row in range(4*imax):
                     Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
+                        #print("(row) (col)",row,col) 
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
@@ -419,7 +428,7 @@ while (it < numit):
         #Deformation gradient F
         for i in range ( var_dim [ 0 ] ):
             idof = var_dim[0] * inode + i
-            print ("idof",idof)
+            #print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
                 #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)

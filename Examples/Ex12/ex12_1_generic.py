@@ -138,7 +138,7 @@ temp2x2=matrix(numpy.matlib.zeros((2, 2)))
 
 #Derivatives
 dHxy=matrix(numpy.matlib.zeros((2, 4)))
-Bs=matrix(numpy.matlib.zeros((2, 8)))
+Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
 BsigF=arange(128).reshape(4,16,2) #

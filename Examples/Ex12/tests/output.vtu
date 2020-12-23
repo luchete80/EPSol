@@ -35,9 +35,9 @@
 </DataArray>
 <DataArray Name="Vel" NumberOfComponents="2" type="Float32" format="ascii" >
 0.000000 1.000000 
-0.100000 1.000000 
+0.010000 1.000000 
 0.000000 1.000000 
-0.100000 1.000000 
+0.010000 1.000000 
 
 </DataArray>
 </PointData>
