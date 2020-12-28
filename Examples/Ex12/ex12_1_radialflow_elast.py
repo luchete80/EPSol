@@ -12,9 +12,9 @@ import deriv
 #Input Data------------------
 lx=1.
 ly=20.*3.1415926/180.
-nex=2
-ney=2
-numit=10
+nex=10
+ney=10
+numit=50
 
 #RADIAL FLOW EXAMPLE 
 r0=1.
