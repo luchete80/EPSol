@@ -370,7 +370,7 @@ while (it < numit):
         #END OF GAUSS INTEGRATION ***************************************************************
         
         #print ("Nv",Nv)
-        #print("Kt[0][0]",Kt[0][0]) 
+        print("Kt[0][0]",Kt[0][0]) 
         
         vrowinc=0
         #Assembly Matrix
