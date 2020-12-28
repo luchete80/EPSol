@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=50
+numit=1
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
