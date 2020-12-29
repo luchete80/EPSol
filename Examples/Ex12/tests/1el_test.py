@@ -140,11 +140,17 @@ dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
-BsigF=arange(128).reshape(4,16,2) #
+#BsigF=arange(128).reshape(4,16,2) #THIS IS NOT WORKING
+BsigF=numpy.zeros((4,16,2))
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 
-B4i=arange(32).reshape(4,4,2) #
+#Problem with array creation
+#https://stackoverflow.com/questions/58967062/problem-assigning-element-to-python-numpy-array
+
+#B4i=arange(32).reshape(4,4,2) #
+B4i=numpy.zeros((4,4,2))
+#Another working is: numpy.zeros(shape=(4, 4, 2))
 #(4,16,2)
 #print(BsigF[0])
 LM =matrix(numpy.matlib.zeros((4, 4)))
@@ -277,8 +283,13 @@ while (it < numit):
                     for l in range(4):
                         for m in range(4):  
                             for n in range(2):
-                                if (l==m):
+                                if l == m :
+                                    #BsigF[l,4*i+m,n]=Bs[n,i]
+                                    #B4i[l,m,n]=float(Bs[n,i])
                                     B4i[l,m,n]=Bs[n,i]
+                                    #print("l,m,n,Bs(n,i)",l,m,n,Bs[n,i])
+                                    #print("B4i[l,m,n]",B4i[l,m,n])
+                                    #print("BsigF[l,4*i+m,n]",BsigF[l,4*i+m,n])
                                 else:
                                     B4i[l,m,n]=0. 
                     print ("B4i",B4i)
@@ -288,9 +299,10 @@ while (it < numit):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
                 
                 
-                print ("BsigF",BsigF)
-                print ("Bs",Bs)
-                print ("Bv",Bv)
+                #print ("BsigF",BsigF)
+                #print ("B4i",B4i)
+                #print ("Bs",Bs)
+                #print ("Bv",Bv)
                                 
                 #Interpolate velocity
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
@@ -404,8 +416,8 @@ while (it < numit):
                 for row in range(4*imax):
                     Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
-                        print("(row) (col)",row,col) 
-                        print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
+                        #print("(row) (col)",row,col) 
+                        #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
