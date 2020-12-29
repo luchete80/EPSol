@@ -292,7 +292,7 @@ it=0
 while (it < numit):
 
     #Clean Global Matrices for assembly
-    print ("Kglob",Kglob)
+    #print ("Kglob",Kglob)
     for idof in range(dof):
         Rglob [idof] = 0.
         for jdof in range(dof):
@@ -303,7 +303,7 @@ while (it < numit):
         #Obtain Ve from global
         Kt=Kzero
         R=Rzero
-        print("Kt[0][0]",Kt[0][0])    
+        #print("Kt[0][0]",Kt[0][0])    
         #Obtain Ve from global
         Kel=0.
         for n in range(4):
@@ -624,6 +624,13 @@ while (it < numit):
         Uglob[i]=Uglob[i]+dUglob[i]
     
     dUglob=linalg.solve(Kglob, Rglob)
+    
+    max=0.
+    for i in range (dof):
+        if abs(dUglob[i])>max:
+            max=abs(dUglob[i])
+    
+    print("max dU=",max)
     #print("it %d, dUglob",it, dUglob)  
     #print("Uglob", Uglob)
     
@@ -651,8 +658,8 @@ while (it < numit):
 
 
     
-print ("Results")
-print("Uglob", Uglob)
+#print ("Results")
+#print("Uglob", Uglob)
 
 file= open("output.vtu","w+")
 file.write("<?xml version=\"1.0\"?>\n")

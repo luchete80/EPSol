@@ -469,22 +469,28 @@ while (it < numit):
     print("it %d, dUglob",it, dUglob)  
     print("Uglob", Uglob)
     
+    max=0.
+    for i in range (dof):
+        if abs(dUglob[i])>max:
+            max=abs(dUglob[i])
+    
+    print("max dU=",max)
     
     #TOTAL BOUNDARY CONDITIONS FOR UF and s calculations
-    dnode=(nex+1)    
-    for dy in range(ney+1): 
-        inode=dy*dnode
-        #Deformation gradient F
-        idof = var_dim[0] * inode 
-        print ("inode, idof",inode, idof)
-        Uglob[ idof     ] = Uglob[ idof + 3 ] = 1
-        Uglob[ idof + 1 ] = Uglob[ idof + 2 ] = 0
+    # dnode=(nex+1)    
+    # for dy in range(ney+1): 
+        # inode=dy*dnode
+        # #Deformation gradient F
+        # idof = var_dim[0] * inode 
+        # print ("inode, idof",inode, idof)
+        # Uglob[ idof     ] = Uglob[ idof + 3 ] = 1
+        # Uglob[ idof + 1 ] = Uglob[ idof + 2 ] = 0
 
         
-        #Sigma is zero, Internal variable s ,      
-        if numvars == 2:
-            idofs = idof + var_dim[0]
-            Uglob[ idofs ] = mat_s0
+        # #Sigma is zero, Internal variable s ,      
+        # if numvars == 2:
+            # idofs = idof + var_dim[0]
+            # Uglob[ idofs ] = mat_s0
  
     
     it+=1
