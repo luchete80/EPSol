@@ -141,7 +141,8 @@ dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
-BsigF=arange(128).reshape(4,16,2) #
+#BsigF=arange(128).reshape(4,16,2) #
+BsigF=numpy.zeros((4,16,2))
 BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
@@ -157,8 +158,10 @@ temp16x2=matrix(numpy.matlib.zeros((16, 2))) #For 4.39
 #(5,20,2) x (20)
 BUFvp=matrix(numpy.matlib.zeros((5, 2)))
 
-B4i=arange(32).reshape(4,4,2) #
-B5i=arange(50).reshape(5,5,2) #
+#B4i=arange(32).reshape(4,4,2) #
+B4i=numpy.zeros((4,4,2))
+#B5i=arange(50).reshape(5,5,2) #
+B5i=numpy.zeros((5,5,2))
 #(4,16,2)
 #print(BsigF[0])
 LM =matrix(numpy.matlib.zeros((4, 4)))
