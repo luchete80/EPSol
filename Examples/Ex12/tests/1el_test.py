@@ -289,7 +289,8 @@ while (it < numit):
                 
                 
                 print ("BsigF",BsigF)
-      
+                print ("Bs",Bs)
+                print ("Bv",Bv)
                                 
                 #Interpolate velocity
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
@@ -403,8 +404,8 @@ while (it < numit):
                 for row in range(4*imax):
                     Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
-                        #print("(row) (col)",row,col) 
-                        #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
+                        print("(row) (col)",row,col) 
+                        print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
