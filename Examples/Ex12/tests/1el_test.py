@@ -292,14 +292,14 @@ while (it < numit):
                                     #print("BsigF[l,4*i+m,n]",BsigF[l,4*i+m,n])
                                 else:
                                     B4i[l,m,n]=0. 
-                    print ("B4i",B4i)
+                    #print ("B4i",B4i)
                     for l in range(4):
                         for m in range(4):  
                             for n in range(2):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
                 
                 
-                #print ("BsigF",BsigF)
+                print ("BsigF",BsigF)
                 #print ("B4i",B4i)
                 #print ("Bs",Bs)
                 #print ("Bv",Bv)
@@ -364,6 +364,7 @@ while (it < numit):
                         for k in range(2):
                             temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
                
+                print("temp4x16",temp4x16)
                 
                 R[0]   = R[0] + (NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
                 print ("R",R)
@@ -462,13 +463,14 @@ while (it < numit):
 
 
 #print (K)
-    for i in range (dof):
-        Uglob[i]=Uglob[i]+dUglob[i]
     
     dUglob=linalg.solve(Kglob, Rglob)
     print("it %d, dUglob",it, dUglob)  
     print("Uglob", Uglob)
-    
+
+    for i in range (dof):
+        Uglob[i]=Uglob[i]+dUglob[i]
+        
     max=0.
     for i in range (dof):
         if abs(dUglob[i])>max:

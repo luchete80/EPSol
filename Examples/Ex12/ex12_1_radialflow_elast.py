@@ -620,11 +620,13 @@ while (it < numit):
 
 
 #print (K)
-    for i in range (dof):
-        Uglob[i]=Uglob[i]+dUglob[i]
+
     
     dUglob=linalg.solve(Kglob, Rglob)
-    
+
+    for i in range (dof):
+        Uglob[i]=Uglob[i]+dUglob[i]
+        
     max=0.
     for i in range (dof):
         if abs(dUglob[i])>max:
