@@ -52,9 +52,9 @@ for nx in range (ney+1):
 print("************VELOCITIES***************")
 #TEST 1, x dX/dx
 vnxy[0,0]=0.0;  vnxy[0,1]=1.
-vnxy[1,0]=0.01;  vnxy[1,1]=1.
+vnxy[1,0]=0.1;  vnxy[1,1]=1.
 vnxy[2,0]=0.0;  vnxy[2,1]=1.
-vnxy[3,0]=0.01;  vnxy[3,1]=1.
+vnxy[3,0]=0.1;  vnxy[3,1]=1.
 
 #TEST 2, x dX/dy!=0
 # vnxy[0,0]=0.;vnxy[0,1]=1.
@@ -298,6 +298,13 @@ while (it < numit):
                             for n in range(2):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
                 
+                temp=zeros((4, 2))
+                
+                for l in range(4):
+                    for m in range(16):  
+                        for n in range(2):
+                            temp[l,n]=temp[l,n]+BsigF[l,m,n]*UF[m]
+                print("temp[l,n]",temp)
                 
                 print ("BsigF",BsigF)
                 #print ("B4i",B4i)

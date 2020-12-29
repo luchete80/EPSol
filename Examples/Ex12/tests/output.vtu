@@ -1,24 +1,14 @@
 <?xml version="1.0"?>
 <VTKFile type="UnstructuredGrid">
 <UnstructuredGrid>
-<Piece NumberOfPoints="9" NumberOfCells="4">
+<Piece NumberOfPoints="4" NumberOfCells="1">
 <Points>
 <DataArray NumberOfComponents="3" type="Float32" format="ascii" >
 0.000000
  0.000000 0.
-0.500000
- 0.000000 0.
 1.000000
  0.000000 0.
 0.000000
- 0.500000 0.
-0.500000
- 0.500000 0.
-1.000000
- 0.500000 0.
-0.000000
- 1.000000 0.
-0.500000
  1.000000 0.
 1.000000
  1.000000 0.
@@ -26,41 +16,28 @@
 </Points>
 <Cells>
 <DataArray Name="connectivity" type="Int32" format="ascii" >
-4 3 0 1 
-5 4 1 2 
-7 6 3 4 
-8 7 4 5 
+3 2 0 1 
 </DataArray>
 <DataArray Name="offsets" type="Int32" format="ascii" >
-4 8 12 16 
+4 
 </DataArray>
 <DataArray Name="types" type="UInt8" format="ascii" >
-10 10 10 10 
+10 
 </DataArray>
 </Cells>
 <PointData Scalars="scalars" format="ascii">
 <DataArray Name="DefGrad_F" NumberOfComponents="4" type="Float32" format="ascii" >
 1.000000 0.000000 0.000000 1.000000 
+-1459470488031.474854 0.000000 0.000000 1.000000 
 1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
-1.000000 0.000000 0.000000 1.000000 
+-1459470488031.625000 0.000000 0.000000 1.000000 
 
 </DataArray>
 <DataArray Name="Vel" NumberOfComponents="2" type="Float32" format="ascii" >
 0.000000 1.000000 
-0.010000 1.000000 
+0.100000 1.000000 
 0.000000 1.000000 
-0.010000 1.000000 
-0.000000 0.000000 
-0.000000 0.000000 
-0.000000 0.000000 
-0.000000 0.000000 
-0.000000 0.000000 
+0.100000 1.000000 
 
 </DataArray>
 </PointData>
