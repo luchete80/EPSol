@@ -13,8 +13,9 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=10
-case=1
+numit=1
+case=2
+initF=2 #1:identity, 2:radialflow,similar to end
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -45,7 +46,28 @@ if case == 1:
     vnxy[1,0]=0.1;  vnxy[1,1]=1.
     vnxy[2,0]=0.1;  vnxy[2,1]=1.
     vnxy[3,0]=0.1;  vnxy[3,1]=1.
+elif case==2:
+    #1 ELEMENT RADIAL FLOW
+    #---------------------
+    #deformed element as radial
+    #node[n,0]=r*cos(t)
+    #node[n,1]=r*sin(t)
+    #r=node[n,0]+r0
+    #Radius are 1 and 2, angles are -5deg and +5deg
+    rcost=cos(5.*3.14159/180.)
+    rsint=sin(5.*3.14159/180.)
+    print(rcost,"rcost")
+    print(rsint,"rcost")
+    node[0]=[rcost,-rsint];node[1]=[2*rcost,-2*rsint]
+    node[2]=[rcost, rsint];node[3]=[2*rcost, 2*rsint]
 
+    #vr=0.1*r0/r
+    #vnxy[n,0]=vr*cos(t)
+    #vnxy[n,1]=vr*sin(t)
+    
+    vnxy[0]=[0.1*rcost,-0.1*rsint];vnxy[1]=[0.05*rcost,-0.05*rsint];
+    vnxy[2]=[0.1*rcost, 0.1*rsint];vnxy[3]=[0.05*rcost, 0.05*rsint];
+    
 print("************VELOCITIES***************")
 for n in range (numnodes):
     print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
@@ -194,13 +216,22 @@ Kzero=[
 #---------------------------------------------------
 #To MODIFY put in a function     
 
-for n in range(numnodes):
-    #Velocities 
-    iF=ndof*n
-    #Initial deformation gradients as identity??
-    Uglob[iF  ]=Uglob[iF+3]=1
-    Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
-
+#CASE 1: 
+if initF==1:
+    for n in range(numnodes):
+        #Velocities 
+        iF=ndof*n
+        #Initial deformation gradients as identity??
+        Uglob[iF  ]=Uglob[iF+3]=1
+        Uglob[iF+1]=Uglob[iF+2]=0#xy and yx      
+elif initF==2: 
+        #8 9 10 11     12 13 14 15
+        #0 1 2 3       4 5 6 7
+        Uglob[0]=Uglob[3]=Uglob[8]=Uglob[11]=1.  #InletFx and Fy
+        Uglob[1]=Uglob[2]=Uglob[9]=Uglob[10]=0.        #InletFxy and Fyx
+        Uglob[4]=Uglob[12]=0.3                     #Fx at the end
+        Uglob[7]=Uglob[15]=5.
+        Uglob[5]=Uglob[6]=Uglob[13]=Uglob[14]=0
                         
 print ("Initial Uglob", Uglob)
 
