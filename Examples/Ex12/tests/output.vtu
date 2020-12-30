@@ -6,10 +6,10 @@
 <DataArray NumberOfComponents="3" type="Float32" format="ascii" >
 0.000000
  0.000000 0.
-1.000000
- 0.000000 0.
 0.000000
  1.000000 0.
+1.000000
+ 0.000000 0.
 1.000000
  1.000000 0.
 </DataArray>
@@ -28,15 +28,15 @@
 <PointData Scalars="scalars" format="ascii">
 <DataArray Name="DefGrad_F" NumberOfComponents="4" type="Float32" format="ascii" >
 1.000000 0.000000 0.000000 1.000000 
--1459470488031.474854 0.000000 0.000000 1.000000 
 1.000000 0.000000 0.000000 1.000000 
--1459470488031.625000 0.000000 0.000000 1.000000 
+1.000000 0.000000 0.000000 1.000000 
+1.000000 0.000000 0.000000 1.000000 
 
 </DataArray>
 <DataArray Name="Vel" NumberOfComponents="2" type="Float32" format="ascii" >
-0.000000 1.000000 
 0.100000 1.000000 
-0.000000 1.000000 
+0.100000 1.000000 
+0.100000 1.000000 
 0.100000 1.000000 
 
 </DataArray>

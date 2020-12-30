@@ -13,7 +13,8 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=1
+numit=10
+case=1
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -35,27 +36,20 @@ elnodes=zeros((numel, 4))#Connectivity
 elnodes.astype(int)
 #print (node)
 #Mesh generation 
-y=0.
-n=0
-for nx in range (ney+1):
-    x=0.
-    for ny in range (nex+1):
-        #print("Node: "+str(x)+" , "+str(y))
-        #this->node.push_back(Node(n,x,y,0.0))
-        node[n]=[x,y]
-        x=x+dx
-        n=n+1
-    y=y+dy
+if case == 1:
 
-#BEFORE CONVERT TO CARTESIAN!
-#Only for this example   
+    node[0]=[0.,0.];node[1]=[0.,1.]
+    node[2]=[1.,0.];node[3]=[1.,1.]
+    
+    vnxy[0,0]=0.1;  vnxy[0,1]=1.
+    vnxy[1,0]=0.1;  vnxy[1,1]=1.
+    vnxy[2,0]=0.1;  vnxy[2,1]=1.
+    vnxy[3,0]=0.1;  vnxy[3,1]=1.
+
 print("************VELOCITIES***************")
-#TEST 1, x dX/dx
-vnxy[0,0]=0.0;  vnxy[0,1]=1.
-vnxy[1,0]=0.1;  vnxy[1,1]=1.
-vnxy[2,0]=0.0;  vnxy[2,1]=1.
-vnxy[3,0]=0.1;  vnxy[3,1]=1.
-
+for n in range (numnodes):
+    print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
+    
 #TEST 2, x dX/dy!=0
 # vnxy[0,0]=0.;vnxy[0,1]=1.
 # vnxy[1,0]=0.;vnxy[1,1]=1.
@@ -74,8 +68,7 @@ vnxy[3,0]=0.1;  vnxy[3,1]=1.
 # vnxy[2,0]=1.;vnxy[2,1]=0.1
 # vnxy[3,0]=1.;vnxy[3,1]=0.1
 
-for n in range (numnodes):
-    print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
+
 
 print("Nodes & Conn")
 print(node)
