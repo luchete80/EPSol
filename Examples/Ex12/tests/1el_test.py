@@ -322,14 +322,7 @@ while (it < numit):
                             for n in range(2):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
                 
-                temp=zeros((4, 2))
-                
-                for l in range(4):
-                    for m in range(16):  
-                        for n in range(2):
-                            temp[l,n]=temp[l,n]+BsigF[l,m,n]*UF[m]
-                print("temp[l,n]",temp)
-                
+               
                 print ("BsigF",BsigF)
                 #print ("B4i",B4i)
                 #print ("Bs",Bs)
@@ -364,6 +357,13 @@ while (it < numit):
                 dVxy=Bv*UV #(4x8)*(8x1)=(4x1) (vx,x vx,y vy,x vy,y)T 
                 
                 print ("dVxy",dVxy)
+                temp=zeros((4, 2))
+                
+                for l in range(4):
+                    for m in range(16):  
+                        for n in range(2):
+                            temp[l,n]=temp[l,n]+BsigF[l,m,n]*UF[m]
+                print("dUFdxy[l,n]",temp)
                 
                 #Stabilization factor tau 2.26
                 beta=1.
