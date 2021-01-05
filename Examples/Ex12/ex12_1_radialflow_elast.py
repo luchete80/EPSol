@@ -12,9 +12,9 @@ import deriv
 #Input Data------------------
 lx=1.
 ly=20.*3.1415926/180.
-nex=10
-ney=10
-numit=50
+nex=1
+ney=1
+numit=1
 
 #RADIAL FLOW EXAMPLE 
 r0=1.
@@ -155,7 +155,7 @@ dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 #BsigF=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 8)))]
-BsigF=arange(128).reshape(4,16,2) #
+BsigF=numpy.zeros((4,16,2))
 BFvp =arange(200).reshape(5,20,2) #
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
@@ -163,8 +163,9 @@ temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 #(5,20,2) x (20)
 BUFvp=matrix(numpy.matlib.zeros((5, 2)))
 
-B4i=arange(32).reshape(4,4,2) #
-B5i=arange(50).reshape(5,5,2) #
+B4i=numpy.zeros((4,4,2))
+B5i=numpy.zeros((5,5,2))
+
 #(4,16,2)
 #print(BsigF[0])
 LM =matrix(numpy.matlib.zeros((4, 4)))
@@ -358,7 +359,7 @@ while (it < numit):
                             for n in range(2):
                                 BsigF[l,4*i+m,n]=B4i[l,m,n]
       
-                                
+                #print ("BsigF",BsigF)                
                 #Interpolate velocity
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
                 #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS

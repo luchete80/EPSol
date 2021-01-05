@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=1
+numit=100
 case=2
 initF=2 #1:identity, 2:radialflow,similar to end
 

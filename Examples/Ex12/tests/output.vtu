@@ -28,9 +28,9 @@
 <PointData Scalars="scalars" format="ascii">
 <DataArray Name="DefGrad_F" NumberOfComponents="4" type="Float32" format="ascii" >
 1.000000 0.000000 0.000000 1.000000 
-0.100000 -0.131233 -0.000000 8.000000 
+-19128.409298 -12551.578430 -0.000000 286935.639471 
 1.000000 0.000000 0.000000 1.000000 
-0.100000 0.131233 -0.000000 8.000000 
+-19128.409298 12551.578430 -0.000000 286935.639471 
 
 </DataArray>
 <DataArray Name="Vel" NumberOfComponents="2" type="Float32" format="ascii" >
