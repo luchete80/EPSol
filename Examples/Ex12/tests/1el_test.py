@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=10
+numit=2
 case=2
 initF=2 #1:identity, 2:radialflow,similar to end
 
@@ -42,10 +42,10 @@ if case == 1:
     node[0]=[0.,0.];node[1]=[0.,1.]
     node[2]=[1.,0.];node[3]=[1.,1.]
     
-    vnxy[0,0]=0.1;  vnxy[0,1]=1.
-    vnxy[1,0]=0.1;  vnxy[1,1]=1.
-    vnxy[2,0]=0.1;  vnxy[2,1]=1.
-    vnxy[3,0]=0.1;  vnxy[3,1]=1.
+    vnxy[0,0]=0.1;  vnxy[0,1]=0.
+    vnxy[1,0]=0.1;  vnxy[1,1]=0.
+    vnxy[2,0]=0.1;  vnxy[2,1]=0.
+    vnxy[3,0]=0.1;  vnxy[3,1]=0.
 elif case==2:
     #1 ELEMENT RADIAL FLOW
     #---------------------
