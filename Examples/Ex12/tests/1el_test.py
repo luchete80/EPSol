@@ -13,7 +13,7 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=100
+numit=10
 case=2
 initF=2 #1:identity, 2:radialflow,similar to end
 
@@ -245,10 +245,10 @@ while (it < numit):
 
     #Clean Global Matrices for assembly
     #print ("Kglob",Kglob)
-    # for idof in range(dof):
-        # Rglob [idof] = 0.
-        # for jdof in range(dof):
-            # Kglob[idof,jdof] = 0.
+    for idof in range(dof):
+        Rglob [idof] = 0.
+        for jdof in range(dof):
+            Kglob[idof,jdof] = 0.
                 
 #ELEMENT LOOP  ----------------
     #for e in range (1):
@@ -282,8 +282,10 @@ while (it < numit):
                 #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
                 dHrs/=4.
                 J=dHrs*X2
+                print("X2",X2)
                 dHxy=linalg.inv(J)*dHrs
                 detJ=linalg.det(J)
+                print("J",J)
                 #Calculate shape functions
                 #Bs=J-1 dHrs(B.13)
                 Bs=dHxy
