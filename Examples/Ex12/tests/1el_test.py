@@ -17,7 +17,7 @@ numit=3
 case=2
 initF=2 #1:identity, 2:radialflow,similar to end
 solver=1 #1:simple 2:Newton Raphson
-
+r1=2.    #r1=1
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 #***** MESH**********
@@ -56,8 +56,8 @@ elif case==2:
     rsint=sin(10.*3.14159/180.)
     print(rcost,"rcost")
     print(rsint,"rcost")
-    node[0]=[rcost,-rsint];node[1]=[2*rcost,-2*rsint]
-    node[2]=[rcost, rsint];node[3]=[2*rcost, 2*rsint]
+    node[0]=[rcost,-rsint];node[1]=[r1*rcost,-r1*rsint]
+    node[2]=[rcost, rsint];node[3]=[r1*rcost, r1*rsint]
 
     #vr=0.1*r0/r
     #vnxy[n,0]=vr*cos(t)
@@ -257,7 +257,7 @@ while (it < numit):
         Kt=Kzero
         R=Rzero
         #print("Kt[0][0]",Kt[0][0])         
-
+        
         
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
@@ -367,8 +367,11 @@ while (it < numit):
                 
                 #Stabilization factor tau 2.26
                 beta=1.
+                lx=dHxy[0,0]
+                ly=dHxy[1,1]
                 he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
-                tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*[1])))
+                print("u2+v2",v[0]*v[0]+v[1]*[1])
+                tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*v[1])))
                 #tau=0.
                 print("tau",tau)
                 #See beta estability paramter

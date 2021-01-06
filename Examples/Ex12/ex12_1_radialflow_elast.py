@@ -10,7 +10,9 @@ import deriv
 #******************************************************
 #----------------------------
 #Input Data------------------
-lx=1.
+r0=1.
+r1=5.
+lx=r1-r0
 ly=20.*3.1415926/180.
 nex=10
 ney=10
@@ -18,8 +20,7 @@ numit=20
 solver=1 #1:simple 2:Newton Raphson
 
 #RADIAL FLOW EXAMPLE 
-r0=1.
-r1=2.
+
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -455,7 +456,10 @@ while (it < numit):
                 #Calculate Piola Kirchoff Pi (2.31) Gij Cjk-Gij LM (jk) sig(k)+
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
-                
+                beta=0.5
+                he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
+                #print("u2+v2",v[0]*v[0]+v[1]*[1])
+                tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*v[1])))
                 #Calculate stabilization parameter
                 tau=1.
                 #STRESSES**********
