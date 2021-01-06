@@ -472,6 +472,13 @@ while (it < numit):
     #In this example velocities are known
     #AT INLET(left nodes):
     # F=I , sigma = 0
+    if solver == 1:
+        nonzerodofs=[0,3,8,11] #Column
+        for i in range(size(nonzerodofs)):
+            idof=nonzerodofs[i]
+            for j in range(dof):
+                Rglob[ j ] = Rglob[ j ] - Kglob[j,idof] * 1. #dU=0, U=1(idof)
+                
     dnode=(nex+1)    
     for dy in range(ney+1): 
         inode=dy*dnode
@@ -493,12 +500,6 @@ while (it < numit):
        
         print("Rglob",Rglob)
         
-        nonzerodofs=[0,3,8,11] #Column
-        for i in range(size(nonzerodofs)):
-            idof=nonzerodofs[i]
-            for j in range(dof):
-                Rglob[ j ] = Rglob[ j ] - Kglob[j,idof] * 1. #dU=0, U=1(idof)
-
     if solver == 1:
         Rglob[0] = Rglob[3] = Rglob[8] = Rglob[11] = 1.           #F INCREMENT (dF) IS NULL!!!!!
         Rglob[1] = Rglob[2] = Rglob[9] = Rglob[10] = 0.           #F INCREMENT (dF) IS NULL!!!!!
