@@ -4,14 +4,14 @@
 <Piece NumberOfPoints="4" NumberOfCells="1">
 <Points>
 <DataArray NumberOfComponents="3" type="Float32" format="ascii" >
-0.996195
- -0.087156 0.
-1.992389
- -0.174311 0.
-0.996195
- 0.087156 0.
-1.992389
- 0.174311 0.
+0.984808
+ -0.173648 0.
+1.969616
+ -0.347296 0.
+0.984808
+ 0.173648 0.
+1.969616
+ 0.347296 0.
 </DataArray>
 </Points>
 <Cells>
@@ -28,16 +28,16 @@
 <PointData Scalars="scalars" format="ascii">
 <DataArray Name="DefGrad_F" NumberOfComponents="4" type="Float32" format="ascii" >
 1.000000 0.000000 0.000000 1.000000 
-0.500000 0.131233 0.000000 2.000000 
+0.500000 0.264490 0.000000 2.000000 
 1.000000 0.000000 0.000000 1.000000 
-0.500000 -0.131233 0.000000 2.000000 
+0.500000 -0.264490 -0.000000 2.000000 
 
 </DataArray>
 <DataArray Name="Vel" NumberOfComponents="2" type="Float32" format="ascii" >
-0.099619 -0.008716 
-0.049810 -0.004358 
-0.099619 0.008716 
-0.049810 0.004358 
+0.098481 -0.017365 
+0.049240 -0.008682 
+0.098481 0.017365 
+0.049240 0.008682 
 
 </DataArray>
 </PointData>

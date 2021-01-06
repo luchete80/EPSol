@@ -55,8 +55,8 @@ elif case==2:
     #node[n,1]=r*sin(t)
     #r=node[n,0]+r0
     #Radius are 1 and 2, angles are -5deg and +5deg
-    rcost=cos(5.*3.14159/180.)
-    rsint=sin(5.*3.14159/180.)
+    rcost=cos(10.*3.14159/180.)
+    rsint=sin(10.*3.14159/180.)
     print(rcost,"rcost")
     print(rsint,"rcost")
     node[0]=[rcost,-rsint];node[1]=[2*rcost,-2*rsint]
