@@ -13,9 +13,10 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=1
+numit=20
 case=2
-initF=1 #1:identity, 2:radialflow,similar to end
+initF=2 #1:identity, 2:radialflow,similar to end
+solver=1 #1:simple 2:Newton Raphson
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -371,7 +372,7 @@ while (it < numit):
                 beta=1.
                 he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
                 tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*[1])))
-                #tau=0.
+                tau=0.
                 print("tau",tau)
                 #See beta estability paramter
                 #LM (2.33 & 4.23 p23 & p91)
@@ -450,7 +451,8 @@ while (it < numit):
                 
                 #print("vcol vncol",vcol,vncol)
                 for row in range(4*imax):
-                    Rglob[vnrow.astype(int)[row]]=Rglob[vnrow.astype(int)[row]]+R[vrow][row]
+                    if solver == 2:
+                        Rglob[vnrow.astype(int)[row]]=Rglob[vnrow.astype(int)[row]]+R[vrow][row]
                     for col in range(4*jmax):
                         #print("(row) (col)",row,col) 
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
@@ -480,14 +482,27 @@ while (it < numit):
             print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
-                #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
                 Kglob[ j ,idof ] = 0
-            
-
-            Kglob[idof,idof] = 1
-            Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!
                       
 
+            Kglob[idof,idof] = 1
+
+            if solver == 2:
+                Rglob[idof  ] = 0.
+
+       
+        print("Rglob",Rglob)
+        
+        nonzerodofs=[0,3,8,11] #Column
+        for i in range(size(nonzerodofs)):
+            idof=nonzerodofs[i]
+            for j in range(dof):
+                Rglob[ j ] = Rglob[ j ] - Kglob[j,idof] * 1. #dU=0, U=1(idof)
+
+    if solver == 1:
+        Rglob[0] = Rglob[3] = Rglob[8] = Rglob[11] = 1.           #F INCREMENT (dF) IS NULL!!!!!
+        Rglob[1] = Rglob[2] = Rglob[9] = Rglob[10] = 0.           #F INCREMENT (dF) IS NULL!!!!!
+        
     print("KGLOB\n")
     for i in range (dof):
         for j in range (dof):
@@ -499,12 +514,16 @@ while (it < numit):
 
 #print (K)
     
-    dUglob=linalg.solve(Kglob, Rglob)
+    if solver == 1:
+        Uglob=linalg.solve(Kglob, Rglob)
+    else:
+        dUglob=linalg.solve(Kglob, Rglob)
+
+        for i in range (dof):
+            Uglob[i]=Uglob[i]+dUglob[i]
+
     print("it %d, dUglob",it, dUglob)  
     print("Uglob", Uglob)
-
-    for i in range (dof):
-        Uglob[i]=Uglob[i]+dUglob[i]
         
     max=0.
     for i in range (dof):
