@@ -13,9 +13,9 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=2
+numit=1
 case=2
-initF=2 #1:identity, 2:radialflow,similar to end
+initF=1 #1:identity, 2:radialflow,similar to end
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
@@ -229,8 +229,8 @@ elif initF==2:
         #0 1 2 3       4 5 6 7
         Uglob[0]=Uglob[3]=Uglob[8]=Uglob[11]=1.  #InletFx and Fy
         Uglob[1]=Uglob[2]=Uglob[9]=Uglob[10]=0.        #InletFxy and Fyx
-        Uglob[4]=Uglob[12]=0.3                     #Fx at the end
-        Uglob[7]=Uglob[15]=5.
+        Uglob[4]=Uglob[12]=0.01                     #Fx at the end
+        Uglob[7]=Uglob[15]=1.01
         Uglob[5]=Uglob[6]=Uglob[13]=Uglob[14]=0
                         
 print ("Initial Uglob", Uglob)
@@ -371,7 +371,7 @@ while (it < numit):
                 beta=1.
                 he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
                 tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*[1])))
-                #tau=1.
+                #tau=0.
                 print("tau",tau)
                 #See beta estability paramter
                 #LM (2.33 & 4.23 p23 & p91)
@@ -396,8 +396,10 @@ while (it < numit):
                     for i in range(16):
                         for k in range(2):
                             temp4x16[m,i]=temp4x16[m,i]+BsigF[m,i,k]*v[k,0]
-               
+                
+                print("LM",LM)
                 print("temp4x16",temp4x16)
+                print("LM*NsigF*UF",LM*NsigF*UF)
                 
                 R[0]   = R[0] + (NsigF+temp4x16*tau).transpose()*(temp4x16*UF-LM*NsigF*UF)*wJ
                 print ("R",R)
@@ -418,7 +420,7 @@ while (it < numit):
         
         #print ("Nv",Nv)
         print("Kt[0][0]",Kt[0][0]) 
-        
+        print("R[0]",R[0]) 
         vrowinc=0
         #Assembly Matrix
         for vrow in range(numvars): #Variables
@@ -448,7 +450,7 @@ while (it < numit):
                 
                 #print("vcol vncol",vcol,vncol)
                 for row in range(4*imax):
-                    Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
+                    Rglob[vnrow.astype(int)[row]]=Rglob[vnrow.astype(int)[row]]+R[vrow][row]
                     for col in range(4*jmax):
                         #print("(row) (col)",row,col) 
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
@@ -475,7 +477,7 @@ while (it < numit):
         #Deformation gradient F
         for i in range ( var_dim [ 0 ] ):
             idof = var_dim[0] * inode + i
-            #print ("idof",idof)
+            print ("idof",idof)
             for j in range(dof):
                 Kglob[ idof , j ] = 0
                 #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
