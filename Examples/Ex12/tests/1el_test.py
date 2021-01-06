@@ -13,16 +13,13 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=20
+numit=3
 case=2
 initF=2 #1:identity, 2:radialflow,similar to end
 solver=1 #1:simple 2:Newton Raphson
 
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s
-
-##********************** INPUT END 
-
 #***** MESH**********
 dx=lx/nex
 dy=ly/ney
@@ -68,7 +65,7 @@ elif case==2:
     
     vnxy[0]=[0.1*rcost,-0.1*rsint];vnxy[1]=[0.05*rcost,-0.05*rsint];
     vnxy[2]=[0.1*rcost, 0.1*rsint];vnxy[3]=[0.05*rcost, 0.05*rsint];
-    
+  
 print("************VELOCITIES***************")
 for n in range (numnodes):
     print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
@@ -224,13 +221,13 @@ if initF==1:
         iF=ndof*n
         #Initial deformation gradients as identity??
         Uglob[iF  ]=Uglob[iF+3]=1
-        Uglob[iF+1]=Uglob[iF+2]=0#xy and yx      
+        Uglob[iF+1]=Uglob[iF+2]=0                       #xy and yx      
 elif initF==2: 
         #8 9 10 11     12 13 14 15
         #0 1 2 3       4 5 6 7
-        Uglob[0]=Uglob[3]=Uglob[8]=Uglob[11]=1.  #InletFx and Fy
-        Uglob[1]=Uglob[2]=Uglob[9]=Uglob[10]=0.        #InletFxy and Fyx
-        Uglob[4]=Uglob[12]=0.01                     #Fx at the end
+        Uglob[0]=Uglob[3]=Uglob[8]=Uglob[11]=1.         #InletFx and Fy
+        Uglob[1]=Uglob[2]=Uglob[9]=Uglob[10]=0.         #InletFxy and Fyx
+        Uglob[4]=Uglob[12]=0.01                         #Fx at the end
         Uglob[7]=Uglob[15]=1.01
         Uglob[5]=Uglob[6]=Uglob[13]=Uglob[14]=0
                         
@@ -372,7 +369,7 @@ while (it < numit):
                 beta=1.
                 he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
                 tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*[1])))
-                tau=0.
+                #tau=0.
                 print("tau",tau)
                 #See beta estability paramter
                 #LM (2.33 & 4.23 p23 & p91)

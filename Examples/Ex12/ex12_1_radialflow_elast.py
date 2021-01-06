@@ -12,9 +12,10 @@ import deriv
 #Input Data------------------
 lx=1.
 ly=20.*3.1415926/180.
-nex=4
-ney=4
+nex=10
+ney=10
 numit=20
+solver=1 #1:simple 2:Newton Raphson
 
 #RADIAL FLOW EXAMPLE 
 r0=1.
@@ -78,7 +79,7 @@ for n in range(numnodes):
     vr=0.1*r0/r
     vnxy[n,0]=vr*cos(t)
     vnxy[n,1]=vr*sin(t)
-    print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
+    #print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
 
 
 #Radial flow example: convert from cilindrical to cartesian
@@ -87,8 +88,44 @@ for n in range(numnodes):
    t=node[n,1]-ly/2.
    node[n,0]=r*cos(t)
    node[n,1]=r*sin(t)
-   print("Coord ",n,":",node[n,0],node[n,1])
-   
+   #print("Coord ",n,":",node[n,0],node[n,1])
+ 
+
+#BEFORE BOUNDARY CONDITIONS
+#Element dimension and DOF PER VARIABLE! 
+var_edof=zeros(2)
+var_dim =[4,1]
+ndof=0
+#Formulation type and DOFs
+for i in range(numvars): 
+    ndof += var_dim[i]
+print ("dofs: ", ndof)
+for i in range(numvars):
+    var_edof[i]=4*var_dim[i]  
+    
+#### BOUNDARY CONDITIONS
+# BOUNDARY CONDITIONS
+boundarynode=zeros(ney+1)
+#ROWS ARE NODES; COLS ARE ENTIRE BCs vector (all vars)
+node_bc=matrix(numpy.matlib.zeros((size(boundarynode), ndof)))
+
+dnode=(nex+1)    
+i=0
+for dy in range(ney+1): 
+    inode=dy*dnode
+    boundarynode[i]=inode
+    print("i",i)
+    node_bc[i]=[1.,0.,0.,1.]
+    i+=1
+
+print("node_bc",node_bc)
+    
+print("boundarynode",boundarynode)
+
+################################################
+##################################### INPUT END
+
+ 
  
 print(node)
 #Connectivity
@@ -102,16 +139,7 @@ for ey in range (ney):
         e=e+1
 print(elnodes)
 #-------------------------- MESH
-#Element dimension and DOF PER VARIABLE! 
-var_edof=zeros(2)
-var_dim =[4,1]
-ndof=0
-#Formulation type and DOFs
-for i in range(numvars): 
-    ndof += var_dim[i]
-print ("dofs: ", ndof)
-for i in range(numvars):
-    var_edof[i]=4*var_dim[i]  
+
     
 #print ("var_edof",var_edof)
 
@@ -564,7 +592,8 @@ while (it < numit):
                 
                 #print("vcol vncol",vcol,vncol)
                 for row in range(4*imax):
-                    Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
+                    if solver==2:   #NEWTON RAPHSON
+                        Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
@@ -583,6 +612,15 @@ while (it < numit):
     #In this example velocities are known
     #AT INLET(left nodes):
     # F=I , sigma = 0
+    if solver == 1: #NONZERO VALUES
+        for n in range(size(boundarynode)):
+            for i in range ( var_dim [ 0 ] ):
+                inode=boundarynode[n]
+                idof = var_dim[0] * inode + i
+                print("idof",idof)
+                for j in range(dof):
+                    Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
+            
     dnode=(nex+1)    
     for dy in range(ney+1): 
         inode=dy*dnode
@@ -598,7 +636,8 @@ while (it < numit):
             
 
             Kglob[idof,idof] = 1
-            Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!
+            if solver == 2:
+                Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!
         
         #Sigma is zero, Internal variable s ,      
         if numvars == 2:
@@ -610,23 +649,35 @@ while (it < numit):
         
             Kglob[idofs,idofs] = 1
             Rglob[idofs  ] = 0                
-
+    
+    #BOUNDARY CONDITIONS IN STANDARD SOLVER (SUCCESIVE ITERATIONS)
+    if solver == 1:
+        for n in range(size(boundarynode)):
+            inode=boundarynode[n]
+            for i in range ( var_dim [ 0 ] ):
+                idof = var_dim[0] * inode + i   
+                print("i, idof",i, idof)
+                Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)      
+                
     #print("KGLOB\n")
     # for i in range (dof):
         # for j in range (dof):
             # print(Kglob[i,j], end = " ")
             
         # print("\n")
-    #print("Rglob",Rglob)
+    print("Rglob",Rglob)
 
 
 #print (K)
 
     
-    dUglob=linalg.solve(Kglob, Rglob)
+    if   solver == 1:
+        Uglob=linalg.solve(Kglob, Rglob)
+    elif solver == 2:
+        dUglob=linalg.solve(Kglob, Rglob)
 
-    for i in range (dof):
-        Uglob[i]=Uglob[i]+dUglob[i]
+        for i in range (dof):
+            Uglob[i]=Uglob[i]+dUglob[i]
         
     max=0.
     for i in range (dof):
