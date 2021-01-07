@@ -240,6 +240,7 @@ P=matrix(numpy.matlib.zeros((4, 1)))
 Kglob=matrix(numpy.matlib.zeros((dof, dof))) 
 dUglob=zeros(dof)
 Uglob=zeros(dof)
+Uglobant=zeros(dof)
 Rglob=zeros(dof)
 
 class bMatrix: #Block matrix
@@ -463,11 +464,14 @@ while (it < numit):
                 #Calculate Piola Kirchoff Pi (2.31) Gij Cjk-Gij LM (jk) sig(k)+
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
-                beta=0.5
+                beta=1.
                 #print("u2+v2",v[0]*v[0]+v[1]*[1])
                 vnorm=sqrt(v[0]*v[0]+v[1]*v[1])
-                he=(lx*v[0]+ly*v[1])/vnorm #ONLY FOR THIS EXAMPLE
+                #he=(lx+ly)/2.
+                he=(lx*v[0]+ly*v[1])/vnorm #HUGHES (APPROX)
                 tau=float(beta*he/(2.*vnorm))
+                #tau=0.
+                #print ("tau",tau)
                 #Calculate stabilization parameter
                 #tau=1.
                 #STRESSES**********
@@ -684,6 +688,8 @@ while (it < numit):
 
     
     if   solver == 1:
+        for i in range(dof):
+            Uglobant[i]=Uglob[i]
         Uglob=linalg.solve(Kglob, Rglob)
     elif solver == 2:
         dUglob=linalg.solve(Kglob, Rglob)
@@ -692,9 +698,14 @@ while (it < numit):
             Uglob[i]=Uglob[i]+dUglob[i]
         
     max=0.
-    for i in range (dof):
-        if abs(dUglob[i])>max:
-            max=abs(dUglob[i])
+    if solver ==1:
+        for i in range (dof):
+            if abs(Uglobant[i]-Uglob[i])>max:
+                max=abs(Uglobant[i]-Uglob[i])
+    elif solver ==2:
+        for i in range (dof):
+            if abs(dUglob[i])>max:
+                max=abs(dUglob[i])
     
     print("max dU=",max)
     #print("it %d, dUglob",it, dUglob)  
