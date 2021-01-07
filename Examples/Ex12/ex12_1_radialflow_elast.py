@@ -338,10 +338,17 @@ while (it < numit):
         Kel=0.
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
+            
         #print ("Element ", e)
         #print ("Element Nodes")
-        #print (X2)
-        
+        #print ("X2",X2)
+        #dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
+        dHrs=matrix([[(1+0.),-(1+0.),-(1-0.),(1-0.)], [(1+0.),(1-0.),-(1-0.),-(1+0.)] ])
+        J=dHrs*X2
+        lx=J[0,0]/2.
+        ly=J[1,1]/2.
+        #print("J,lx,ly",J,lx,ly)
+                
         for ig in range(2):
             for jg in range(2):
                 rg=gauss[ig]
@@ -457,11 +464,12 @@ while (it < numit):
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
                 beta=0.5
-                he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
                 #print("u2+v2",v[0]*v[0]+v[1]*[1])
-                tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*v[1])))
+                vnorm=sqrt(v[0]*v[0]+v[1]*v[1])
+                he=(lx*v[0]+ly*v[1])/vnorm #ONLY FOR THIS EXAMPLE
+                tau=float(beta*he/(2.*vnorm))
                 #Calculate stabilization parameter
-                tau=1.
+                #tau=1.
                 #STRESSES**********
                 #From 2.27 Plane Strain Symmetric tensors are defined as 
                 #t=[txx tyy tzz tyz]

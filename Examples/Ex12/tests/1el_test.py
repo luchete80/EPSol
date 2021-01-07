@@ -367,8 +367,8 @@ while (it < numit):
                 
                 #Stabilization factor tau 2.26
                 beta=1.
-                lx=dHxy[0,0]
-                ly=dHxy[1,1]
+                lx=J[0,0]
+                ly=J[1,1]
                 he=(lx+ly)/2. #ONLY FOR THIS EXAMPLE
                 print("u2+v2",v[0]*v[0]+v[1]*[1])
                 tau=float(beta*he/(2.*sqrt(v[0]*v[0]+v[1]*v[1])))
