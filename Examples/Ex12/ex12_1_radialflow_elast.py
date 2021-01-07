@@ -14,9 +14,9 @@ r0=1.
 r1=5.
 lx=r1-r0
 ly=20.*3.1415926/180.
-nex=10
-ney=10
-numit=20
+nex=1
+ney=1
+numit=1
 solver=1 #1:simple 2:Newton Raphson
 
 #RADIAL FLOW EXAMPLE 
@@ -470,7 +470,7 @@ while (it < numit):
                 #he=(lx+ly)/2.
                 he=(lx*v[0]+ly*v[1])/vnorm #HUGHES (APPROX)
                 tau=float(beta*he/(2.*vnorm))
-                #tau=0.
+                tau=0.
                 #print ("tau",tau)
                 #Calculate stabilization parameter
                 #tau=1.
@@ -675,11 +675,11 @@ while (it < numit):
                 print("i, idof",i, idof)
                 Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)      
                 
-    #print("KGLOB\n")
-    # for i in range (dof):
-        # for j in range (dof):
-            # print(Kglob[i,j], end = " ")
-            
+    print("KGLOB\n")
+    for i in range (dof):
+        for j in range (dof):
+            print(Kglob[i,j], end = " ")
+        print("\n")   
         # print("\n")
     print("Rglob",Rglob)
 
