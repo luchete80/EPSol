@@ -23,9 +23,6 @@ solver=1 #1:simple 2:Newton Raphson
 
 
 #-------------
-
-
-
 numvars=1 #1: Only F tensor, 2: F and internal variable s
 #---------------------------------------------------
 #Material properties (Table 2.1 p28)
