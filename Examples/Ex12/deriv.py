@@ -141,19 +141,19 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     for i,k in range(4,4):
         temp4[i,0]=temp4[i,0]+TF[i,k]*F4ed[k,0]
 
-    print ("Fed",Fed)        
-    print ("det_Fed",det_Fed)
+    #print ("Fed",Fed)        
+    #print ("det_Fed",det_Fed)
         
     dF4einv_dF4e=float(-1./(det_Fed*det_Fed))*temp4*ddetFe_dF4ed+float(1./(det_Fed))*TF
     
     #E.8
     for i,k in zip(range(4),range(4)):
-        print("i,j",i,j)
+        #print("i,j",i,j)
         dFeinv_dFe[i,k]=dF4einv_dF4e[i,k]
     
     dFeinv_dFe[4,4]=float(-1./(Fed[4,0]*Fed[4,0]))
         
-    print ("dF4einv_dF4e",dF4einv_dF4e)
+    #print ("dF4einv_dF4e",dF4einv_dF4e)
     #F derivative
     #Eqn E.2
     dEdU[0]=dEdFed_inv*dFeinv_dFe*dFedUF
@@ -192,6 +192,6 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #Eqn E.2
     dEdU[1]=dEdFed_inv*dFeinv_dFe*dFedUFvp
     
-    print("dEdU[0]",dEdU[0])
+    #print("dEdU[0]",dEdU[0])
        
     return dEdU

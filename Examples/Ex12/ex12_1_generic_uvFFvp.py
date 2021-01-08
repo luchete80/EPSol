@@ -13,8 +13,8 @@ import deriv
 form=2
 lx=1.
 ly=20.*3.1415926/180.
-nex=2
-ney=2
+nex=1
+ney=1
 plastic=0
 numit=1
 solver=1 #1:simple 2:Newton Raphson
@@ -135,7 +135,7 @@ for dy in range(ney+1):
     inode=dy*dnode
     boundarynode[i]=inode
     print("i",i)
-    node_bc[i]=[0.,0.,1.,0.,0.,1.]
+    node_bc[i]=[0.001,0.,1.,0.,0.,1.]
     i+=1
 
 print("node_bc",node_bc)
@@ -475,7 +475,7 @@ while (it < numit):
                             UF  [j+juf,0]=Uglob[ndof*d+6+j]
                         else: #Fig 4.1, Z is not translated to Fvpt
                             UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                            print("UF(j,coord)",j,ndof*d+6+j)
+                            #print("UF(j,coord)",j,ndof*d+6+j)
                     juf+=var_dim[1]
                     
                     if plastic:
@@ -483,12 +483,12 @@ while (it < numit):
                             UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
                 
 
-                print("UF",UF)
+                #print("UF",UF)
 
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-                print("F",F)
+                #print("F",F)
                 #Ft=
                 if (form==1):
                     sig=NsigF*Usig
@@ -630,7 +630,7 @@ while (it < numit):
                     
                 visc=1.
                 
-                print ("Fvpd",Fvpd)
+                #print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
                 #Arguments passed are ~ vectors
                 dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
@@ -854,7 +854,7 @@ while (it < numit):
             
         vrowinc=0
         #Assembly Matrix
-        for vrow in range(4): #Variables
+        for vrow in range(numvars): #Variables
             ir=0
             imax=int(var_dim[vrow])
             for n in range (4): #Nodes
@@ -865,7 +865,7 @@ while (it < numit):
                     ir=ir+1
             
             vcolinc=0        
-            for vcol in range(4): #Variables
+            for vcol in range(numvars): #Variables
                 #print("vcol",vcol)
                 jmax=int(var_dim[vcol])
                 #print("imax, jmax",imax,jmax)
@@ -901,12 +901,14 @@ while (it < numit):
     # F=I , sigma = 0
     if solver == 1: #NONZERO VALUES
         for n in range(size(boundarynode)):
-            for i in range ( var_dim [ 0 ] ):
-                inode=boundarynode[n]
-                idof = var_dim[0] * inode + i
-                print("idof",idof)
-                for j in range(dof):
-                    Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
+            inode=boundarynode[n]
+            idof = ndof * inode + i
+            for nvar in range(numvars):
+                for i in range ( var_dim [ nvar ] ):
+                    idof = var_dim[nvar] * inode + i
+                    print("idof",idof)
+                    for j in range(dof):
+                        Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
             
     dnode=(nex+1)    
     for dy in range(ney+1): 
