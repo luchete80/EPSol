@@ -643,7 +643,8 @@ while (it < numit):
                 #print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
                 #Arguments passed are ~ vectors
-                dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
+                if plastic == 1 :
+                    dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
                 
                 # *****************************************************************
                 #RESIDUALS ******************* 2.26 to 2.39 *****************************
@@ -755,34 +756,35 @@ while (it < numit):
                                 
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38
                 
-                #---------------------------------------------------
-                ##Viscoplastic derivatives
-                #Kt(2,0)=dFvp/dUV 4.39
-                temp5x1=LM5*NFvp*UFvp
-                temp1=0
-                #print ("temp4x1,temp1",temp5x1,temp1)
-                
-                for m in range(5):
-                    for i in range(20):
-                        for n in range(2):
-                            temp1=temp2=0. #increase with each m
-                            
-                            for j in range(20):
-                                for k in range(2):
-                                    temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
-                            
-                            temp20x2[i,n]=  temp20x2[i,n]+(
-                                            BFvp[m,i,n]*
-                                            (temp1-temp5x1[m,0])
-                                            )
-                
-                for m in range(5):
-                    for j in range (20):
-                        for k in range (2):
-                            BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
-                #print("size",len((NFvp+float(tau)*temp5x16)))
-                #dRFvp/DUv
                 if plastic:
+                    #---------------------------------------------------
+                    ##Viscoplastic derivatives
+                    #Kt(2,0)=dFvp/dUV 4.39
+                    temp5x1=LM5*NFvp*UFvp
+                    temp1=0
+                    #print ("temp4x1,temp1",temp5x1,temp1)
+                    
+                    for m in range(5):
+                        for i in range(20):
+                            for n in range(2):
+                                temp1=temp2=0. #increase with each m
+                                
+                                for j in range(20):
+                                    for k in range(2):
+                                        temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
+                                
+                                temp20x2[i,n]=  temp20x2[i,n]+(
+                                                BFvp[m,i,n]*
+                                                (temp1-temp5x1[m,0])
+                                                )
+                    
+                    for m in range(5):
+                        for j in range (20):
+                            for k in range (2):
+                                BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
+                    #print("size",len((NFvp+float(tau)*temp5x16)))
+                    #dRFvp/DUv
+                
                     Kt[2][0]=Kt[2][0]+(
                                 NFvp.transpose()*BUFvp*Nv+
                                  tau*temp20x2*Nv #temp_in  * N_np
@@ -919,7 +921,7 @@ while (it < numit):
                     if is_bcnode_byvar[n,nvar]:
                         for j in range(dof):
                             Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
-                    idof+=i #Increase var always although var is not bc
+                    idof+=1 #Increase var always although var is not bc
             
     for n in range(size(boundarynode)):
         inode=boundarynode[n]
@@ -929,17 +931,17 @@ while (it < numit):
         for nvar in range(numvars):
             for i in range ( var_dim [ nvar ] ):
                 if is_bcnode_byvar[n,nvar]:
-                    #print ("idof",idof)
+                    print ("idof",idof)
                     for j in range(dof):
                         Kglob[ idof , j ] = 0
-                        #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
+                        #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0 in NEWTON RAPHSON, U=1(idof) IN PICARD
                         Kglob[ j ,idof ] = 0
-                idof+=i
-            
-
-            Kglob[idof,idof] = 1
-            if solver == 2:
-                Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!                
+                    
+                    Kglob[idof,idof] = 1
+                    if solver == 2:
+                        Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!   
+                idof+=1
+                         
 
     #BOUNDARY CONDITIONS IN STANDARD SOLVER (SUCCESIVE ITERATIONS)
     if solver == 1:
@@ -950,13 +952,13 @@ while (it < numit):
                 print("i, idof",i, idof)
                 Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)      
                 
-    # print("KGLOB\n")
-    # for i in range (dof):
-        # for j in range (dof):
-            # print(Kglob[i,j], end = " ")
-        # print("\n")   
-        # # print("\n")
-    # print("Rglob",Rglob)
+    print("KGLOB\n")
+    for i in range (dof):
+        for j in range (dof):
+            print(Kglob[i,j], end = " ")
+        print("\n")   
+        # print("\n")
+    print("Rglob",Rglob)
     
 
 #print (K)
