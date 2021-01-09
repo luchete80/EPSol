@@ -923,7 +923,7 @@ while (it < numit):
             
     for n in range(size(boundarynode)):
         inode=boundarynode[n]
-        idof = ndof * inode 
+        idof = int(ndof * inode)
         #print("node",inode)   
         #Deformation gradient F
         for nvar in range(numvars):
