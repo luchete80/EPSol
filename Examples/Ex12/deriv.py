@@ -10,7 +10,8 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     TF=matrix([[0,0,0,1],[0,-1,0,0],[0,0,-1,0],[1,0,0,0]])
     dEdFed_inv=matrix(numpy.matlib.zeros((4, 5)))    #E.3
     
-    dFMdUF =arange(256).reshape(4,4,16)
+    #dFMdUF =arange(256).reshape(4,4,16)
+    dFMdUF=numpy.zeros((4,4,16))
 
     Fet  = matrix(numpy.matlib.zeros((3,3)))#Tensor form    
     Fed=matrix(numpy.matlib.zeros((5, 1)))
@@ -192,6 +193,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #Eqn E.2
     dEdU[1]=dEdFed_inv*dFeinv_dFe*dFedUFvp
     
-    #print("dEdU[0]",dEdU[0])
+    print("dEdU[0]",dEdU[0])
+    print("dEdU[1]",dEdU[1])
        
     return dEdU

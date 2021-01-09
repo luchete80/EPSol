@@ -17,7 +17,7 @@ nex=1
 ney=1
 plastic=0
 numit=1
-solver=1 #1:simple 2:Newton Raphson
+solver=2 #1:simple 2:Newton Raphson
 
 bcnodecount=2*(ney+1)   #INLET AND CENTER 
 is_bcnode_byvar=zeros((bcnodecount, 4)) #in case of disturbed flow
@@ -218,7 +218,7 @@ dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 BsigF=numpy.zeros((4,16,2))
-BFvp =arange(200).reshape(5,20,2) #
+BFvp=numpy.zeros((5,20,2))
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 temp4x1=matrix(numpy.matlib.zeros((4, 1)))
@@ -267,7 +267,7 @@ Eet=matrix(numpy.matlib.zeros((2, 2))) #Tensor form
 #These are the same but reorganized
 dVxy=zeros(4)
 L   =matrix(numpy.matlib.zeros((2, 2)))
-BL      = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
+BL      = numpy.zeros((4,4,8))                      #Eqns 2.33, B.17
 temp8x1 = matrix(numpy.matlib.zeros((8, 1))) 
 
 
@@ -306,10 +306,10 @@ class bMatrix: #Block matrix
 # (20x 8) (20x16) (20x20) (20x4)
 # ( 4x 8)
 
-dDdUv   =arange(200).reshape(5,5, 8) #TO MODIFY
-dDdUF   =arange(400).reshape(5,5,16) #TO MODIFY
-dDdUFvp =arange(500).reshape(5,5,20) #TO MODIFY
-dDdUs   =arange(100).reshape(5,5, 4) #TO MODIFY
+dDdUv   =numpy.zeros((5,5, 8)) #TO MODIFY
+dDdUF   =numpy.zeros((5,5,16)) #TO MODIFY
+dDdUFvp =numpy.zeros((5,5,20)) #TO MODIFY
+dDdUs   =numpy.zeros((5,5, 4)) #TO MODIFY
 
 #From multiplying dDdU x NFvp*
 #4.39 to 4.42
