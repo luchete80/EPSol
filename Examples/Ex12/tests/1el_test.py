@@ -456,7 +456,7 @@ while (it < numit):
                     for col in range(4*jmax):
                         #print("(row) (col)",row,col) 
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
-                        Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
+                        Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]-(
                                                                               Kt[vrow][vcol][row,col])
                 vcolinc+=numnodes*var_dim[vcol]
             
