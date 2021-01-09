@@ -921,34 +921,25 @@ while (it < numit):
                             Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
                     idof+=i #Increase var always although var is not bc
             
-    dnode=(nex+1)    
-    for dy in range(ney+1): 
-        inode=dy*dnode
+    for n in range(size(boundarynode)):
+        inode=boundarynode[n]
+        idof = ndof * inode 
         #print("node",inode)   
         #Deformation gradient F
-        for i in range ( var_dim [ 0 ] ):
-            idof = var_dim[0] * inode + i
-            #print ("idof",idof)
-            for j in range(dof):
-                Kglob[ idof , j ] = 0
-                #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
-                Kglob[ j ,idof ] = 0
+        for nvar in range(numvars):
+            for i in range ( var_dim [ nvar ] ):
+                if is_bcnode_byvar[n,nvar]:
+                    #print ("idof",idof)
+                    for j in range(dof):
+                        Kglob[ idof , j ] = 0
+                        #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
+                        Kglob[ j ,idof ] = 0
+                idof+=i
             
 
             Kglob[idof,idof] = 1
             if solver == 2:
-                Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!
-        
-        #Sigma is zero, Internal variable s ,      
-        if numvars == 2:
-            idofs = idof + var_dim[0]
-            for i in range(dof):                    
-                Kglob[ idofs , i ] = 0
-                #Rglob[ i ] -= Kglob[ i, idofs ] * 0 #1 is R(idof)  
-                Kglob[ i , idofs ] = 0                
-        
-            Kglob[idofs,idofs] = 1
-            Rglob[idofs  ] = 0                
+                Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!                
 
     #BOUNDARY CONDITIONS IN STANDARD SOLVER (SUCCESIVE ITERATIONS)
     if solver == 1:
