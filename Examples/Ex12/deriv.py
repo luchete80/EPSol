@@ -84,7 +84,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #TODO FOR FUTURE AND 3D FORMULATIONS:
     #Fe in fact is Fe=F*Fvp-1
     F4ed=FM*F4vpd_inv  
-    print ("Fvpd_inv",Fvpd_inv) 
+    #print ("Fvpd_inv",Fvpd_inv) 
     #Earr_e=
     #Earr_e=TLa*
     #E.9 
@@ -92,7 +92,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
         Fed[i]=F4ed[i]    
     Fed[4,0]=Fvpt_inv[2,2]       
 
-    print ("Fed(3)",Fed[3]) 
+    #print ("Fed(3)",Fed[3]) 
     
     det_Fed=Fed[0]*Fed[3]-Fed[1]*Fed[2] #E.6
     

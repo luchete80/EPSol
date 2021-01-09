@@ -13,10 +13,10 @@ lx=1.
 ly=1
 nex=1
 ney=1
-numit=3
+numit=20
 case=2
 initF=2 #1:identity, 2:radialflow,similar to end
-solver=1 #1:simple 2:Newton Raphson
+solver=2 #1:simple 2:Newton Raphson
 r1=2.    #r1=1
 #-------------
 numvars=1 #1: Only F tensor, 2: F and internal variable s

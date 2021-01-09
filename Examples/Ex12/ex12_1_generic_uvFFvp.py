@@ -18,6 +18,16 @@ ney=1
 plastic=0
 numit=1
 solver=1 #1:simple 2:Newton Raphson
+
+bcnodecount=2*(ney+1)   #INLET AND CENTER 
+is_bcnode_byvar=zeros((bcnodecount, 4)) #in case of disturbed flow
+for n in range(ney+1):
+    is_bcnode_byvar[n]=[1,1,0,0]    #Velocity and F are bc 
+
+n=ney+1
+for ni in range (ney+1):
+    is_bcnode_byvar[ni+n]=[1,0,0,0] #ONLY VELOCITY IS BC
+
 #-------------
 if plastic==0:
 	numvars=2 #u,F
@@ -902,13 +912,14 @@ while (it < numit):
     if solver == 1: #NONZERO VALUES
         for n in range(size(boundarynode)):
             inode=boundarynode[n]
-            idof = ndof * inode + i
+            idof = ndof * inode 
             for nvar in range(numvars):
                 for i in range ( var_dim [ nvar ] ):
-                    idof = var_dim[nvar] * inode + i
                     print("idof",idof)
-                    for j in range(dof):
-                        Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
+                    if is_bcnode_byvar[n,nvar]:
+                        for j in range(dof):
+                            Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
+                    idof+=i #Increase var always although var is not bc
             
     dnode=(nex+1)    
     for dy in range(ney+1): 
