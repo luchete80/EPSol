@@ -643,8 +643,7 @@ while (it < numit):
                 #print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
                 #Arguments passed are ~ vectors
-                if plastic == 1 :
-                    dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
+                dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
                 
                 # *****************************************************************
                 #RESIDUALS ******************* 2.26 to 2.39 *****************************
