@@ -16,7 +16,7 @@ lx=r1-r0
 ly=20.*3.1415926/180.
 nex=20
 ney=8
-numit=50
+numit=20
 solver=1 #1:simple 2:Newton Raphson
 
 #RADIAL FLOW EXAMPLE 
@@ -612,7 +612,7 @@ while (it < numit):
                 #print("vcol vncol",vcol,vncol)
                 for row in range(4*imax):
                     if solver==2:   #NEWTON RAPHSON
-                        Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
+                        Rglob[vnrow.astype(int)[row]]-=R[vrow][row]
                     for col in range(4*jmax):
                         #print("vnrow(row)vncol(col)",vnrow[row],vncol[col]) 
                         Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]] =  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
