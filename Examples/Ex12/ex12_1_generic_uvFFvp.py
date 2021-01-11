@@ -47,7 +47,6 @@ mat_Q  =312.35e3
 mat_R  =8.314
 mat_a  =1.5
 mat_h0 =3093.1e6
-mat_s0 =125.1e6
 
 # print (K)
 # print (X2[0,0])
