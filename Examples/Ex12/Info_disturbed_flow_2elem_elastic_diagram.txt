@@ -1,0 +1,88 @@
+
+THIS IS OK
+18,19 20-23   24,25 26-29  30,31 32,
+* ----------- * ----------- *
+|             |             |
+|             |             |
+|             |             |
+|             |             |
+* ----------- * ----------- * 
+0,1 2-5    6,7 8-11         12,13,14-17
+
+
+
+THIS IS WRONG!!!!!
+6,7 20-23   8,9 26-29  30,31
+* ----------- * ----------- *
+|             |             |
+|             |             |
+|             |             |
+|             |             |
+* ----------- * ----------- * 
+0,1 2-5    2,3 8-11         4,5 14-17
+
+
+IS HAS BEEN READED TO REORDER IN VARIABLE BLOCKS FOR SOLVING 
+GLOBAL DOF could be rearranged per variable
+
+for n in range (4):
+	d=elnodes.astype(int)[e][n]
+	#print("d len Uglob i",d,len(Uglob),ndof*d+2)
+	for i in range (var_dim[0]):    #Velocity is var 0
+		UV[i,0]=Uglob[ndof*d+i]
+	uvf+=var_dim[0]
+	for j in range (var_dim[1]):
+		#print("J",j)
+		if (form==1):
+			Usig[j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+			UF  [j+juf,0]=Uglob[ndof*d+6+j]
+		else: #Fig 4.1, Z is not translated to Fvpt
+			UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+			#print("UF(j,coord)",j,ndof*d+6+j)
+	juf+=var_dim[1]
+	
+	if plastic:
+		for j in range (var_dim[2]):
+			UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
+			
+IN ASSEMBLY 
+
+
+        vrowinc=0
+        #Assembly Matrix
+        for vrow in range(numvars): #Variables
+            ir=0
+            imax=int(var_dim[vrow])
+            for n in range (4): #Nodes
+                for i in range(imax): 
+                    d=elnodes.astype(int)[e][n]
+                    #print("vrowinc,d,a+b",vrowinc,d,vrowinc+var_dim[vrow]*d+i)
+                    vnrow[ir]=vrowinc+var_dim[vrow]*d+i
+                    ir=ir+1
+            
+            vcolinc=0        
+            for vcol in range(numvars): #Variables
+                #print("vcol",vcol)
+                jmax=int(var_dim[vcol])
+                #print("imax, jmax",imax,jmax)
+                #Store vn vectors
+                ic=0
+                for n in range (4): #Nodes 
+                    for j in range(jmax):
+                        d=elnodes.astype(int)[e][n]
+                        #print("vcolinc",vcolinc)
+                        vncol[ic]=vcolinc+var_dim[vcol]*d+j
+                        ic=ic+1
+                            
+                        
+                print("vnrow",vnrow.astype(int))            
+                print("vncol",vncol.astype(int))
+                for row in range(4*imax):
+                    Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
+                    for col in range(4*jmax):
+                        Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]=  Kglob[vnrow.astype(int)[row],vncol.astype(int)[col]]+(
+                                                                              Kt[vrow][vcol][row,col])
+                vcolinc+=numnodes*var_dim[vcol]
+            
+            
+            vrowinc+=numnodes*var_dim[vrow]

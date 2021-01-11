@@ -492,29 +492,54 @@ while (it < numit):
                 #Interpolate velocity
                 #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
                 #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
-                juf=0
-                uvf=0
-                for n in range (4):
-                    d=elnodes.astype(int)[e][n]
-                    #print("d len Uglob i",d,len(Uglob),ndof*d+2)
-                    for i in range (var_dim[0]):    #Velocity is var 0
-                        UV[i,0]=Uglob[ndof*d+i]
-                    uvf+=var_dim[0]
-                    for j in range (var_dim[1]):
-                        #print("J",j)
-                        if (form==1):
-                            Usig[j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                            UF  [j+juf,0]=Uglob[ndof*d+6+j]
-                        else: #Fig 4.1, Z is not translated to Fvpt
-                            UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                            #print("UF(j,coord)",j,ndof*d+6+j)
-                    juf+=var_dim[1]
+                # THIS IS THE CRITERIA IN WHICH VARS ARE INBLOCK PER NODE
+                # juf=0
+                # uvf=0
+                # for n in range (4):
+                    # d=elnodes.astype(int)[e][n]
+                    # for i in range (var_dim[0]):    #Velocity is var 0
+                        # print("UV loc glob ",i,ndof*d+i)
+                        # UV[i,0]=Uglob[ndof*d+i]
+                    # uvf+=var_dim[0]
+                    # for j in range (var_dim[1]):
+                        # #print("J",j)
+                        # if (form==1):
+                            # Usig[j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+                            # UF  [j+juf,0]=Uglob[ndof*d+6+j]
+                        # else: #Fig 4.1, Z is not translated to Fvpt
+                            # UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
+                            # #print("UF(j,coord)",j,ndof*d+6+j)
+                    # juf+=var_dim[1]
                     
-                    if plastic:
-                        for j in range (var_dim[2]):
-                            UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
-                
+                    # if plastic:
+                        # for j in range (var_dim[2]):
+                            # UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
+               
+                #IN CASE GLOBAL NODES ARE STORED IN BLOCK
+                vrowinc=0
+                #Assembly Matrix
+                for vrow in range(numvars): #Variables
+                    print("vrow",vrow)
+                    ir=0
+                    imax=int(var_dim[vrow])
+                    for n in range (4): #Nodes
+                        for i in range(imax): 
+                            d=elnodes.astype(int)[e][n]
+                            print("ir glob",ir, vrowinc+var_dim[vrow]*d+i)
+                            vnrow[ir]=vrowinc+var_dim[vrow]*d+i
+                            ir=ir+1
+                                
+                        # print("vnrow",vnrow.astype(int)) 
+                    
+                    if   vrow == 0:
+                        for row in range(4*imax):
+                            UV[row,0]=Uglob[int(vnrow[row])]
+                    elif vrow == 1:
+                        for row in range(4*imax):
+                            UF[row,0]=Uglob[int(vnrow[row])]                                
+                    vrowinc+=numnodes*var_dim[vrow]
 
+                            
                 #print("UF",UF)
 
                 v  =Nv*UV #[2x8 x (8x1)]
@@ -923,6 +948,7 @@ while (it < numit):
         vrowinc=0
         #Assembly Matrix
         for vrow in range(numvars): #Variables
+            print("vrow",vrow)
             ir=0
             imax=int(var_dim[vrow])
             for n in range (4): #Nodes
@@ -934,7 +960,7 @@ while (it < numit):
             
             vcolinc=0        
             for vcol in range(numvars): #Variables
-                #print("vcol",vcol)
+                print("vcol",vcol)
                 jmax=int(var_dim[vcol])
                 #print("imax, jmax",imax,jmax)
                 #Store vn vectors
@@ -947,8 +973,8 @@ while (it < numit):
                         ic=ic+1
                             
                         
-                #print("vnrow",vnrow.astype(int))            
-                #print("vncol",vncol.astype(int))
+                print("vnrow",vnrow.astype(int))            
+                print("vncol",vncol.astype(int))
                 for row in range(4*imax):
                     Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
