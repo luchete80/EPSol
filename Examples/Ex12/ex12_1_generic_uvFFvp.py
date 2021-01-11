@@ -389,14 +389,33 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
 #---------------------------------------------------
 #To MODIFY put in a function     
 
-for n in range(numnodes):
-    #Velocities 
-    iF=ndof*n
-    Uglob[iF  ]=    Uglob[iF +1] = 0. #Velocities 
-    #Initial deformation gradients as identity??
-    Uglob[iF+2]=Uglob[iF+5]=1
-    Uglob[iF+3]=Uglob[iF+4]=0#xy and yx        	
-print ("Initial Uglob", Uglob)
+# for n in range(numnodes):
+    # #Velocities 
+    # iF=ndof*n
+    # Uglob[iF  ]=    Uglob[iF +1] = 0. #Velocities 
+    # #Initial deformation gradients as identity??
+    # Uglob[iF+2]=Uglob[iF+5]=1
+    # Uglob[iF+3]=Uglob[iF+4]=0#xy and yx        	
+# print ("Initial Uglob", Uglob)
+
+for n in range(size(boundarynode)):
+    inode=boundarynode[n]
+    print("node",inode)   
+    #Deformation gradient F
+    vrowinc=0
+    int iloc=0
+    for nvar in range(numvars):
+        print("nvar, vrowinc",nvar, vrowinc)
+        idof=int(vrowinc+var_dim[nvar]*inode)
+        for i in range ( var_dim [ nvar ] ):
+            if is_bcnode_byvar[n,nvar]:
+                print ("idof",idof)
+                if solver == 2:
+                    Uglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!   
+            idof+=1
+    
+        vrowinc+=numnodes*var_dim[nvar]                           
+                
 
 #-------------------------------------------
 it=0
