@@ -1004,13 +1004,44 @@ while (it < numit):
                         for j in range(dof):
                             Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
                     idof+=1 #Increase var always although var is not bc
-            
+        
+        for n in range(size(boundarynode)):
+            inode=boundarynode[n]
+            for i in range ( var_dim [ 0 ] ):
+                idof = var_dim[0] * inode + i   
+                print("i, idof",i, idof)
+                Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)    
+
+
+    # ORIGINAL BC APPLICATION; IN CASE OF BLOCK GLOBAL DOFS ER EACH NODE
+    # for n in range(size(boundarynode)):
+        # inode=boundarynode[n]
+        # idof = int(ndof * inode)
+        # print("node",inode)   
+        # #Deformation gradient F
+        # for nvar in range(numvars):
+            # for i in range ( var_dim [ nvar ] ):
+                # if is_bcnode_byvar[n,nvar]:
+                    # print ("idof",idof)
+                    # for j in range(dof):
+                        # Kglob[ idof , j ] = 0
+                        # #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0 in NEWTON RAPHSON, U=1(idof) IN PICARD
+                        # Kglob[ j ,idof ] = 0
+                    
+                    # Kglob[idof,idof] = 1
+                    # if solver == 2:
+                        # Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!   
+                # idof+=1
+    
+    #CASE FR SECUENTIAL DOF (FIRST DOFS VELOCITY,THEN F OR SIGMA; etc
     for n in range(size(boundarynode)):
         inode=boundarynode[n]
-        idof = int(ndof * inode)
         print("node",inode)   
         #Deformation gradient F
+        vrowinc=0
         for nvar in range(numvars):
+            print("nvar, vrowinc",nvar, vrowinc)
+            idof=int(vrowinc+var_dim[nvar]*inode)
             for i in range ( var_dim [ nvar ] ):
                 if is_bcnode_byvar[n,nvar]:
                     print ("idof",idof)
@@ -1023,16 +1054,8 @@ while (it < numit):
                     if solver == 2:
                         Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!   
                 idof+=1
-                         
-
-    #BOUNDARY CONDITIONS IN STANDARD SOLVER (SUCCESIVE ITERATIONS)
-    if solver == 1:
-        for n in range(size(boundarynode)):
-            inode=boundarynode[n]
-            for i in range ( var_dim [ 0 ] ):
-                idof = var_dim[0] * inode + i   
-                print("i, idof",i, idof)
-                Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)      
+        
+            vrowinc+=numnodes*var_dim[nvar]                           
                 
     print("KGLOB\n")
     for i in range (dof):
