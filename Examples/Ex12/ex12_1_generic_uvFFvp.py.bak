@@ -10,19 +10,51 @@ import deriv
 
 #----------------------------
 #Input Data------------------
+#############################
+
 form=2
 lx=1.
 ly=20.*3.1415926/180.
 nex=2
-ney=2
+ney=1
 plastic=0
 numit=1
-solver=1 #1:simple 2:Newton Raphson
+solver=2 #1:simple 2:Newton Raphson
+
+bcnodecount=2*(ney+1)   #INLET AND CENTER 
+is_bcnode_byvar=zeros((bcnodecount, 4)) #in case of disturbed flow
+for n in range(ney+1):
+    is_bcnode_byvar[n]=[1,1,0,0]    #Velocity and F are bc 
+
+n=ney+1
+for ni in range (ney+1):
+    is_bcnode_byvar[ni+n]=[1,0,0,0] #ONLY VELOCITY IS BC
+
 #-------------
 if plastic==0:
 	numvars=2 #u,F
 else:
 	numvars=4 #u,F,F,Fvp
+#BEFORE BOUNDARY CONDITIONS
+#Element dimension and DOF PER VARIABLE! 
+var_edof=zeros(2)
+if plastic == 0:
+	if form==2:
+	    var_dim =[2,4]
+else:
+	if form==2:
+		var_dim =[2,4,5,1]
+	else:
+		var_dim =[2,4,4,1]
+var_edof=zeros(4)
+ndof=0
+#Formulation type and DOFs
+for i in range(numvars): 
+    ndof += var_dim[i]
+print ("dofs: ", ndof)
+for i in range(numvars):
+    var_edof[i]=4*var_dim[i] 
+    
 #---------------------------------------------------
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
@@ -37,7 +69,6 @@ mat_Q  =312.35e3
 mat_R  =8.314
 mat_a  =1.5
 mat_h0 =3093.1e6
-mat_s0 =125.1e6
 
 # print (K)
 # print (X2[0,0])
@@ -101,31 +132,11 @@ for n in range(numnodes):
    node[n,0]=r*cos(t)
    node[n,1]=r*sin(t)
    #print("Coord ",n,":",node[n,0],node[n,1])
- 
-
-#BEFORE BOUNDARY CONDITIONS
-#Element dimension and DOF PER VARIABLE! 
-var_edof=zeros(2)
-if plastic == 0:
-	if form==2:
-	    var_dim =[2,4]
-else:
-	if form==2:
-		var_dim =[2,4,5,1]
-	else:
-		var_dim =[2,4,4,1]
-var_edof=zeros(4)
-ndof=0
-#Formulation type and DOFs
-for i in range(numvars): 
-    ndof += var_dim[i]
-print ("dofs: ", ndof)
-for i in range(numvars):
-    var_edof[i]=4*var_dim[i]  
+  
     
 #### BOUNDARY CONDITIONS
 # BOUNDARY CONDITIONS
-boundarynode=zeros(ney+1)
+boundarynode=zeros(2*(ney+1))
 #ROWS ARE NODES; COLS ARE ENTIRE BCs vector (all vars)
 node_bc=matrix(numpy.matlib.zeros((size(boundarynode), ndof)))
 
@@ -135,14 +146,22 @@ for dy in range(ney+1):
     inode=dy*dnode
     boundarynode[i]=inode
     print("i",i)
-    node_bc[i]=[0.,0.,1.,0.,0.,1.]
+    node_bc[i]=[1.0,0.,1.,0.,0.,1.]
     i+=1
 
+inode=nex/2 #Central nodes
+for dy in range(ney+1):
+    boundarynode[i]=inode
+    inode+=dnode
+    print("i",i)
+    node_bc[i]=[1.001,0.,0.,0.,0.,0.] #ONLY VELOCITY
+    i+=1
+    
 print("node_bc",node_bc)
     
 print("boundarynode",boundarynode)
 
-################################################
+#########################################################################################
 ##################################### INPUT END
  
 print(node)
@@ -184,6 +203,8 @@ Ft      = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 Fd      = matrix(numpy.matlib.zeros((4,1)))#Vector form, FZZ IS 1!!
 Ft_inv  = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 Fd_inv  = matrix(numpy.matlib.zeros((5,1)))#Tensor form
+Fet_inv = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Fet     = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 
 #Formulation 2
 Fvp  = matrix(numpy.matlib.zeros((4,1)))#Tensor form
@@ -208,7 +229,7 @@ dHxy=matrix(numpy.matlib.zeros((2, 4)))
 Bs=matrix(numpy.matlib.zeros((2, 4)))
 Bv=matrix(numpy.matlib.zeros((4, 8)))
 BsigF=numpy.zeros((4,16,2))
-BFvp =arange(200).reshape(5,20,2) #
+BFvp=numpy.zeros((5,20,2))
 
 temp4x16=matrix(numpy.matlib.zeros((4, 16)))
 temp4x1=matrix(numpy.matlib.zeros((4, 1)))
@@ -249,20 +270,21 @@ Rv  =matrix(numpy.matlib.zeros((8, 1)))
 #Formulation 1
 #-----------------------------------
 #Symmetric tensors
-Ee =matrix(numpy.matlib.zeros((4, 1)))
-Eet=matrix(numpy.matlib.zeros((2, 2))) #Tensor form 
-
+Ee= matrix(numpy.matlib.zeros((4, 1)))
+Eet=matrix(numpy.matlib.zeros((3, 3)))
+D= matrix(numpy.matlib.zeros((4, 1))) #Strain Rate 4.4
+Dt=matrix(numpy.matlib.zeros((2, 2))) #Strain Rate 4.4
 
 
 #These are the same but reorganized
 dVxy=zeros(4)
 L   =matrix(numpy.matlib.zeros((2, 2)))
-BL      = arange(128).reshape(4,4,8)            #Eqns 2.33, B.17
+BL      = numpy.zeros((4,4,8))                      #Eqns 2.33, B.17
 temp8x1 = matrix(numpy.matlib.zeros((8, 1))) 
 
 
 #Stress
-sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points
+sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points xx, yy,zz, syx, is sbar, WHICH IS SYMMETRIC
 sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
 N_d  =matrix(numpy.matlib.zeros((4, 1)))    #Direction of plastic strain
 
@@ -296,10 +318,10 @@ class bMatrix: #Block matrix
 # (20x 8) (20x16) (20x20) (20x4)
 # ( 4x 8)
 
-dDdUv   =arange(200).reshape(5,5, 8) #TO MODIFY
-dDdUF   =arange(400).reshape(5,5,16) #TO MODIFY
-dDdUFvp =arange(500).reshape(5,5,20) #TO MODIFY
-dDdUs   =arange(100).reshape(5,5, 4) #TO MODIFY
+dDdUv   =numpy.zeros((5,5, 8)) #TO MODIFY
+dDdUF   =numpy.zeros((5,5,16)) #TO MODIFY
+dDdUFvp =numpy.zeros((5,5,20)) #TO MODIFY
+dDdUs   =numpy.zeros((5,5, 4)) #TO MODIFY
 
 #From multiplying dDdU x NFvp*
 #4.39 to 4.42
@@ -348,6 +370,7 @@ print("Kt_0",len((Kt[1][0])),len((Kt[1][0]).transpose()))
 
 ck = ey/ ((1. + nu)*(1. - 2. * nu))
 c=matrix(numpy.matlib.zeros((4, 4)))
+#PLAIN STRAIN
 c[0,0]=c[1,1]=c[2,2]=ck*(1.-nu)                 
 c[0,1]=c[1,0]=c[0,2]=c[2,0]=c[2,1]=c[1,2]=ck*nu
 c[3,3]=ck*(.5 - nu)
@@ -366,18 +389,11 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
 
 for n in range(numnodes):
     #Velocities 
-    iu=ndof*n
-    Uglob[iu  ]=vnxy[n,0]
-    Uglob[iu+1]=vnxy[n,1]
+    iF=ndof*n
+    Uglob[iF  ]=    Uglob[iF +1] = 0. #Velocities 
     #Initial deformation gradients as identity??
-    for j in range (2):
-        iF=iu+var_dim[0]+j*var_dim[1]
-        #ONLY IN FORM 2
-        Uglob[iF  ]=Uglob[iF+3]=1
-        Uglob[iF+1]=Uglob[iF+2]=0#xy and yx        
-        if j==1:
-            Uglob[iF+4]=1
-	
+    Uglob[iF+2]=Uglob[iF+5]=1
+    Uglob[iF+3]=Uglob[iF+4]=0#xy and yx        	
 print ("Initial Uglob", Uglob)
 
 #-------------------------------------------
@@ -395,8 +411,10 @@ while (it < numit):
         for jdof in range(dof):
             Kglob[idof,jdof] = 0.  
 #ELEMENT LOOP  ----------------
-    for e in range (1): # TO MODIFY 
+    for e in range (numel): # TO MODIFY 
         #Obtain Ve from global
+        Kt=Kzero
+        R=Rzero
         Kel=0.
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
@@ -482,18 +500,20 @@ while (it < numit):
                             UF  [j+juf,0]=Uglob[ndof*d+6+j]
                         else: #Fig 4.1, Z is not translated to Fvpt
                             UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                            print("UF(j,coord)",j,ndof*d+6+j)
+                            #print("UF(j,coord)",j,ndof*d+6+j)
                     juf+=var_dim[1]
-                    for j in range (var_dim[2]):
+                    
+                    if plastic:
+                        for j in range (var_dim[2]):
                             UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
                 
 
-                print("UF",UF)
+                #print("UF",UF)
 
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
-                print("F",F)
+                #print("F",F)
                 #Ft=
                 if (form==1):
                     sig=NsigF*Usig
@@ -521,6 +541,9 @@ while (it < numit):
                 L[1,0]=dVxy[2]
                 L[1,0]=dVxy[3]
                 
+                Dt=0.5*(L+L.transpose())
+                D[0]=Dt[0,0];D[0]=Dt[0,0];
+                
                 #Stabilization factor tau 2.26
                 #tau=beta*he/(2|v|)
                 #See beta estability paramter
@@ -547,6 +570,33 @@ while (it < numit):
                 
                     
                 w=1. #TO MODIFY
+                
+                beta=1.
+                #print("u2+v2",v[0]*v[0]+v[1]*[1])
+                vnorm=sqrt(v[0]*v[0]+v[1]*v[1])
+                #he=(lx+ly)/2.
+                he=(lx*v[0]+ly*v[1])/vnorm #HUGHES (APPROX)
+                tau=float(beta*he/(2.*vnorm))
+
+                Ft[0,0]=F[0]
+                Ft[0,1]=F[1]
+                Ft[1,0]=F[2]
+                Ft[1,1]=F[3]
+                Ft[2,2]=1.      #Fzz, plain strain 
+                
+                #F is [xx xy yx yy zz] , (4.21) in form 2
+                Fd[0]=F[0]
+                Fd[1]=F[2] #yx
+                Fd[2]=F[1] #xy
+                Fd[3]=F[3]
+                                
+                #Calculate stabilization parameter
+                tau=1.
+                ################ STRESSES**********
+                #FORMULATION TRUE EQUILIBRIUM, EQ 4.2
+                #####################################
+                
+                #FORM 1
                 #Calculate sigma
                 #2.31 Comes first from 2.2 (Then 2.31)
                 #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
@@ -554,17 +604,32 @@ while (it < numit):
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
                 
-                #Calculate stabilization parameter
-                tau=1.
-                #STRESSES**********
+                #FORM 2
+                if plastic == 0:
+                    Fet=Ft
+                
+                Fet_inv=linalg.inv(Fet) 
+                Eet=0.5*(identity(3)-Fet_inv.transpose()*Fet_inv)
+                #4 x 1 vector arrangement, for constitutive equation, Eq. 4.20
+                Ee[0]=Eet[0,0];Ee[1]=Eet[1,1];Ee[2]=Eet[2,2];
+                Ee[3]=Eet[0,1]; #OR 1,0, being Eet symmetric
+                visc=1.
+                sig=c*Ee+2*visc*D
+                print ("sig",sig)
+                
+                #E if were total Is the same as Almansi?? (NONLINEAR CONTINUA EQ. 4.3)
+                
+                #AND THEN 4.20
                 #From 2.27 Plane Strain Symmetric tensors are defined as 
                 #t=[txx tyy tzz tyz]
                 pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
+                print("pi",pi)
                 for i in range(3): #Only daigonal is modified
                     sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
                 #print ("sigd",sig_d[i][0])   
                 for k in range(4):
                     sig_eq=sqrt(1.5*(sig_d[k,0]))
+                print ("sig_eq",sig_eq)
                 #*** STRAINS
                 #Equivalent strain rate
                 mat_A=mat_A0*math.exp(-mat_Q/mat_R)
@@ -603,21 +668,11 @@ while (it < numit):
                 
                 wJ=w*detJ
                 
-                Ft[0,0]=F[0]
-                Ft[0,1]=F[1]
-                Ft[1,0]=F[2]
-                Ft[1,1]=F[3]
-                Ft[2,2]=1.
-                #F is [xx xy yx yy zz] , (4.21) in form 2
-                Fd[0]=F[0]
-                Fd[1]=F[2] #yx
-                Fd[2]=F[1] #xy
-                Fd[3]=F[3]
                 
                 #Elastic part of F 4.6
                 #ATENTION F~ is not in the same order of NODAL variable 
                 if (it==0):
-                    Ft=identity(3)
+                    #Ft=identity(3)
                     #NOT USE!!! Fd=[[1,0,0,1]]
                     Fvpt=identity(3)
                     #print(Ft)
@@ -633,9 +688,8 @@ while (it < numit):
                     Fvpd[2]=Fvp[1] #xy
                     Fvpd[3]=Fvp[3]  
                     
-                visc=1.
                 
-                print ("Fvpd",Fvpd)
+                #print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
                 #Arguments passed are ~ vectors
                 dEdU=deriv.calc_dEdU(Fd,Fvpd,NsigF,NFvp)
@@ -697,7 +751,8 @@ while (it < numit):
                 #(8x16)
                 Kt[0][1]=   Kt[0][1]+Bv.transpose()*c*dEdU[0]*wJ
                 #dRv/dUF (8x20)
-                Kt[0][2]=   Kt[0][2]+Bv.transpose()*c*dEdU[1]*wJ
+                if plastic:
+                    Kt[0][2]=   Kt[0][2]+Bv.transpose()*c*dEdU[1]*wJ
                 #Kt(0,3) dRv/dUs=0
                 
                 #----------------------------------------------------
@@ -749,84 +804,87 @@ while (it < numit):
                                 
                 #dRFdUF=dRFdUF=0.  4.37 & 4.38
                 
-                #---------------------------------------------------
-                ##Viscoplastic derivatives
-                #Kt(2,0)=dFvp/dUV 4.39
-                temp5x1=LM5*NFvp*UFvp
-                temp1=0
-                #print ("temp4x1,temp1",temp5x1,temp1)
+                if plastic:
+                    #---------------------------------------------------
+                    ##Viscoplastic derivatives
+                    #Kt(2,0)=dFvp/dUV 4.39
+                    temp5x1=LM5*NFvp*UFvp
+                    temp1=0
+                    #print ("temp4x1,temp1",temp5x1,temp1)
+                    
+                    for m in range(5):
+                        for i in range(20):
+                            for n in range(2):
+                                temp1=temp2=0. #increase with each m
+                                
+                                for j in range(20):
+                                    for k in range(2):
+                                        temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
+                                
+                                temp20x2[i,n]=  temp20x2[i,n]+(
+                                                BFvp[m,i,n]*
+                                                (temp1-temp5x1[m,0])
+                                                )
+                    
+                    for m in range(5):
+                        for j in range (20):
+                            for k in range (2):
+                                BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
+                    #print("size",len((NFvp+float(tau)*temp5x16)))
+                    #dRFvp/DUv
                 
-                for m in range(5):
-                    for i in range(20):
-                        for n in range(2):
-                            temp1=temp2=0. #increase with each m
-                            
-                            for j in range(20):
-                                for k in range(2):
-                                    temp1=temp1+2*BFvp[m,j,k]*v[k]*UFvp[j,0]
-                            
-                            temp20x2[i,n]=  temp20x2[i,n]+(
-                                            BFvp[m,i,n]*
-                                            (temp1-temp5x1[m,0])
-                                            )
-                
-                for m in range(5):
-                    for j in range (20):
-                        for k in range (2):
-                            BUFvp[m,k]=BFvp[m,j,k]*UFvp[j,0]
-                #print("size",len((NFvp+float(tau)*temp5x16)))
-                #dRFvp/DUv
-                Kt[2][0]=Kt[2][0]+(
-                            NFvp.transpose()*BUFvp*Nv+
-                             tau*temp20x2*Nv #temp_in  * N_np
-                            -(NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[0]
-                            )*wJ
-                
-                #dRFvp/dUF 4.40
-                Kt[2][1]=Kt[2][1]-(
-                             (NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[1]
-                            )*wJ
-                
-                #dRFvp/dUFvp 4.41
-                Kt[2][2]=Kt[2][2]+(
-                             (NFvp+float(tau)*temp5x16).transpose()*(
-                             temp5x16-DM*NFvp-temp_dDFvp[2])
-                            )*wJ
+                    Kt[2][0]=Kt[2][0]+(
+                                NFvp.transpose()*BUFvp*Nv+
+                                 tau*temp20x2*Nv #temp_in  * N_np
+                                -(NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[0]
+                                )*wJ
+                    
+                    #dRFvp/dUF 4.40
+                    Kt[2][1]=Kt[2][1]-(
+                                 (NFvp+float(tau)*temp5x16).transpose()*temp_dDFvp[1]
+                                )*wJ
+                    
+                    #dRFvp/dUFvp 4.41
+                    Kt[2][2]=Kt[2][2]+(
+                                 (NFvp+float(tau)*temp5x16).transpose()*(
+                                 temp5x16-DM*NFvp-temp_dDFvp[2])
+                                )*wJ
 
-                #dRFvp/dUs 4.42
-                Kt[2][3]=Kt[2][3]-(
-                             (NFvp+float(tau)*temp5x16).transpose()*(
-                             temp_dDFvp[3])
+                    #dRFvp/dUs 4.42
+                    Kt[2][3]=Kt[2][3]-(
+                                 (NFvp+float(tau)*temp5x16).transpose()*(
+                                 temp_dDFvp[3])
+                                )*wJ
+                                
+                    #---------------------------------------------------
+                    #S derivatives -- COMMON TO BOTH FORMULATIONS
+                    #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
+                    #dRs/dUv
+                    # print("test",tau*Bs.transpose()*Nv*(2.*v*Bs*Us * g_sigs) 
+                    #print("test",float(2.0*(Bs*Us).transpose()*v))
+                    Kt[3][0]=Kt[3][0]+(
+                              Ns.transpose()*(Bs*Us).transpose()*Nv +
+                              tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs)
+                              )*wJ 
+                    
+                    #4.44 dRs/dF 4.44 (4x16)
+                    Kt[3][1]=Kt[3][1]+(
+                              (Ns+tau*v.transpose()*Bs).transpose()*
+                              (-dgdU[1])*
+                              wJ) 
+                    
+                    #dRs/dFvp 4.45
+                    #4x20
+                    Kt[3][2]=Kt[3][2]+(
+                            (Ns.transpose()+tau*Bs.transpose()*v)*(-1.)*dgdU[2]
                             )*wJ
-                            
-                #---------------------------------------------------
-                #S derivatives -- COMMON TO BOTH FORMULATIONS
-                #2.53 and 4.xx ATENTION IN CHAPTER 4 k and p indices are wrong, see 2.53
-                #dRs/dUv
-                # print("test",tau*Bs.transpose()*Nv*(2.*v*Bs*Us * g_sigs) 
-                #print("test",float(2.0*(Bs*Us).transpose()*v))
-                Kt[3][0]=Kt[3][0]+(
-                          Ns.transpose()*(Bs*Us).transpose()*Nv +
-                          tau*Bs.transpose()*Nv*float(2.*(Bs*Us).transpose()*v * g_sigs)
-                          )*wJ 
+                    #dRs/dS 4.46    
+                    Kt[3][3]=Kt[3][3]+(
+                              (Ns+tau*v.transpose()*Bs).transpose()*
+                              (v.transpose()*Bs-dgdU[3])*
+                              wJ) 
+                #END IF PLASTIC ******************************************
                 
-                #4.44 dRs/dF 4.44 (4x16)
-                Kt[3][1]=Kt[3][1]+(
-                          (Ns+tau*v.transpose()*Bs).transpose()*
-                          (-dgdU[1])*
-                          wJ) 
-                
-                #dRs/dFvp 4.45
-                #4x20
-                Kt[3][2]=Kt[3][2]+(
-                        (Ns.transpose()+tau*Bs.transpose()*v)*(-1.)*dgdU[2]
-                        )*wJ
-                #dRs/dS 4.46    
-                Kt[3][3]=Kt[3][3]+(
-                          (Ns+tau*v.transpose()*Bs).transpose()*
-                          (v.transpose()*Bs-dgdU[3])*
-                          wJ) 
-        
         print ("Nv",Nv)
         # #Element dimension and DOF PER VARIABLE! 
         # var_dim =[2,4,4,1]
@@ -856,7 +914,7 @@ while (it < numit):
             
         vrowinc=0
         #Assembly Matrix
-        for vrow in range(4): #Variables
+        for vrow in range(numvars): #Variables
             ir=0
             imax=int(var_dim[vrow])
             for n in range (4): #Nodes
@@ -867,7 +925,7 @@ while (it < numit):
                     ir=ir+1
             
             vcolinc=0        
-            for vcol in range(4): #Variables
+            for vcol in range(numvars): #Variables
                 #print("vcol",vcol)
                 jmax=int(var_dim[vcol])
                 #print("imax, jmax",imax,jmax)
@@ -903,41 +961,35 @@ while (it < numit):
     # F=I , sigma = 0
     if solver == 1: #NONZERO VALUES
         for n in range(size(boundarynode)):
-            for i in range ( var_dim [ 0 ] ):
-                inode=boundarynode[n]
-                idof = var_dim[0] * inode + i
-                print("idof",idof)
-                for j in range(dof):
-                    Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
+            inode=boundarynode[n]
+            idof = ndof * inode 
+            for nvar in range(numvars):
+                for i in range ( var_dim [ nvar ] ):
+                    print("idof",idof)
+                    if is_bcnode_byvar[n,nvar]:
+                        for j in range(dof):
+                            Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
+                    idof+=1 #Increase var always although var is not bc
             
-    dnode=(nex+1)    
-    for dy in range(ney+1): 
-        inode=dy*dnode
-        #print("node",inode)   
+    for n in range(size(boundarynode)):
+        inode=boundarynode[n]
+        idof = int(ndof * inode)
+        print("node",inode)   
         #Deformation gradient F
-        for i in range ( var_dim [ 0 ] ):
-            idof = var_dim[0] * inode + i
-            #print ("idof",idof)
-            for j in range(dof):
-                Kglob[ idof , j ] = 0
-                #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0, U=1(idof)
-                Kglob[ j ,idof ] = 0
-            
-
-            Kglob[idof,idof] = 1
-            if solver == 2:
-                Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!
-        
-        #Sigma is zero, Internal variable s ,      
-        if numvars == 2:
-            idofs = idof + var_dim[0]
-            for i in range(dof):                    
-                Kglob[ idofs , i ] = 0
-                #Rglob[ i ] -= Kglob[ i, idofs ] * 0 #1 is R(idof)  
-                Kglob[ i , idofs ] = 0                
-        
-            Kglob[idofs,idofs] = 1
-            Rglob[idofs  ] = 0                
+        for nvar in range(numvars):
+            for i in range ( var_dim [ nvar ] ):
+                if is_bcnode_byvar[n,nvar]:
+                    print ("idof",idof)
+                    for j in range(dof):
+                        Kglob[ idof , j ] = 0
+                        #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0 in NEWTON RAPHSON, U=1(idof) IN PICARD
+                        Kglob[ j ,idof ] = 0
+                    
+                    Kglob[idof,idof] = 1
+                    if solver == 2:
+                        Rglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!   
+                idof+=1
+                         
 
     #BOUNDARY CONDITIONS IN STANDARD SOLVER (SUCCESIVE ITERATIONS)
     if solver == 1:
@@ -948,13 +1000,13 @@ while (it < numit):
                 print("i, idof",i, idof)
                 Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)      
                 
-    # print("KGLOB\n")
-    # for i in range (dof):
-        # for j in range (dof):
-            # print(Kglob[i,j], end = " ")
-        # print("\n")   
-        # # print("\n")
-    # print("Rglob",Rglob)
+    print("KGLOB\n")
+    for i in range (dof):
+        for j in range (dof):
+            print(Kglob[i,j], end = " ")
+        print("\n")   
+        # print("\n")
+    print("Rglob",Rglob)
     
 
 #print (K)

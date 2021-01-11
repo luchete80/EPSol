@@ -411,8 +411,10 @@ while (it < numit):
         for jdof in range(dof):
             Kglob[idof,jdof] = 0.  
 #ELEMENT LOOP  ----------------
-    for e in range (1): # TO MODIFY 
+    for e in range (numel): # TO MODIFY 
         #Obtain Ve from global
+        Kt=Kzero
+        R=Rzero
         Kel=0.
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
@@ -420,6 +422,11 @@ while (it < numit):
         print ("Element Nodes")
         print (X2)
         
+        dHrs=matrix([[(1+0.),-(1+0.),-(1-0.),(1-0.)], [(1+0.),(1-0.),-(1-0.),-(1+0.)] ])
+        J=dHrs*X2
+        lx=J[0,0]/2.
+        ly=J[1,1]/2.
+        #print("J,lx,ly",J,lx,ly)
         for ig in range(2):
             for jg in range(2):
                 rg=gauss[ig]
