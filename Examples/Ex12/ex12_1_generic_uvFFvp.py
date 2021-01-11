@@ -193,6 +193,8 @@ Ft      = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 Fd      = matrix(numpy.matlib.zeros((4,1)))#Vector form, FZZ IS 1!!
 Ft_inv  = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 Fd_inv  = matrix(numpy.matlib.zeros((5,1)))#Tensor form
+Fet_inv = matrix(numpy.matlib.zeros((3,3)))#Tensor form
+Fet     = matrix(numpy.matlib.zeros((3,3)))#Tensor form
 
 #Formulation 2
 Fvp  = matrix(numpy.matlib.zeros((4,1)))#Tensor form
@@ -261,7 +263,7 @@ Rv  =matrix(numpy.matlib.zeros((8, 1)))
 Ee= matrix(numpy.matlib.zeros((4, 1)))
 Eet=matrix(numpy.matlib.zeros((3, 3)))
 D= matrix(numpy.matlib.zeros((4, 1))) #Strain Rate 4.4
-Dt=matrix(numpy.matlib.zeros((4, 4))) #Strain Rate 4.4
+Dt=matrix(numpy.matlib.zeros((2, 2))) #Strain Rate 4.4
 
 
 #These are the same but reorganized
@@ -272,7 +274,7 @@ temp8x1 = matrix(numpy.matlib.zeros((8, 1)))
 
 
 #Stress
-sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points
+sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points xx, yy,zz, syx, is sbar, WHICH IS SYMMETRIC
 sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
 N_d  =matrix(numpy.matlib.zeros((4, 1)))    #Direction of plastic strain
 
@@ -527,7 +529,8 @@ while (it < numit):
                 L[1,0]=dVxy[2]
                 L[1,0]=dVxy[3]
                 
-                Dt=0.5+(L+L.transpose())
+                Dt=0.5*(L+L.transpose())
+                D[0]=Dt[0,0];D[0]=Dt[0,0];
                 
                 #Stabilization factor tau 2.26
                 #tau=beta*he/(2|v|)
@@ -555,29 +558,54 @@ while (it < numit):
                 
                     
                 w=1. #TO MODIFY
+                
+                beta=1.
+                #print("u2+v2",v[0]*v[0]+v[1]*[1])
+                vnorm=sqrt(v[0]*v[0]+v[1]*v[1])
+                #he=(lx+ly)/2.
+                he=(lx*v[0]+ly*v[1])/vnorm #HUGHES (APPROX)
+                tau=float(beta*he/(2.*vnorm))
+
+                Ft[0,0]=F[0]
+                Ft[0,1]=F[1]
+                Ft[1,0]=F[2]
+                Ft[1,1]=F[3]
+                Ft[2,2]=1.      #Fzz, plain strain 
+                
+                #F is [xx xy yx yy zz] , (4.21) in form 2
+                Fd[0]=F[0]
+                Fd[1]=F[2] #yx
+                Fd[2]=F[1] #xy
+                Fd[3]=F[3]
+                                
+                #Calculate stabilization parameter
+                tau=1.
+                ################ STRESSES**********
+                #FORMULATION TRUE EQUILIBRIUM, EQ 4.2
+                #####################################
+                
+                #FORM 1
                 #Calculate sigma
                 #2.31 Comes first from 2.2 (Then 2.31)
                 #Pij=vk d(sig ij)/xk - dvi/dxk sig(kj) + dvk/dxk sig ij
                 #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) +
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
-
-                Ft[0,0]=F[0]
-                Ft[0,1]=F[1]
-                Ft[1,0]=F[2]
-                Ft[1,1]=F[3]
-                Ft[2,2]=1.
-                #F is [xx xy yx yy zz] , (4.21) in form 2
-                Fd[0]=F[0]
-                Fd[1]=F[2] #yx
-                Fd[2]=F[1] #xy
-                Fd[3]=F[3]
                 
-                #Calculate stabilization parameter
-                tau=1.
-                #STRESSES**********
-                #FORMULATION TRUE EQUILIBRIUM, EQ 4.2
+                #FORM 2
+                if plastic == 0:
+                    Fet=Ft
                 
+                Fet_inv=linalg.inv(Fet) 
+                Eet=0.5*(identity(3)-Fet_inv.transpose()*Fet_inv)
+                #4 x 1 vector arrangement, for constitutive equation, Eq. 4.20
+                Ee[0]=Eet[0,0];Ee[1]=Eet[1,1];Ee[2]=Eet[2,2];
+                Ee[3]=Eet[0,1]; #OR 1,0, being Eet symmetric
+                visc=1.
+                sig=c*Ee+2*visc*D
+                print ("sig",sig)
+                
+                #E if were total Is the same as Almansi?? (NONLINEAR CONTINUA EQ. 4.3)
                 
                 #AND THEN 4.20
                 #From 2.27 Plane Strain Symmetric tensors are defined as 
@@ -632,7 +660,7 @@ while (it < numit):
                 #Elastic part of F 4.6
                 #ATENTION F~ is not in the same order of NODAL variable 
                 if (it==0):
-                    Ft=identity(3)
+                    #Ft=identity(3)
                     #NOT USE!!! Fd=[[1,0,0,1]]
                     Fvpt=identity(3)
                     #print(Ft)
@@ -648,7 +676,6 @@ while (it < numit):
                     Fvpd[2]=Fvp[1] #xy
                     Fvpd[3]=Fvp[3]  
                     
-                visc=1.
                 
                 #print ("Fvpd",Fvpd)
                 #print("Fd",Fd[0,0])
