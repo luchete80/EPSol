@@ -151,7 +151,7 @@ print("node_bc",node_bc)
     
 print("boundarynode",boundarynode)
 
-################################################
+#########################################################################################
 ##################################### INPUT END
  
 print(node)
@@ -258,9 +258,9 @@ Rv  =matrix(numpy.matlib.zeros((8, 1)))
 #Formulation 1
 #-----------------------------------
 #Symmetric tensors
-Ee =matrix(numpy.matlib.zeros((4, 1)))
-Eet=matrix(numpy.matlib.zeros((2, 2))) #Tensor form 
-
+Ee= matrix(numpy.matlib.zeros((4, 1)))
+D= matrix(numpy.matlib.zeros((4, 1))) #Strain Rate 4.4
+Dt=matrix(numpy.matlib.zeros((4, 4))) #Strain Rate 4.4
 
 
 #These are the same but reorganized
@@ -357,6 +357,7 @@ print("Kt_0",len((Kt[1][0])),len((Kt[1][0]).transpose()))
 
 ck = ey/ ((1. + nu)*(1. - 2. * nu))
 c=matrix(numpy.matlib.zeros((4, 4)))
+#PLAIN STRAIN
 c[0,0]=c[1,1]=c[2,2]=ck*(1.-nu)                 
 c[0,1]=c[1,0]=c[0,2]=c[2,0]=c[2,1]=c[1,2]=ck*nu
 c[3,3]=ck*(.5 - nu)
@@ -525,6 +526,8 @@ while (it < numit):
                 L[1,0]=dVxy[2]
                 L[1,0]=dVxy[3]
                 
+                Dt=0.5+(L+L.transpose())
+                
                 #Stabilization factor tau 2.26
                 #tau=beta*he/(2|v|)
                 #See beta estability paramter
@@ -561,14 +564,20 @@ while (it < numit):
                 #Calculate stabilization parameter
                 tau=1.
                 #STRESSES**********
+                #FORMULATION TRUE EQUILIBRIUM, EQ 4.2
+                
+                
+                #AND THEN 4.20
                 #From 2.27 Plane Strain Symmetric tensors are defined as 
                 #t=[txx tyy tzz tyz]
                 pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
+                print("pi",pi)
                 for i in range(3): #Only daigonal is modified
                     sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
                 #print ("sigd",sig_d[i][0])   
                 for k in range(4):
                     sig_eq=sqrt(1.5*(sig_d[k,0]))
+                print ("sig_eq",sig_eq)
                 #*** STRAINS
                 #Equivalent strain rate
                 mat_A=mat_A0*math.exp(-mat_Q/mat_R)
