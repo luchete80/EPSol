@@ -259,6 +259,7 @@ Rv  =matrix(numpy.matlib.zeros((8, 1)))
 #-----------------------------------
 #Symmetric tensors
 Ee= matrix(numpy.matlib.zeros((4, 1)))
+Eet=matrix(numpy.matlib.zeros((3, 3)))
 D= matrix(numpy.matlib.zeros((4, 1))) #Strain Rate 4.4
 Dt=matrix(numpy.matlib.zeros((4, 4))) #Strain Rate 4.4
 
@@ -560,6 +561,17 @@ while (it < numit):
                 #Calculate Piola Kirchoff Pi (2.31) Gij Cjk˙¯-Gij LM (jk) sig(k) +
                 #Attention double contraction
                 #P=G*c*E-G*LM*sig+(LM[0,0]+LM[1,1])*G*sig
+
+                Ft[0,0]=F[0]
+                Ft[0,1]=F[1]
+                Ft[1,0]=F[2]
+                Ft[1,1]=F[3]
+                Ft[2,2]=1.
+                #F is [xx xy yx yy zz] , (4.21) in form 2
+                Fd[0]=F[0]
+                Fd[1]=F[2] #yx
+                Fd[2]=F[1] #xy
+                Fd[3]=F[3]
                 
                 #Calculate stabilization parameter
                 tau=1.
@@ -616,16 +628,6 @@ while (it < numit):
                 
                 wJ=w*detJ
                 
-                Ft[0,0]=F[0]
-                Ft[0,1]=F[1]
-                Ft[1,0]=F[2]
-                Ft[1,1]=F[3]
-                Ft[2,2]=1.
-                #F is [xx xy yx yy zz] , (4.21) in form 2
-                Fd[0]=F[0]
-                Fd[1]=F[2] #yx
-                Fd[2]=F[1] #xy
-                Fd[3]=F[3]
                 
                 #Elastic part of F 4.6
                 #ATENTION F~ is not in the same order of NODAL variable 
