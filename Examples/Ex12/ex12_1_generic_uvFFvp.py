@@ -255,11 +255,13 @@ dEdU=[matrix(numpy.matlib.zeros((4, 16))),matrix(numpy.matlib.zeros((4, 20)))]
 
 K=matrix(numpy.matlib.zeros((44, 44)))
 
-R   =[  matrix(numpy.matlib.zeros(( 8, 1))),
-        matrix(numpy.matlib.zeros((16, 1))),
-        matrix(numpy.matlib.zeros((20, 1))),
-        matrix(numpy.matlib.zeros(( 4, 1)))]
-Rzero =[  matrix(numpy.matlib.zeros((16, 1))),
+R    =[  matrix(numpy.matlib.zeros(( 8, 1))),
+         matrix(numpy.matlib.zeros((16, 1))),
+         matrix(numpy.matlib.zeros((20, 1))),
+         matrix(numpy.matlib.zeros(( 4, 1)))]
+Rzero=[  matrix(numpy.matlib.zeros(( 8, 1))),
+         matrix(numpy.matlib.zeros((16, 1))),
+         matrix(numpy.matlib.zeros((20, 1))),
          matrix(numpy.matlib.zeros(( 4, 1)))]
 RF  =matrix(numpy.matlib.zeros((16, 1)))
 Rsig=matrix(numpy.matlib.zeros((16, 1)))
@@ -345,7 +347,7 @@ Kt=[
      ]    
     ] 
     
-Kt=[
+Kzero=[
      [matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[0]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[1]))),
       matrix(numpy.matlib.zeros(( var_edof.astype(int)[0], var_edof.astype(int)[2]))), matrix(numpy.matlib.zeros((var_edof.astype(int)[0], var_edof.astype(int)[3])))]
      ,
