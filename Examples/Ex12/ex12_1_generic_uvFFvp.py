@@ -10,10 +10,12 @@ import deriv
 
 #----------------------------
 #Input Data------------------
+#############################
+
 form=2
 lx=1.
 ly=20.*3.1415926/180.
-nex=1
+nex=2
 ney=1
 plastic=0
 numit=1
@@ -33,6 +35,26 @@ if plastic==0:
 	numvars=2 #u,F
 else:
 	numvars=4 #u,F,F,Fvp
+#BEFORE BOUNDARY CONDITIONS
+#Element dimension and DOF PER VARIABLE! 
+var_edof=zeros(2)
+if plastic == 0:
+	if form==2:
+	    var_dim =[2,4]
+else:
+	if form==2:
+		var_dim =[2,4,5,1]
+	else:
+		var_dim =[2,4,4,1]
+var_edof=zeros(4)
+ndof=0
+#Formulation type and DOFs
+for i in range(numvars): 
+    ndof += var_dim[i]
+print ("dofs: ", ndof)
+for i in range(numvars):
+    var_edof[i]=4*var_dim[i] 
+    
 #---------------------------------------------------
 #Material properties (Table 2.1 p28)
 #HSLA-65 steel with strain rate between e-3 and e-4
@@ -110,31 +132,11 @@ for n in range(numnodes):
    node[n,0]=r*cos(t)
    node[n,1]=r*sin(t)
    #print("Coord ",n,":",node[n,0],node[n,1])
- 
-
-#BEFORE BOUNDARY CONDITIONS
-#Element dimension and DOF PER VARIABLE! 
-var_edof=zeros(2)
-if plastic == 0:
-	if form==2:
-	    var_dim =[2,4]
-else:
-	if form==2:
-		var_dim =[2,4,5,1]
-	else:
-		var_dim =[2,4,4,1]
-var_edof=zeros(4)
-ndof=0
-#Formulation type and DOFs
-for i in range(numvars): 
-    ndof += var_dim[i]
-print ("dofs: ", ndof)
-for i in range(numvars):
-    var_edof[i]=4*var_dim[i]  
+  
     
 #### BOUNDARY CONDITIONS
 # BOUNDARY CONDITIONS
-boundarynode=zeros(ney+1)
+boundarynode=zeros(2*(ney+1))
 #ROWS ARE NODES; COLS ARE ENTIRE BCs vector (all vars)
 node_bc=matrix(numpy.matlib.zeros((size(boundarynode), ndof)))
 
@@ -144,9 +146,17 @@ for dy in range(ney+1):
     inode=dy*dnode
     boundarynode[i]=inode
     print("i",i)
-    node_bc[i]=[0.001,0.,1.,0.,0.,1.]
+    node_bc[i]=[1.0,0.,1.,0.,0.,1.]
     i+=1
 
+inode=nex/2 #Central nodes
+for dy in range(ney+1):
+    boundarynode[i]=inode
+    inode+=dnode
+    print("i",i)
+    node_bc[i]=[1.001,0.,0.,0.,0.,0.] #ONLY VELOCITY
+    i+=1
+    
 print("node_bc",node_bc)
     
 print("boundarynode",boundarynode)
@@ -962,7 +972,7 @@ while (it < numit):
     for n in range(size(boundarynode)):
         inode=boundarynode[n]
         idof = int(ndof * inode)
-        #print("node",inode)   
+        print("node",inode)   
         #Deformation gradient F
         for nvar in range(numvars):
             for i in range ( var_dim [ nvar ] ):
