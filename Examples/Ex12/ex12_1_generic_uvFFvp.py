@@ -12,11 +12,19 @@ import deriv
 #Input Data------------------
 #############################
 
+#CASE RADIAL FLOW
+# form=2
+# lx=1.
+# ly=20.*3.1415926/180.
+# nex=2
+# ney=1
+
 form=2
-lx=1.
-ly=20.*3.1415926/180.
+lx=0.1
+ly=0.01
 nex=2
 ney=1
+plastic=0
 plastic=0
 numit=1
 solver=2 #1:simple 2:Newton Raphson
@@ -444,8 +452,9 @@ it=0
 ## ------------------------------------------
 ## Newton Rhapson Loop
 ## ------------------------------------------
+print ("**************************************** BEGIN LOOP *************************************************")
 while (it < numit):
-
+    print ("Iteration: ",it, "from ", numit)
     #Clean Global Matrices for assembly
     #print ("Kglob",Kglob)
     for idof in range(dof):
@@ -460,9 +469,9 @@ while (it < numit):
         Kel=0.
         for n in range(4):
             X2[n]=node[elnodes.astype(int)[e][n]]
-        print ("Element ", e)
-        print ("Element Nodes")
-        print (X2)
+        #print ("Element ", e)
+        #print ("Element Nodes")
+        #print (X2)
         
         dHrs=matrix([[(1+0.),-(1+0.),-(1-0.),(1-0.)], [(1+0.),(1-0.),-(1-0.),-(1+0.)] ])
         J=dHrs*X2
@@ -687,7 +696,7 @@ while (it < numit):
                 Ee[3]=Eet[0,1]; #OR 1,0, being Eet symmetric
                 visc=1.
                 sig=c*Ee+2*visc*D
-                print ("sig",sig)
+                #print ("sig",sig)
                 
                 #E if were total Is the same as Almansi?? (NONLINEAR CONTINUA EQ. 4.3)
                 
@@ -695,13 +704,13 @@ while (it < numit):
                 #From 2.27 Plane Strain Symmetric tensors are defined as 
                 #t=[txx tyy tzz tyz]
                 pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
-                print("pi",pi)
+                #print("pi",pi)
                 for i in range(3): #Only daigonal is modified
                     sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
                 #print ("sigd",sig_d[i][0])   
                 for k in range(4):
                     sig_eq=sqrt(1.5*(sig_d[k,0]))
-                print ("sig_eq",sig_eq)
+                #print ("sig_eq",sig_eq)
                 #*** STRAINS
                 #Equivalent strain rate
                 mat_A=mat_A0*math.exp(-mat_Q/mat_R)
@@ -1150,7 +1159,6 @@ while (it < numit):
  
     
     it+=1
-    print ("Iteration: ",it, "from ", numit)
     
 
 
