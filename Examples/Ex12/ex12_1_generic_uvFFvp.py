@@ -30,6 +30,7 @@ n=ney+1
 for ni in range (ney+1):
     is_bcnode_byvar[ni+n]=[1,0,0,0] #ONLY VELOCITY IS BC
 
+Uinit=[1.,0.,1.,0.,0.,1.] #Initial Condition, Velocity and F
 #-------------
 if plastic==0:
 	numvars=2 #u,F
@@ -54,6 +55,29 @@ for i in range(numvars):
 print ("dofs: ", ndof)
 for i in range(numvars):
     var_edof[i]=4*var_dim[i] 
+
+#### BOUNDARY CONDITIONS
+# BOUNDARY CONDITIONS
+boundarynode=zeros(2*(ney+1))
+#ROWS ARE NODES; COLS ARE ENTIRE BCs vector (all vars)
+node_bc=matrix(numpy.matlib.zeros((size(boundarynode), ndof)))
+
+dnode=(nex+1)    
+i=0
+for dy in range(ney+1): 
+    inode=dy*dnode
+    boundarynode[i]=inode
+    print("i",i)
+    node_bc[i]=[1.,0.,1.,0.,0.,1.]
+    i+=1
+
+inode=nex/2 #Central nodes
+for dy in range(ney+1):
+    boundarynode[i]=inode
+    inode+=dnode
+    print("i",i)
+    node_bc[i]=[1.001,0.,0.,0.,0.,0.] #ONLY VELOCITY
+    i+=1
     
 #---------------------------------------------------
 #Material properties (Table 2.1 p28)
@@ -134,28 +158,7 @@ for n in range(numnodes):
    #print("Coord ",n,":",node[n,0],node[n,1])
   
     
-#### BOUNDARY CONDITIONS
-# BOUNDARY CONDITIONS
-boundarynode=zeros(2*(ney+1))
-#ROWS ARE NODES; COLS ARE ENTIRE BCs vector (all vars)
-node_bc=matrix(numpy.matlib.zeros((size(boundarynode), ndof)))
 
-dnode=(nex+1)    
-i=0
-for dy in range(ney+1): 
-    inode=dy*dnode
-    boundarynode[i]=inode
-    print("i",i)
-    node_bc[i]=[1.0,0.,1.,0.,0.,1.]
-    i+=1
-
-inode=nex/2 #Central nodes
-for dy in range(ney+1):
-    boundarynode[i]=inode
-    inode+=dnode
-    print("i",i)
-    node_bc[i]=[1.001,0.,0.,0.,0.,0.] #ONLY VELOCITY
-    i+=1
     
 print("node_bc",node_bc)
     
@@ -398,25 +401,43 @@ H=matrix([[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,0]])
     # Uglob[iF+3]=Uglob[iF+4]=0#xy and yx        	
 # print ("Initial Uglob", Uglob)
 
+#TODO: SHORTEN THIS
+for inode in range(numnodes):
+    #print("node",inode)   
+    #Deformation gradient F
+    vrowinc=0
+    varinc=0
+    for nvar in range(numvars):
+        print("nvar, vrowinc",nvar, vrowinc)
+        idof=int(vrowinc+var_dim[nvar]*inode)
+        for i in range ( var_dim [ nvar ] ):
+            Uglob[idof] = Uinit[varinc+i] 
+            idof+=1
+        varinc+=var_dim[nvar]
+        vrowinc+=numnodes*var_dim[nvar]      
+
 for n in range(size(boundarynode)):
     inode=boundarynode[n]
     print("node",inode)   
     #Deformation gradient F
     vrowinc=0
-    int iloc=0
+    varinc=0
     for nvar in range(numvars):
         print("nvar, vrowinc",nvar, vrowinc)
         idof=int(vrowinc+var_dim[nvar]*inode)
         for i in range ( var_dim [ nvar ] ):
             if is_bcnode_byvar[n,nvar]:
-                print ("idof",idof)
+                print ("BC idof, varinc+i, val",idof,varinc+i,node_bc[ n, varinc+i ])
                 if solver == 2:
-                    Uglob[idof  ] = 0           #F INCREMENT (dF) IS NULL!!!!!   
+                    Uglob[idof] = node_bc[ n, varinc+i ]           #F INCREMENT (dF) IS NULL!!!!!
+            else:
+                print ("INITIAL idof, varinc+i,val",idof,varinc+i,Uinit[varinc+i] )
+                Uglob[idof] = Uinit[varinc+i] 
             idof+=1
-    
+        varinc+=var_dim[nvar]
         vrowinc+=numnodes*var_dim[nvar]                           
                 
-
+print ("Initial Uglob (with bcs)",Uglob)
 #-------------------------------------------
 it=0
 
