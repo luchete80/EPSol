@@ -23,7 +23,7 @@ form=2
 lx=0.1
 ly=0.01
 nex=2
-ney=1
+ney=4
 plastic=0
 plastic=0
 numit=20
@@ -1171,6 +1171,8 @@ while (it < numit):
 #print ("Results")
 #print("Uglob", Uglob)
 
+varname=["Veloc","DefGrad_F","Fvp","s"]
+
 file= open("output.vtu","w+")
 file.write("<?xml version=\"1.0\"?>\n")
 file.write("<VTKFile type=\"UnstructuredGrid\">\n")
@@ -1202,6 +1204,22 @@ file.write("\n</DataArray>\n");
 file.write("</Cells>\n")
 file.write("<PointData Scalars=\"scalars\" format=\"ascii\">\n")
 file.write("<DataArray Name=\"DefGrad_F\" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(ndof))
+vrowinc=0
+for n in range (numnodes):
+    for vrow in range(numvars): #Variables
+        #print("vrow",vrow)
+        ir=0
+        imax=int(var_dim[vrow])
+        for i in range(imax): 
+            vnrow[ir]=vrowinc+var_dim[vrow]*n+i
+            ir=ir+1
+            # print("vnrow",vnrow.astype(int)) 
+        
+        for row in range(4*imax):
+            file.write("%f " %(Uglob[int(vnrow[row]]))
+        file.write("\n")
+        vrowinc+=numnodes*var_dim[vrow]
+
 v=0
 for n in range (numnodes):
     for d in range (ndof):
