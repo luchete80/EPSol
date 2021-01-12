@@ -26,7 +26,7 @@ nex=2
 ney=1
 plastic=0
 plastic=0
-numit=1
+numit=20
 solver=2 #1:simple 2:Newton Raphson
 
 bcnodecount=2*(ney+1)   #INLET AND CENTER 
@@ -452,6 +452,8 @@ it=0
 ## ------------------------------------------
 ## Newton Rhapson Loop
 ## ------------------------------------------
+if plastic == 0:
+    UFvp=Fvpd=[1.,0.,0.,1.,1.]
 print ("**************************************** BEGIN LOOP *************************************************")
 while (it < numit):
     print ("Iteration: ",it, "from ", numit)
@@ -599,7 +601,8 @@ while (it < numit):
                 if (form==1):
                     sig=NsigF*Usig
                 else:
-                    Fvp=NFvp*UFvp
+                    if plastic:
+                        Fvp=NFvp*UFvp
                 
                  
                 #Galerkin strain integration
@@ -752,22 +755,24 @@ while (it < numit):
                 
                 #Elastic part of F 4.6
                 #ATENTION F~ is not in the same order of NODAL variable 
-                if (it==0):
-                    #Ft=identity(3)
-                    #NOT USE!!! Fd=[[1,0,0,1]]
-                    Fvpt=identity(3)
-                    #print(Ft)
-                    Fvpd[0]=1.
-                    Fvpd[1]=0. #yx
-                    Fvpd[2]=0. #xy
-                    Fvpd[3]=1. 
-                    Fvpd[4]=1.
-                else:
-                    #F is [xx xy yx yy zz]
-                    Fvpd[0]=Fvp[0]
-                    Fvpd[1]=Fvp[2] #yx
-                    Fvpd[2]=Fvp[1] #xy
-                    Fvpd[3]=Fvp[3]  
+                if plastic:
+                    if (it==0):
+                        #Ft=identity(3)
+                        #NOT USE!!! Fd=[[1,0,0,1]]
+                        Fvpt=identity(3)
+                        #print(Ft)
+                        Fvpd[0]=1.
+                        Fvpd[1]=0. #yx
+                        Fvpd[2]=0. #xy
+                        Fvpd[3]=1. 
+                        Fvpd[4]=1.
+                    else:
+                        #Fvp is [xx xy yx yy zz]
+                        Fvpd[0]=Fvp[0]
+                        Fvpd[1]=Fvp[2] #yx
+                        Fvpd[2]=Fvp[1] #xy
+                        Fvpd[3]=Fvp[3]  
+                        Fvpd[4]=Fvp[4]
                     
                 
                 #print ("Fvpd",Fvpd)
