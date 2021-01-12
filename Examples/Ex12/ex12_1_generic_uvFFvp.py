@@ -23,10 +23,10 @@ form=2
 lx=0.1
 ly=0.01
 nex=2
-ney=4
+ney=1
 plastic=0
 plastic=0
-numit=20
+numit=1
 solver=2 #1:simple 2:Newton Raphson
 
 bcnodecount=2*(ney+1)   #INLET AND CENTER 
@@ -138,32 +138,32 @@ for nx in range (ney+1):
         n=n+1
     y=y+dy
  
-#Radial flow example: convert from cilindrical to cartesian
-r0=1.
-r1=2.
-for n in range(numnodes):
-   r=node[n,0]+r0
-   t=node[n,1]-ly/2.
-   node[n,0]=r*cos(t)
-   node[n,1]=r*sin(t)
-   print("Coord ",n,":",node[n,0],node[n,1])
+# #Radial flow example: convert from cilindrical to cartesian
+# r0=1.
+# r1=2.
+# for n in range(numnodes):
+   # r=node[n,0]+r0
+   # t=node[n,1]-ly/2.
+   # node[n,0]=r*cos(t)
+   # node[n,1]=r*sin(t)
+   # print("Coord ",n,":",node[n,0],node[n,1])
    
 
-#Only for this example   
-for n in range(numnodes):
-    r=node[n,0]+r0
-    t=node[n,1]-ly/2.
-    vr=0.1*r0/r
-    vnxy[n,0]=vr*cos(t)
-    vnxy[n,1]=vr*sin(t)
-print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
-#Radial flow example: convert from cilindrical to cartesian
-for n in range(numnodes):
-   r=node[n,0]+r0
-   t=node[n,1]-ly/2.
-   node[n,0]=r*cos(t)
-   node[n,1]=r*sin(t)
-   #print("Coord ",n,":",node[n,0],node[n,1])
+# #Only for this example   
+# for n in range(numnodes):
+    # r=node[n,0]+r0
+    # t=node[n,1]-ly/2.
+    # vr=0.1*r0/r
+    # vnxy[n,0]=vr*cos(t)
+    # vnxy[n,1]=vr*sin(t)
+# print("vxy ",n,":",vnxy[n,0],vnxy[n,1])
+# #Radial flow example: convert from cilindrical to cartesian
+# for n in range(numnodes):
+   # r=node[n,0]+r0
+   # t=node[n,1]-ly/2.
+   # node[n,0]=r*cos(t)
+   # node[n,1]=r*sin(t)
+   # #print("Coord ",n,":",node[n,0],node[n,1])
   
     
 
@@ -1203,39 +1203,40 @@ for e in range (numel):
 file.write("\n</DataArray>\n");
 file.write("</Cells>\n")
 file.write("<PointData Scalars=\"scalars\" format=\"ascii\">\n")
-file.write("<DataArray Name=\"DefGrad_F\" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(ndof))
-vrowinc=0
-for n in range (numnodes):
-    for vrow in range(numvars): #Variables
-        #print("vrow",vrow)
-        ir=0
-        imax=int(var_dim[vrow])
-        for i in range(imax): 
-            vnrow[ir]=vrowinc+var_dim[vrow]*n+i
-            ir=ir+1
-            # print("vnrow",vnrow.astype(int)) 
-        
-        for row in range(4*imax):
-            file.write("%f " %(Uglob[int(vnrow[row]]))
-        file.write("\n")
-        vrowinc+=numnodes*var_dim[vrow]
 
-v=0
-for n in range (numnodes):
-    for d in range (ndof):
-        print("v,Uglob[v]",v,Uglob[v])
-        file.write("%f " %(Uglob[v]))
-        v=v+1
-    file.write("\n")
-file.write("\n</DataArray>\n")
-file.write("<DataArray Name=\"Vel\" NumberOfComponents=\"2\" type=\"Float32\" format=\"ascii\" >\n")
-v=0
-for n in range (numnodes):
-    for d in range (2):
-        file.write("%f " %(vnxy[n,d]))
-    file.write("\n")
-    #i+=var_dim[0]
-file.write("\n</DataArray>\n")
+varinc=0    
+for var in range(numvars): #Variables
+    file.write("<DataArray Name=\" %s \" NumberOfComponents=\"%d\" type=\"Float32\" format=\"ascii\" >\n" %(varname[var],var_dim[var]))
+    print ("var", var)
+    for n in range (numnodes):
+        print ("node ",n)
+        imax=int(var_dim[var])
+        for i in range(imax): 
+            dof=int(varinc+var_dim[var]*n+i)
+            print ("dof",dof)
+            file.write("%f " %(Uglob[dof]))
+            # print("vnrow",vnrow.astype(int))         
+        file.write("\n")
+    print ("varinc",varinc)
+    varinc+=numnodes*var_dim[var]
+    file.write("\n</DataArray>\n")
+
+# v=0
+# for n in range (numnodes):
+    # for d in range (ndof):
+        # print("v,Uglob[v]",v,Uglob[v])
+        # file.write("%f " %(Uglob[v]))
+        # v=v+1
+    # file.write("\n")
+# file.write("\n</DataArray>\n")
+# file.write("<DataArray Name=\"Vel\" NumberOfComponents=\"2\" type=\"Float32\" format=\"ascii\" >\n")
+# v=0
+# for n in range (numnodes):
+    # for d in range (2):
+        # file.write("%f " %(vnxy[n,d]))
+    # file.write("\n")
+    # #i+=var_dim[0]
+# file.write("\n</DataArray>\n")
 file.write("</PointData>\n")
 file.write("</Piece>\n")
 file.write("</UnstructuredGrid>\n")
