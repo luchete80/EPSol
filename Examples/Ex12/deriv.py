@@ -55,7 +55,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
                [0    ,    0,Fd[0,0],Fd[2,0]],
                [0    ,    0,Fd[1,0],Fd[3,0]]])     
     
-    print ("FM",FM)
+    #print ("FM",FM)
     
     # Ft[0,0]=Fd[0]
     # Ft[1,0]=Fd[1]
@@ -71,7 +71,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     Fvpt[0,1]=Fvpd[2]
     Fvpt[1,1]=Fvpd[3] 
     Fvpt[2,2]=Fvpd[4] 
-    print ("Fvpt",Fvpt)
+    #print ("Fvpt",Fvpt)
     
     Fvpt_inv=linalg.inv(Fvpt) 
     F4vpd_inv[0]=Fvpt_inv[0,0]
@@ -193,7 +193,7 @@ def calc_dEdU(Fd,Fvpd,NsigF,NFvp):
     #Eqn E.2
     dEdU[1]=dEdFed_inv*dFeinv_dFe*dFedUFvp
     
-    print("dEdU[0]",dEdU[0])
-    print("dEdU[1]",dEdU[1])
+    #print("dEdU[0]",dEdU[0])
+    #print("dEdU[1]",dEdU[1])
        
     return dEdU

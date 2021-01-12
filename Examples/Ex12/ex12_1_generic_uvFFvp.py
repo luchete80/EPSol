@@ -559,13 +559,13 @@ while (it < numit):
                 vrowinc=0
                 #Assembly Matrix
                 for vrow in range(numvars): #Variables
-                    print("vrow",vrow)
+                    #print("vrow",vrow)
                     ir=0
                     imax=int(var_dim[vrow])
                     for n in range (4): #Nodes
                         for i in range(imax): 
                             d=elnodes.astype(int)[e][n]
-                            print("ir glob",ir, vrowinc+var_dim[vrow]*d+i)
+                            #print("ir glob",ir, vrowinc+var_dim[vrow]*d+i)
                             vnrow[ir]=vrowinc+var_dim[vrow]*d+i
                             ir=ir+1
                                 
@@ -958,7 +958,7 @@ while (it < numit):
                               wJ) 
                 #END IF PLASTIC ******************************************
                 
-        print ("Nv",Nv)
+        #print ("Nv",Nv)
         # #Element dimension and DOF PER VARIABLE! 
         # var_dim =[2,4,4,1]
         # var_edof=zeros(4)
@@ -988,7 +988,7 @@ while (it < numit):
         vrowinc=0
         #Assembly Matrix
         for vrow in range(numvars): #Variables
-            print("vrow",vrow)
+            #print("vrow",vrow)
             ir=0
             imax=int(var_dim[vrow])
             for n in range (4): #Nodes
@@ -1000,7 +1000,7 @@ while (it < numit):
             
             vcolinc=0        
             for vcol in range(numvars): #Variables
-                print("vcol",vcol)
+                #print("vcol",vcol)
                 jmax=int(var_dim[vcol])
                 #print("imax, jmax",imax,jmax)
                 #Store vn vectors
@@ -1013,8 +1013,8 @@ while (it < numit):
                         ic=ic+1
                             
                         
-                print("vnrow",vnrow.astype(int))            
-                print("vncol",vncol.astype(int))
+                #print("vnrow",vnrow.astype(int))            
+                #print("vncol",vncol.astype(int))
                 for row in range(4*imax):
                     Rglob[vnrow.astype(int)[row]]+=R[vrow][row]
                     for col in range(4*jmax):
@@ -1039,7 +1039,7 @@ while (it < numit):
             idof = ndof * inode 
             for nvar in range(numvars):
                 for i in range ( var_dim [ nvar ] ):
-                    print("idof",idof)
+                    #print("idof",idof)
                     if is_bcnode_byvar[n,nvar]:
                         for j in range(dof):
                             Rglob[ j ] = Rglob[ j ] - Kglob[j,int(idof)] * node_bc[ n, i ] #dU=0, U=1(idof)
@@ -1049,7 +1049,7 @@ while (it < numit):
             inode=boundarynode[n]
             for i in range ( var_dim [ 0 ] ):
                 idof = var_dim[0] * inode + i   
-                print("i, idof",i, idof)
+                #print("i, idof",i, idof)
                 Rglob[ int(idof) ] = node_bc[ n, i ] #dU=0, U=1(idof)    
 
 
@@ -1076,15 +1076,15 @@ while (it < numit):
     #CASE FR SECUENTIAL DOF (FIRST DOFS VELOCITY,THEN F OR SIGMA; etc
     for n in range(size(boundarynode)):
         inode=boundarynode[n]
-        print("node",inode)   
+        #print("node",inode)   
         #Deformation gradient F
         vrowinc=0
         for nvar in range(numvars):
-            print("nvar, vrowinc",nvar, vrowinc)
+            #print("nvar, vrowinc",nvar, vrowinc)
             idof=int(vrowinc+var_dim[nvar]*inode)
             for i in range ( var_dim [ nvar ] ):
                 if is_bcnode_byvar[n,nvar]:
-                    print ("idof",idof)
+                    #print ("idof",idof)
                     for j in range(dof):
                         Kglob[ idof , j ] = 0
                         #Rglob[ j ] -= Kglob[j,idof] * 0 #dU=0 in NEWTON RAPHSON, U=1(idof) IN PICARD
@@ -1097,13 +1097,13 @@ while (it < numit):
         
             vrowinc+=numnodes*var_dim[nvar]                           
                 
-    print("KGLOB\n")
-    for i in range (dof):
-        for j in range (dof):
-            print(Kglob[i,j], end = " ")
-        print("\n")   
+    #print("KGLOB\n")
+    # for i in range (dof):
+        # for j in range (dof):
+            # print(Kglob[i,j], end = " ")
+        # print("\n")   
         # print("\n")
-    print("Rglob",Rglob)
+    #print("Rglob",Rglob)
     
 
 #print (K)
