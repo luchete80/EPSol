@@ -22,8 +22,8 @@ import deriv
 form=2
 lx=0.1
 ly=0.01
-nex=2
-ney=1
+nex=40
+ney=5
 plastic=0
 plastic=0
 numit=3
