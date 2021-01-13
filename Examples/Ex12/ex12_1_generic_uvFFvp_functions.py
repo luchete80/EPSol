@@ -560,10 +560,11 @@ def calculate_Vderivs(Bv,UV):
     L[0,0]=dVxy[0]
     L[0,1]=dVxy[1]
     L[1,0]=dVxy[2]
-    L[1,0]=dVxy[3]
+    L[1,1]=dVxy[3]
     
     Dt=0.5*(L+L.transpose())
-    D[0]=Dt[0,0];D[0]=Dt[0,0];
+    D[0]=Dt[0,0];D[1]=Dt[1,1];
+    D[3]=Dt[0,1];
     return dVxy,L,Dt,D
     
 def calculate_sigma(c,D):
@@ -686,10 +687,12 @@ while (it < numit):
                 L[0,0]=dVxy[0]
                 L[0,1]=dVxy[1]
                 L[1,0]=dVxy[2]
-                L[1,0]=dVxy[3]
+                L[1,1]=dVxy[3]
                 
                 Dt=0.5*(L+L.transpose())
-                D[0]=Dt[0,0];D[0]=Dt[0,0];
+                #SYMMETRIC TENSORS, STRESS AND STRAINS
+                D[0]=Dt[0,0];D[1]=Dt[1,1];
+                D[3]=Dt[0,1];
                 
                 #Stabilization factor tau 2.26
                 #tau=beta*he/(2|v|)
@@ -1273,6 +1276,7 @@ for e in range (numel):
         Ee[3]=Eet[0,1]; #OR 1,0, being Eet symmetric
         visc=1.
         sig=c*Ee+2*visc*D
+        print ("sig",sig)
         #signod[n]+=sig
         sigeq_nod[n]+=sig_eq
         #sigeq_nod
