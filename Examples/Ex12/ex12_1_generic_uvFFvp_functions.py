@@ -509,7 +509,61 @@ def calculate_shape_matrices (rg, sg,X2):
                     for n in range(2):
                         BFvp[l,4*i+m,n]=B5i[l,m,n]   
 
-    return Nv,NsigF,Ns                    
+    return Nv,NsigF,Ns,Bv,BsigF,BFvp
+
+def calculate_Jacobian(rg,sg,X2):
+    dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
+    #Numerated as in deal.ii
+    #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
+    dHrs/=4.
+    J=dHrs*X2
+    dHxy=linalg.inv(J)*dHrs
+    detJ=linalg.det(J) 
+    return J,detJ
+    
+def calculate_Uelem(numnodes,elnodes,Uglob,var_dim):
+    if plastic ==0:
+        numvars=2
+    else:
+        numvars=4
+    #IN CASE GLOBAL NODES ARE STORED IN BLOCK
+    vrowinc=0
+    #Assembly Matrix
+    for vrow in range(numvars): #Variables
+        #print("vrow",vrow)
+        ir=0
+        imax=int(var_dim[vrow])
+        for n in range (4): #Nodes
+            for i in range(imax): 
+                d=elnodes.astype(int)[e][n]
+                #print("ir glob",ir, vrowinc+var_dim[vrow]*d+i)
+                vnrow[ir]=vrowinc+var_dim[vrow]*d+i
+                ir=ir+1
+                    
+            # print("vnrow",vnrow.astype(int)) 
+        
+        if   vrow == 0:
+            for row in range(4*imax):
+                UV[row,0]=Uglob[int(vnrow[row])]
+        elif vrow == 1:
+            for row in range(4*imax):
+                UF[row,0]=Uglob[int(vnrow[row])]                                
+        vrowinc+=numnodes*var_dim[vrow]
+    if plastic ==0:
+        return UV,UF
+    else:
+        return UV,UF,UFvp,Us
+        
+def calculate_Vderivs(Bv,UV)
+    dVxy=Bv*UV #(4x8)*(8x1)=(4x1) (vx,x vx,y vy,x vy,y)T 
+    L[0,0]=dVxy[0]
+    L[0,1]=dVxy[1]
+    L[1,0]=dVxy[2]
+    L[1,0]=dVxy[3]
+    
+    Dt=0.5*(L+L.transpose())
+    D[0]=Dt[0,0];D[0]=Dt[0,0];
+    return dVxy,L,Dt,D
 
 ## ------------------------------------------
 ## Newton Rhapson Loop
@@ -547,116 +601,17 @@ while (it < numit):
                 rg=gauss[ig]
                 sg=gauss[jg]
                 detJ=0.
-                # Nv,NsigF,Ns=calculate_shape_matrices (rg, sg,X2)
+                Nv,NsigF,Ns,Bv,BsigF,BFvp=calculate_shape_matrices (rg, sg,X2)
+                J,detJ=calculate_Jacobian(rg,sg,X2)
+                #print ("Nv NsigF",Nv, NsigF)
                 # print ("dHxy",dHxy)
                 #Numerated as in Bathe
-                Ns  =0.25*matrix([(1+sg)*(1+rg),(1-rg)*(1+sg),(1-sg)*(1-rg),(1-sg)*(1+rg)])   
-                dHrs=matrix([[(1+sg),-(1+sg),-(1-sg),(1-sg)], [(1+rg),(1-rg),-(1-rg),-(1+rg)] ])
-                #Numerated as in deal.ii
-                #dHrs=matrix([[-(1-s),(1-s),-(1+s),(1+s)], [-(1-r),-(1+r),(1-r),(1+r)] ])        
-                dHrs/=4.
-                J=dHrs*X2
-                dHxy=linalg.inv(J)*dHrs
-                detJ=linalg.det(J)
-                #Calculate shape functions
-                #Bs=J-1 dHrs(B.13)
-                Bs=dHxy
-                for k in range(4):
-                    #shape functions
-                    Nv[0,2*k  ]=Nv[1,2*k+1]=Ns[0,k]
-                    for j in range(4):
-                        NsigF[j,4*k+j]=Ns[0,k]
-
-                    #derivatives Bv (B.14)
-                    Bv[0,2*k  ]=dHxy[0,k]
-                    Bv[1,2*k  ]=dHxy[1,k]
-                    Bv[2,2*k+1]=dHxy[0,k]
-                    Bv[3,2*k+1]=dHxy[1,k]
-                
-                ################            
-                ## 
-                for i in range(4):
-                    for l in range(4):
-                        for m in range(4):  
-                            for n in range(2):
-                                if (l==m):
-                                    B4i[l,m,n]=Bs[n,i]
-                                else:
-                                    B4i[l,m,n]=0.              
-                    for l in range(4):
-                        for m in range(4):  
-                            for n in range(2):
-                                BsigF[l,4*i+m,n]=B4i[l,m,n]
-                
-                ###################
-                ## Ec. D.20 p177 
-                if form==2:
-                    for i in range(4):
-                        for l in range(5):
-                            for m in range(5):  
-                                for n in range(2):
-                                    if (l==m):
-                                        B5i[l,m,n]=Bs[n,i]
-                                    else:
-                                        B5i[l,m,n]=0.              
-                        for l in range(5):
-                            for m in range(5):  
-                                for n in range(2):
-                                    BFvp[l,4*i+m,n]=B5i[l,m,n]            
-                                
-                #Interpolate velocity
-                #INCREMENT GLOBAL VELOCITY FROM INCREMENTS!!!
-                #CHANGE F TO ASSEMBLE IN THE SAME PLACE FOR BOTH FORMS
-                # THIS IS THE CRITERIA IN WHICH VARS ARE INBLOCK PER NODE
-                # juf=0
-                # uvf=0
-                # for n in range (4):
-                    # d=elnodes.astype(int)[e][n]
-                    # for i in range (var_dim[0]):    #Velocity is var 0
-                        # print("UV loc glob ",i,ndof*d+i)
-                        # UV[i,0]=Uglob[ndof*d+i]
-                    # uvf+=var_dim[0]
-                    # for j in range (var_dim[1]):
-                        # #print("J",j)
-                        # if (form==1):
-                            # Usig[j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                            # UF  [j+juf,0]=Uglob[ndof*d+6+j]
-                        # else: #Fig 4.1, Z is not translated to Fvpt
-                            # UF  [j+juf,0]=Uglob[ndof*d+var_dim[0]+j]
-                            # #print("UF(j,coord)",j,ndof*d+6+j)
-                    # juf+=var_dim[1]
                     
-                    # if plastic:
-                        # for j in range (var_dim[2]):
-                            # UFvp[j,0]=Uglob[ndof*d+var_dim[0]+var_dim[1]+j]
-               
-                #IN CASE GLOBAL NODES ARE STORED IN BLOCK
-                vrowinc=0
-                #Assembly Matrix
-                for vrow in range(numvars): #Variables
-                    #print("vrow",vrow)
-                    ir=0
-                    imax=int(var_dim[vrow])
-                    for n in range (4): #Nodes
-                        for i in range(imax): 
-                            d=elnodes.astype(int)[e][n]
-                            #print("ir glob",ir, vrowinc+var_dim[vrow]*d+i)
-                            vnrow[ir]=vrowinc+var_dim[vrow]*d+i
-                            ir=ir+1
-                                
-                        # print("vnrow",vnrow.astype(int)) 
-                    
-                    if   vrow == 0:
-                        for row in range(4*imax):
-                            UV[row,0]=Uglob[int(vnrow[row])]
-                    elif vrow == 1:
-                        for row in range(4*imax):
-                            UF[row,0]=Uglob[int(vnrow[row])]                                
-                    vrowinc+=numnodes*var_dim[vrow]
-
-                            
+                if plastic==0:
+                    UV,UF=calculate_Uelem(numnodes,elnodes,Uglob,var_dim)
+                
                 #print("UF",UF)
-
+ 
                 v  =Nv*UV #[2x8 x (8x1)]
                 s  =float(Ns*Us)
                 F  =NsigF*UF #[(4x16)*(16x1) =(4x1)]
