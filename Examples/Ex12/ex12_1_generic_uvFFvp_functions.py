@@ -26,7 +26,7 @@ nex=2
 ney=1
 plastic=0
 plastic=0
-numit=1
+numit=3
 solver=2 #1:simple 2:Newton Raphson
 
 bcnodecount=2*(ney+1)   #INLET AND CENTER 
@@ -299,7 +299,8 @@ temp8x1 = matrix(numpy.matlib.zeros((8, 1)))
 #Stress
 sig  =matrix(numpy.matlib.zeros((4, 1)))    #Stress Gauss Points xx, yy,zz, syx, is sbar, WHICH IS SYMMETRIC
 sig_d=matrix(numpy.matlib.zeros((4, 1)))    #Deviatoric, is also symmetric
-signod=matrix(numpy.matlib.zeros((numnodes, numnodes*4)))
+signod=matrix(numpy.matlib.zeros((numnodes, 4)))
+sigeq_nod=zeros(numnodes)
 N_d  =matrix(numpy.matlib.zeros((4, 1)))    #Direction of plastic strain
 
 P=matrix(numpy.matlib.zeros((4, 1))) 
@@ -554,7 +555,7 @@ def calculate_Uelem(numnodes,elnodes,Uglob,var_dim):
     else:
         return UV,UF,UFvp,Us
         
-def calculate_Vderivs(Bv,UV)
+def calculate_Vderivs(Bv,UV):
     dVxy=Bv*UV #(4x8)*(8x1)=(4x1) (vx,x vx,y vy,x vy,y)T 
     L[0,0]=dVxy[0]
     L[0,1]=dVxy[1]
@@ -564,6 +565,49 @@ def calculate_Vderivs(Bv,UV)
     Dt=0.5*(L+L.transpose())
     D[0]=Dt[0,0];D[0]=Dt[0,0];
     return dVxy,L,Dt,D
+    
+def calculate_sigma(c,D):
+
+    #print("F",F)
+    #Ft=
+    if (form==1):
+        sig=NsigF*Usig
+    else:
+        if plastic:
+            Fvp=NFvp*UFvp
+    
+
+    Ft[0,0]=F[0]
+    Ft[0,1]=F[1]
+    Ft[1,0]=F[2]
+    Ft[1,1]=F[3]
+    Ft[2,2]=1.      #Fzz, plain strain 
+    
+    
+    #FORM 2
+    if plastic == 0:
+        Fet=Ft
+    
+    Fet_inv=linalg.inv(Fet) 
+    Eet=0.5*(identity(3)-Fet_inv.transpose()*Fet_inv)
+    #4 x 1 vector arrangement, for constitutive equation, Eq. 4.20
+    Ee[0]=Eet[0,0];Ee[1]=Eet[1,1];Ee[2]=Eet[2,2];
+    Ee[3]=Eet[0,1]; #OR 1,0, being Eet symmetric
+    visc=1.
+    sig=c*Ee+2*visc*D
+
+    #AND THEN 4.20
+    #From 2.27 Plane Strain Symmetric tensors are defined as 
+    #t=[txx tyy tzz tyz]
+    pi=1./3.*(sig[0,0]+sig[1,0]+sig[2,0])
+    #print("pi",pi)
+    for i in range(3): #Only daigonal is modified
+        sig_d[i,0]=sig[i,0]-pi #comps are [x y z yz]
+    #print ("sigd",sig_d[i][0])   
+    for k in range(4):
+        sig_eq=sqrt(1.5*(sig_d[k,0]))
+                    
+    return sig,sig_eq
 
 ## ------------------------------------------
 ## Newton Rhapson Loop
@@ -589,7 +633,7 @@ while (it < numit):
             X2[n]=node[elnodes.astype(int)[e][n]]
         #print ("Element ", e)
         #print ("Element Nodes")
-        #print (X2)
+        #print ("X2",X2)
         
         dHrs=matrix([[(1+0.),-(1+0.),-(1-0.),(1-0.)], [(1+0.),(1-0.),-(1-0.),-(1+0.)] ])
         J=dHrs*X2
@@ -1184,7 +1228,63 @@ while (it < numit):
     
     it+=1
     
+#CALCULATE NEIGHBOURS NODES
+shared_nodes=zeros(numnodes)
+for e in range (numel):
+    for n in range(4):
+        en=elnodes.astype(int)[e][n]
+        shared_nodes[en]+=1
 
+print ("shared_nodes",shared_nodes)
+
+#STRESS CALCULATIONS (AVERAGED)
+nod_gaussp=numpy.matrix([[1., 1.],[-1., 1.],[-1.,-1.],[1.,-1.]])
+for e in range (numel):
+    for n in range(4):
+        X2[n]=node[elnodes.astype(int)[e][n]]
+    
+    print ("X2",X2)
+    for i in range(4):
+        rg=nod_gaussp[i,0];sg=nod_gaussp[i,1]
+        print ("rg,sg",rg,sg)
+        Nv,NsigF,Ns,Bv,BsigF,BFvp=calculate_shape_matrices (rg, sg,X2)
+        J,detJ=calculate_Jacobian(rg,sg,X2)
+        if plastic==0:
+            UV,UF=calculate_Uelem(numnodes,elnodes,Uglob,var_dim)
+            
+        dVxy,L,Dt,D=calculate_Vderivs(Bv,UV)
+        print ("D",D)
+
+        Ft[0,0]=F[0]
+        Ft[0,1]=F[1]
+        Ft[1,0]=F[2]
+        Ft[1,1]=F[3]
+        Ft[2,2]=1.      #Fzz, plain strain 
+        
+        
+        #FORM 2
+        if plastic == 0:
+            Fet=Ft
+        
+        Fet_inv=linalg.inv(Fet) 
+        Eet=0.5*(identity(3)-Fet_inv.transpose()*Fet_inv)
+        #4 x 1 vector arrangement, for constitutive equation, Eq. 4.20
+        Ee[0]=Eet[0,0];Ee[1]=Eet[1,1];Ee[2]=Eet[2,2];
+        Ee[3]=Eet[0,1]; #OR 1,0, being Eet symmetric
+        visc=1.
+        sig=c*Ee+2*visc*D
+        #signod[n]+=sig
+        sigeq_nod[n]+=sig_eq
+        #sigeq_nod
+#average
+for n in range (numnodes):
+    #signod[n]/=shared_nodes[n]
+    sigeq_nod[n]/=shared_nodes[n]
+    
+
+print("sig,sig_eq",signod,sigeq_nod)
+
+# print ("nod_gauss",nod_gauss)
 
     
 #print ("Results")
@@ -1232,7 +1332,7 @@ for var in range(numvars): #Variables
         imax=int(var_dim[var])
         for i in range(imax): 
             dof=int(varinc+var_dim[var]*n+i)
-            print ("dof",dof)
+            #print ("dof",dof)
             file.write("%f " %(Uglob[dof]))
             # print("vnrow",vnrow.astype(int))         
         file.write("\n")
